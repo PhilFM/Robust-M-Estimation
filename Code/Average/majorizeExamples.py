@@ -58,7 +58,7 @@ def plotResult(algInstance, uValues, label, fileName):
     ax.set_xlabel(r'r')
 
     plt.legend()
-    plt.savefig("../../Doc/RobustAverage/pictures/" + fileName + ".png", bbox_inches='tight')
+    plt.savefig("../../Output/" + fileName + ".png", bbox_inches='tight')
     plt.show()
 
 paramInstance = GNC_IRLSpParams(0.0, 1.0, 0.1) # p, rscale, epsilonBase

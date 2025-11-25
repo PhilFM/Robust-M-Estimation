@@ -1,0 +1,36 @@
+import math
+import numpy as np
+
+from welschMean import WelschMean
+
+np.random.seed(0) # We want the numbers to be the same on each run
+
+nTests = 10
+
+for i in range(nTests):
+    sigma = 0.1+np.random.rand()
+    sigmapop = 0.1+np.random.rand()
+    sigmac = math.sqrt(sigma*sigma + sigmapop*sigmapop)
+
+    weightGood = [sigma/sigmac]
+    dataGood = [0.0]
+    #print(data)
+    state = [-sigma]
+    derivGood = WelschMean.gradientFunc(state, None, [sigmac], dataGood, weightGood)
+
+    derivGoodCheck = sigma*sigma*math.exp(sigmapop*sigmapop/(2.0*sigmac*sigmac))*math.exp(-0.5)/(sigmac*sigmac*sigmac)
+    derivGoodCheck2 = -(sigma/sigmac)*(-sigma)*math.exp(-sigma*sigma/(2.0*sigmac*sigmac))/(sigmac*sigmac)
+    w2 = sigma*sigma*sigma*math.exp(sigmapop*sigmapop/(2.0*sigmac*sigmac))/(sigmac*sigmac*sigmac)
+    weightBad = [w2]
+    dataBad = [-2.0*sigma]
+    #print(data)
+    derivBad = WelschMean.gradientFunc(state, None, [sigma], dataBad, weightBad)[0]
+    print(derivGood, derivGoodCheck, derivGoodCheck2, -derivBad)
+
+    state = [0.0]
+    deriv2ndGood = WelschMean.secondDerivFunc(state, None, [sigmac], dataGood, weightGood)
+    deriv2ndGoodCheck = -sigma*math.exp(0.0*sigma*sigma/(2.0*sigmac*sigmac))/(sigmac*sigmac*sigmac)
+    print("deriv2nd:", deriv2ndGood, deriv2ndGoodCheck)
+
+    wp2 = (sigma/sigmac)*math.exp(0.5*sigmapop*sigmapop/(sigmac*sigmac))
+    #dataBad2 = [[wp2, 

@@ -83,7 +83,7 @@ for N in [10,20,50,100]:
     dataDict['nSamples'] = nSamples
     jstr = json.dumps(dataDict)
     js = json.loads(jstr)
-    with open('../../Doc/RobustAverage/pictures/compareStudentTN' + str(N) + '.json', 'w', encoding='utf-8') as f:
+    with open('../../Output/compareStudentTN' + str(N) + '.json', 'w', encoding='utf-8') as f:
         json.dump(js, f, ensure_ascii=False, indent=4)
 
     plt.figure(num=1, dpi=240)
@@ -105,5 +105,5 @@ for N in [10,20,50,100]:
     ax.set_ylim(0.0,1.1)
 
     plt.legend()
-    plt.savefig('../../Doc/RobustAverage/pictures/compareStudentTN' + str(N) + '.png', bbox_inches='tight')
+    plt.savefig('../../Output/compareStudentTN' + str(N) + '.png', bbox_inches='tight')
     #plt.show()

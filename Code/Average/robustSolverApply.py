@@ -17,15 +17,14 @@ from trimmedMean import trimmedMean
 
 sys.path.append("../Library")
 from IRLS import IRLS
-from weightedMean import weightedMean
 from GNC_WelschParams import GNC_WelschParams
 from WelschParams import WelschParams
 from GNC_IRLSpParams import GNC_IRLSpParams
 from drawFunctions import drawDataPoints
 import pltAlgVis
 
+from weightedMean import weightedMean
 from robust_mean import M_estimator
-from drawFunctions import drawDataPoints
 
 showOthers = True
 

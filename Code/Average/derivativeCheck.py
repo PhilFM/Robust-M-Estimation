@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import sys
 
 sys.path.append("Welsch")
-from flatWelschMean import flatWelschMean
 from WelschMean import WelschMean
 
 sys.path.append("PseudoHuber")

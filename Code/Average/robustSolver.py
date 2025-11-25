@@ -81,7 +81,7 @@ for xgtrange in [3.0,5.0,10.0,30.0,100.0]:
         dataDict['nSamples'] = nSamples
         jstr = json.dumps(dataDict)
         js = json.loads(jstr)
-        with open('../../Doc/RobustAverage/pictures/compareN' + str(N) + '-range' + str(int(xgtrange)) + '.json', 'w', encoding='utf-8') as f:
+        with open('../../Output/compareN' + str(N) + '-range' + str(int(xgtrange)) + '.json', 'w', encoding='utf-8') as f:
             json.dump(js, f, ensure_ascii=False, indent=4)
 
         plt.figure(num=1, dpi=240)
@@ -102,5 +102,5 @@ for xgtrange in [3.0,5.0,10.0,30.0,100.0]:
         ax.set_ylim(0.0,1.1)
 
         plt.legend()
-        plt.savefig('../../Doc/RobustAverage/pictures/compareN' + str(N) + '-range' + str(int(xgtrange)) + '.png', bbox_inches='tight')
+        plt.savefig('../../Output/compareN' + str(N) + '-range' + str(int(xgtrange)) + '.png', bbox_inches='tight')
         #plt.show()
