@@ -46,7 +46,7 @@ We separate the basic IRLS algorithm (implemented in the code `Library/IRLS.py`)
 1. An instance of an estimator class using the parameter class instance. An instance of either a simple or a GNC parameter class may be used to build the estimator class instance. An example is `Average/Welsch/WelschMean.py`. The estimator class also requires that the input data and weights be passed in.
 1. An instance of the `IRLS` class, using the estimator class instance and optional parameters. Once this is built, call the `run()` function to execute IRLS to completion.
 
-Example code showing how to use the IRLS algorithm is in `Average/Welsch\welschSolver.py`.
+Example code showing how to use the IRLS algorithm is in [welschSolver.py](Code/Average/Welsch/welschSolver.py#L51).
 
 
 
