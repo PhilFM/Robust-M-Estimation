@@ -30,7 +30,9 @@ Now the programs within each sub-directory. To run them, `cd` into each sub-dire
 - `GemanMcClure` Code related to the Geman-McClure influence function.
    - `gemanMcClureSolver.py` Example code that generates simulated data and runs IRLS with the Geman-McClure influence function.
 - `GNC_IRLSp` Code related to the GNC IRLS-p influence function.
-   - `gncIRLSpSolver.py` Example code that generates simulated data and runs IRLS with the Geman-McClure influence function.
+   - `gncIRLSpSolver.py` Example code that generates simulated data and runs IRLS with the GNC IRLS-p influence function.
+- `GNC_TLS` Code related to the GNC TLS influence function.
+   - `gncTLSSolver.py` Example code that generates simulated data and runs IRLS with the GNC TLS influence function.
 - `Trimmed` Code related to various trimmed mean algorithms:
    - `trimmedMeanEfficiency.py` Calculation of the efficiency of the trimmed mean with simulated data.
    - `winsorisedMeanEfficiency.py` Calculation of the efficiency of the Winsorised mean with simulated data.
