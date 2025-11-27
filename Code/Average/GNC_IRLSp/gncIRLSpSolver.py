@@ -93,7 +93,7 @@ ax.set_ylim((yMin, yMax))
 if showGradient:
     rmgv = np.vectorize(gradientFunc)
     plt.plot(mlist, rmgv(mlist), lw = 1.0)
-    for d,w in zip(data,weight):
+    for d,w in zip(data,weight, strict=True):
         if d >= xMin and d <= xMax:
             plt.axvline(x = d, color = 'b', ymax = 0.05*w, lw = 1.0)
 
@@ -106,7 +106,7 @@ if showGradient:
 else:
     hmfv = np.vectorize(objectiveFunc)
     plt.plot(mlist, hmfv(mlist), lw = 1.0)
-    for d,w in zip(data,weight):
+    for d,w in zip(data,weight, strict=True):
         if d >= xMin and d <= xMax:
             plt.axvline(x = d, color = 'b', ymax = 0.1*w, lw = 1.0)
 

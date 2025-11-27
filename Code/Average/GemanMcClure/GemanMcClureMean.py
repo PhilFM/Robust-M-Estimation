@@ -36,7 +36,7 @@ class GemanMcClureMean:
         tot = 0.0
         if self.scale is None:
             var = self.paramInstance.sigma*self.paramInstance.sigma
-            for d,w in zip(self.data,weight):
+            for d,w in zip(self.data,weight, strict=True):
                 diff = m-d
                 diffSqr = diff*diff
                 tot += w*diffSqr/(var + diffSqr)
@@ -64,7 +64,7 @@ class GemanMcClureMean:
         tot = 0.0
         if self.scale is None:
             var = self.paramInstance.sigma*self.paramInstance.sigma
-            for d,w in zip(self.data,weight):
+            for d,w in zip(self.data,weight, strict=True):
                 diff = m-d
                 diffSqr = diff*diff
                 v = var + diffSqr
@@ -89,7 +89,7 @@ class GemanMcClureMean:
         tot = 0.0
         if self.scale is None:
             var = self.paramInstance.sigma*self.paramInstance.sigma
-            for d,w in zip(self.data,weight):
+            for d,w in zip(self.data,weight, strict=True):
                 diff = m-d
                 diffSqr = diff*diff
                 v = var + diffSqr
@@ -120,7 +120,7 @@ class GemanMcClureMean:
         tot = 0.0
         if self.scale is None:
             var = self.paramInstance.sigma*self.paramInstance.sigma
-            for d,w in zip(self.data,weight):
+            for d,w in zip(self.data,weight, strict=True):
                 diff = m-d
                 diffSqr = diff*diff
                 v = var + diffSqr
@@ -144,7 +144,7 @@ class GemanMcClureMean:
         tot = 0.0
         if self.scale is None:
             var = self.paramInstance.sigma*self.paramInstance.sigma
-            for d,w in zip(self.data,weight):
+            for d,w in zip(self.data,weight, strict=True):
                 diff = m-d
                 diffSqr = diff*diff
                 v = var + diffSqr

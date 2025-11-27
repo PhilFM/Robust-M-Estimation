@@ -55,7 +55,7 @@ nSamples = 3000
 
 Narray = [5,10,50,100]
 colArray = ['magenta','r','g','cyan']
-for N,col in zip(Narray,colArray):
+for N,col in zip(Narray,colArray, strict=True):
     effData = []
     for sigmaPop in splist:
         mstot = 0.0

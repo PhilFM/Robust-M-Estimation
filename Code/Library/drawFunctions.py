@@ -7,7 +7,7 @@ def drawDataPoints(plt, data, weight, xMin, xMax, N0, scale=0.1):
 
     # combine repeated data values into one
     count = {}
-    for d,w in zip(data,weight):
+    for d,w in zip(data,weight, strict=True):
         s = str(d)
         if s in count:
             count[s] = count[s] + w
