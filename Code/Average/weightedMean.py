@@ -1,12 +1,19 @@
 import numpy as np
 
-def weightedMean(data, weight):
+def weightedMean(data, weight, scale=None):
     totx = 0.0
     totw = 0.0
-    for d,w in zip(data,weight):
-        #print("Weighted mean d:",d)
-        totx += w*d
-        totw += w
+    if scale is None:
+        for d,w in zip(data,weight):
+            totx += w*d
+            totw += w
+
+        return np.array([totx/totw])
+    else:
+        for d,w,s in zip(data,weight,scale):
+            w /= s*s
+            totx += w*d
+            totw += w
 
     return np.array([totx/totw])
 

@@ -51,6 +51,18 @@ algInstance = GemanMcClureMean(paramInstance, data, weight)
 m = IRLS(algInstance, maxNIterations=maxNIterations, printWarnings=True).run()
 print("IRLS result: m=", m)
 
+# check result when scale is included
+if showGradient:
+    scale = np.array([1.0, # good data
+                      1.0, 1.0, 1.0, 1.0]) # bad data
+else:
+    scale = np.array([1.0, # good data
+                      1.0]) # bad data
+
+algInstanceWithScale = GemanMcClureMean(paramInstance, data, weight, scale)
+mscale = IRLS(algInstanceWithScale, maxNIterations=maxNIterations).run()
+print("Scale result difference=", mscale-m)
+
 # get min and max of data
 yMin = yMax = 0.0
 
@@ -121,5 +133,5 @@ else:
         plt.axvline(x = m[0], color = 'r', label = 'solution', lw = 1.0)
 
 plt.legend()
-plt.savefig('../../../Output/gemanMcClureMean.png', bbox_inches='tight')
+plt.savefig('../../../Output/mean.png', bbox_inches='tight')
 plt.show()

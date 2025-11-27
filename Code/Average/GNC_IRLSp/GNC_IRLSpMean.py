@@ -58,22 +58,22 @@ class GNC_IRLSpMean:
         if p == 0.0:
             K = 0.5*math.pow(epsilon,p)*math.pow(rscale,p-2.0) - math.pow(rscale,-2.0)*math.log(epsilon)
             #print("K=",K,0.5*math.pow(epsilon,p)*math.pow(rscale,p-2.0),math.pow(rscale,-2.0)*math.log(epsilon))
-            for d in self.data:
+            for d,w in zip(self.data,weight, strict=True):
                 sgn = np.sign(m-d)
                 r = rscale*math.fabs(m-d)
                 if r < epsilon:
-                    tot += 0.5*math.pow(epsilon, p-2.0)*r*r/(rscale*rscale)
+                    tot += w*0.5*math.pow(epsilon, p-2.0)*r*r/(rscale*rscale)
                 else:
-                    tot += K + math.log(r)/(rscale*rscale)
+                    tot += w*(K + math.log(r)/(rscale*rscale))
         else:
             K = 0.5*math.pow(epsilon,p)*math.pow(rscale,-2.0) - math.pow(epsilon,p)*math.pow(rscale,-2.0)/p
-            for d in self.data:
+            for d,w in zip(self.data,weight, strict=True):
                 sgn = np.sign(m-d)
                 r = rscale*math.fabs(m-d)
                 if r < epsilon:
-                    tot += 0.5*math.pow(epsilon, p-2.0)*r*r/(rscale*rscale)
+                    tot += w*0.5*math.pow(epsilon, p-2.0)*r*r/(rscale*rscale)
                 else:
-                    tot += K + math.pow(r,p)/(rscale*rscale)/p
+                    tot += w*(K + math.pow(r,p)/(rscale*rscale)/p)
 
         return tot
 
@@ -86,8 +86,8 @@ class GNC_IRLSpMean:
             weight = self.weight
 
         tot = 0.0
-        for d in self.data:
-            tot += (m-d)*weightFunc(m,p,epsilon,rscale,d)
+        for d,w in zip(self.data,weight, strict=True):
+            tot += w*(m-d)*weightFunc(m,p,epsilon,rscale,d)
 
         return [tot]
 
@@ -101,8 +101,8 @@ class GNC_IRLSpMean:
             weight = self.weight
 
         tot = 0.0
-        for d in self.data:
-            tot += weightFunc(m,p,epsilon,rscale,d)
+        for d,w in zip(self.data,weight, strict=True):
+            tot += w*weightFunc(m,p,epsilon,rscale,d)
 
         return tot
 

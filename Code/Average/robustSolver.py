@@ -32,7 +32,7 @@ for xgtrange in [3.0,5.0,10.0,30.0,100.0]:
         effrmelist = []
         dataDict = {}
         for outlierFraction in outlierFractionList:
-            outputFile = '' # 'solver-' + str(int(xgtrange)) + "-" + str(N) + "-" + str(int(100.0*outlierFraction)) + ".png"
+            outputFile = '' # '../../Output/solver-' + str(int(xgtrange)) + "-" + str(N) + "-" + str(int(100.0*outlierFraction)) + ".png"
             dataArray,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,nSamples = applyToData(sigmaPop, p, xgtrange, N, nSamplesBase, minNSamples, outlierFraction, outputFile=outputFile)
 
             outlierDict = {}

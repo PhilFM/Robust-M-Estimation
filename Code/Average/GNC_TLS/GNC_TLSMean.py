@@ -57,17 +57,17 @@ class GNC_TLSMean:
             weight = self.weight
 
         tot = 0.0
-        for d in self.data:
+        for d,w in zip(self.data,weight, strict=True):
             r = rscale*math.fabs(m-d)
             if r <= c:
                 #print("TLS small")
-                tot += 0.5*r*r/(rscale*rscale)
+                tot += w*0.5*r*r/(rscale*rscale)
             elif r >= rlimit:
                 #print("TLS large")
-                tot += (0.5*c*c*(1.0+mu)/mu)/(rscale*rscale)
+                tot += w*(0.5*c*c*(1.0+mu)/mu)/(rscale*rscale)
             else:
                 #print("TLS just right")
-                tot += (c*(1.0+mu)*r - 0.5*mu*r*r + C)/(rscale*rscale)
+                tot += w*(c*(1.0+mu)*r - 0.5*mu*r*r + C)/(rscale*rscale)
 
         return tot
 
@@ -80,8 +80,8 @@ class GNC_TLSMean:
             weight = self.weight
 
         tot = 0.0
-        for d in self.data:
-            tot += (m-d)*weightFunc(m,c,mu,rscale,d)
+        for d,w in zip(self.data,weight, strict=True):
+            tot += w*(m-d)*weightFunc(m,c,mu,rscale,d)
 
         return [tot]
 
@@ -95,8 +95,8 @@ class GNC_TLSMean:
             weight = self.weight
 
         tot = 0.0
-        for d in self.data:
-            tot += weightFunc(m,c,mu,rscale,d)
+        for d,w in zip(self.data,weight, strict=True):
+            tot += w*weightFunc(m,c,mu,rscale,d)
 
         return tot
 

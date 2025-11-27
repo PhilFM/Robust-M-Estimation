@@ -40,6 +40,18 @@ algInstance = PseudoHuberMean(paramInstance, data, weight)
 m = IRLS(algInstance, printWarnings=True).run()
 print("Result: m=", m)
 
+# check result when scale is included
+if showGradient:
+    scale = np.array([1.0, # good data
+                      1.0, 1.0, 1.0, 1.0]) # bad data
+else:
+    scale = np.array([1.0, 1.0, 1.0, 1.0, 1.0, # good data
+                      1.0, 1.0, 1.0, 1.0]) # bad data
+
+algInstanceWithScale = PseudoHuberMean(paramInstance, data, weight, scale)
+mscale = IRLS(algInstanceWithScale).run()
+print("Scale result difference=", mscale-m)
+
 # get min and max of data
 yMin = yMax = 0.0
 
@@ -110,5 +122,5 @@ else:
         plt.axvline(x = m[0], color = 'r', label = 'solution', lw = 1.0)
 
 plt.legend()
-plt.savefig('../../../Output/pseudoHuberMean.png', bbox_inches='tight')
+plt.savefig('../../../Output/mean.png', bbox_inches='tight')
 plt.show()

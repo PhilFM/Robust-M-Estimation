@@ -6,7 +6,7 @@ sys.path.append("..")
 from weightedMean import weightedMean
 
 class GemanMcClureMean:
-    def __init__(self, paramInstance, data, weight=None):
+    def __init__(self, paramInstance, data, weight=None, scale=None):
         self.paramInstance = paramInstance
         self.data = data
         if weight is None:
@@ -18,6 +18,8 @@ class GemanMcClureMean:
 
             self.weight = weight
 
+        self.scale = scale
+
     def objectiveFuncSign(self):
         return 1.0
 
@@ -27,16 +29,23 @@ class GemanMcClureMean:
     #
     #  where d = x - z
     def objectiveFunc(self, state, weight=None, stateRef=None):
-        tot = 0.0
-        var = self.paramInstance.sigma*self.paramInstance.sigma
         m = state[0]
         if weight is None:
             weight = self.weight
 
-        for d,w in zip(self.data,weight):
-            diff = m-d
-            diffSqr = diff*diff
-            tot += w*diffSqr/(var + diffSqr)
+        tot = 0.0
+        if self.scale is None:
+            var = self.paramInstance.sigma*self.paramInstance.sigma
+            for d,w in zip(self.data,weight):
+                diff = m-d
+                diffSqr = diff*diff
+                tot += w*diffSqr/(var + diffSqr)
+        else:
+            for d,w,s in zip(self.data,weight,self.scale, strict=True):
+                sigma = s*self.paramInstance.sigma
+                diff = m-d
+                diffSqr = diff*diff
+                tot += w*diffSqr/(sigma*sigma + diffSqr)
 
         return tot
 
@@ -48,33 +57,51 @@ class GemanMcClureMean:
     #        = -----------------
     #          (sigma^2 + d^2)^2
     def gradient(self, state, weight=None, stateRef=None):
-        tot = 0.0
-        var = self.paramInstance.sigma*self.paramInstance.sigma
         m = state[0]
         if weight is None:
             weight = self.weight
 
-        for d,w in zip(self.data,weight):
-            diff = m-d
-            diffSqr = diff*diff
-            v = var + diffSqr
-            tot += w*2.0*var*diff/(v*v)
+        tot = 0.0
+        if self.scale is None:
+            var = self.paramInstance.sigma*self.paramInstance.sigma
+            for d,w in zip(self.data,weight):
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                tot += w*2.0*var*diff/(v*v)
+        else:
+            for d,w,s in zip(self.data,weight,self.scale, strict=True):
+                sigma = s*self.paramInstance.sigma
+                var = sigma*sigma
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                tot += w*2.0*var*diff/(v*v)
 
         return [tot]
 
     # for checking algorithms
     def weightSum(self, state, weight=None):
-        tot = 0.0
-        var = self.paramInstance.sigma*self.paramInstance.sigma
         m = state[0]
         if weight is None:
             weight = self.weight
 
-        for d,w in zip(self.data,weight):
-            diff = m-d
-            diffSqr = diff*diff
-            v = var + diffSqr
-            tot += w*2.0*var/(v*v)
+        tot = 0.0
+        if self.scale is None:
+            var = self.paramInstance.sigma*self.paramInstance.sigma
+            for d,w in zip(self.data,weight):
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                tot += w*2.0*var/(v*v)
+        else:
+            for d,w,s in zip(self.data,weight,self.scale, strict=True):
+                sigma = s*self.paramInstance.sigma
+                var = sigma*sigma
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                tot += w*2.0*var/(v*v)
 
         return tot
 
@@ -86,32 +113,50 @@ class GemanMcClureMean:
     #          = ---------------------------
     #                (sigma^2 + d^2)^3
     def secondDeriv(self, state, weight=None, stateRef=None):
-        tot = 0.0
-        var = self.paramInstance.sigma*self.paramInstance.sigma
         m = state[0]
         if weight is None:
             weight = self.weight
 
-        for d,w in zip(self.data,weight):
-            diff = m-d
-            diffSqr = diff*diff
-            v = var + diffSqr
-            tot += w*2.0*var*(var - 3.0*diffSqr)/(v*v*v)
+        tot = 0.0
+        if self.scale is None:
+            var = self.paramInstance.sigma*self.paramInstance.sigma
+            for d,w in zip(self.data,weight):
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                tot += w*2.0*var*(var - 3.0*diffSqr)/(v*v*v)
+        else:
+            for d,w,s in zip(self.data,weight,self.scale, strict=True):
+                sigma = s*self.paramInstance.sigma
+                var = sigma*sigma
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                tot += w*2.0*var*(var - 3.0*diffSqr)/(v*v*v)
 
         return [[tot]]
 
     def weightedDeriv(self, state, lambdaVal, weight=None, stateRef=None):
-        tot = 0.0
-        var = self.paramInstance.sigma*self.paramInstance.sigma
         m = state[0]
         if weight is None:
             weight = self.weight
 
-        for d,w in zip(self.data,weight):
-            diff = m-d
-            diffSqr = diff*diff
-            v = var + diffSqr
-            tot += w*2.0*var*(1.0 + lambdaVal*((var - 3.0*diffSqr)/v - 1.0))/(v*v)
+        tot = 0.0
+        if self.scale is None:
+            var = self.paramInstance.sigma*self.paramInstance.sigma
+            for d,w in zip(self.data,weight):
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                tot += w*2.0*var*(1.0 + lambdaVal*((var - 3.0*diffSqr)/v - 1.0))/(v*v)
+        else:
+            for d,w,s in zip(self.data,weight,self.scale, strict=True):
+                sigma = s*self.paramInstance.sigma
+                var = sigma*sigma
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                tot += w*2.0*var*(1.0 + lambdaVal*((var - 3.0*diffSqr)/v - 1.0))/(v*v)
 
         return [[tot]]
 
@@ -120,16 +165,25 @@ class GemanMcClureMean:
         return None
 
     def updateWeights(self, state, weight: np.array):
-        var = self.paramInstance.sigma*self.paramInstance.sigma
         m = state[0]
-        for i,d in enumerate(self.data):
-            diff = m-d
-            diffSqr = diff*diff
-            v = var + diffSqr
-            weight[i] = self.weight[i]*2.0*var/(v*v)
+        if self.scale is None:
+            var = self.paramInstance.sigma*self.paramInstance.sigma
+            for i,d in enumerate(self.data):
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                weight[i] = self.weight[i]*2.0*var/(v*v)
+        else:
+            for i,(d,s) in enumerate(zip(self.data,self.scale, strict=True)):
+                sigma = s*self.paramInstance.sigma
+                var = sigma*sigma
+                diff = m-d
+                diffSqr = diff*diff
+                v = var + diffSqr
+                weight[i] = self.weight[i]*2.0*var/(v*v)
 
     def weightedFit(self, weight=None):
         if weight is None:
             weight = self.weight
 
-        return weightedMean(self.data, weight)
+        return weightedMean(self.data, weight, self.scale)

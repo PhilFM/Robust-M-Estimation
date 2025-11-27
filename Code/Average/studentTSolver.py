@@ -34,7 +34,7 @@ for N in [10,20,50,100]:
     effrmelist = []
     dataDict = {}
     for studentTDOF in studentTDOFList:
-        outputFile = '' #'test.png' if studentTDOF == 2 else ''
+        outputFile = '' #'../../Output/test.png' if studentTDOF == 2 else ''
         dataArray,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,nSamples = applyToData(sigmaPop, p, xgtrange, N, nSamplesBase, minNSamples, 0.0, studentTDOF=studentTDOF, outputFile=outputFile)
 
         outlierDict = {}
