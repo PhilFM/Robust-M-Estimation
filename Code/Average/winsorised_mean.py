@@ -3,9 +3,9 @@ import numpy as np
 import sys
 
 sys.path.append("..")
-from weightedMean import weightedMean
+from weighted_mean import weighted_mean
 
-def winsorisedMean(data, weight, trimSize):
+def winsorised_mean(data, weight, trimSize):
     # if array would be deleted by trim, return the median
     if 2*trimSize >= len(data):
         return np.median(data)
@@ -19,5 +19,5 @@ def winsorisedMean(data, weight, trimSize):
     sortedData[len(data)-trimSize:len(data)] = sortedData[len(data)-trimSize-1]
     #print("Winsorised data: ", sortedData)
     
-    return weightedMean(sortedData, weight)
+    return weighted_mean(sortedData, weight)
 

@@ -110,7 +110,7 @@
 import math
 import numpy as np
 
-from BaseIRLS import BaseIRLS
+from .BaseIRLS import BaseIRLS
 
 
 class SupGaussNewton:

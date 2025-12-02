@@ -3,45 +3,43 @@ import matplotlib.pyplot as plt
 import math
 import sys
 
-sys.path.append("Welsch")
-from WelschMean import WelschMean
-
-sys.path.append("PseudoHuber")
-from PseudoHuberMean import PseudoHuberMean
-
-sys.path.append("GNC_IRLSp")
-from GNC_IRLSpMean import GNC_IRLSpMean
-
 sys.path.append("Trimmed")
-from trimmedMean import trimmedMean
+from trimmed_mean import trimmed_mean
 
 sys.path.append("../Library")
+from SupGaussNewton import SupGaussNewton
 from IRLS import IRLS
 from GNC_WelschParams import GNC_WelschParams
-from WelschParams import WelschParams
+from NullParams import NullParams
 from GNC_IRLSpParams import GNC_IRLSpParams
-from drawFunctions import drawDataPoints
+from WelschInfluenceFunc import WelschInfluenceFunc
+from PseudoHuberInfluenceFunc import PseudoHuberInfluenceFunc
+from GNC_IRLSpInfluenceFunc import GNC_IRLSpInfluenceFunc
+from draw_functions import drawDataPoints
 import pltAlgVis
 
-from weightedMean import weightedMean
+from RobustMean import RobustMean
+from weighted_mean import weighted_mean
 from robust_mean import M_estimator
 
 showOthers = True
 
-def objectiveFunc(m, algInstance):
-    return algInstance.objectiveFunc([m])
+def objective_func(m, optimiser_instance):
+    return optimiser_instance.objective_func([m])
 
-def applyToData(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction, studentTDOF = 0, outputFile = ''):
+def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction, studentTDOF = 0, outputFile = '', testrun:bool=False):
     vgncwelsch = vmean = vhuber = vtrimmed = vmedian = vgncirlsp = vrme = 0.0
 
     N0 = int((1.0-outlierFraction)*N+0.5)
     nSamples = max(nSamplesBase//N, minNSamples)
-    print("outlierFraction=",outlierFraction," N=",N," N0=",N0," nSamples=",nSamples," studentTDOF=",studentTDOF)
+    if not testrun:
+        print("outlierFraction=",outlierFraction," N=",N," N0=",N0," nSamples=",nSamples," studentTDOF=",studentTDOF)
+
     xgtborder = 3.0*sigmaPop
     dataArray = []
     for i in range(nSamples):
         mgt = np.random.rand()*xgtrange + xgtborder
-        data = np.zeros(N)
+        data = np.zeros((N,1))
         weight = np.zeros(N)
         goodData = []
         for j in range(N0):
@@ -51,67 +49,70 @@ def applyToData(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction, 
                 d = np.random.normal(loc=mgt, scale=sigmaPop)
 
             weight[j] = 1.0
-            data[j] = d
-            goodData.append([weight[j], data[j]])
+            data[j] = [d]
+            goodData.append([weight[j], [d]])
 
         outlierData = []
         for j in range(N-N0):
             d = np.random.rand()*(xgtrange + 2.0*xgtborder)
             weight[N0+j] = 1.0
-            data[N0+j] = d
-            outlierData.append([weight[N0+j], data[N0+j]])
+            data[N0+j] = [d]
+            outlierData.append([weight[N0+j], [d]])
 
         datap = {}
         datap["good"] = goodData
         datap["outlier"] = outlierData
 
         dataArray.append(datap)
+
+        model_instance = RobustMean()
+
         gncwelschSigma = sigmaPop/p
-        welschParamInstance = GNC_WelschParams(gncwelschSigma, max(xgtrange,10.0*sigmaPop), 100)
-        welschMeanInstance = WelschMean(welschParamInstance, data, weight)
+        welschIRLSInstance = IRLS(GNC_WelschParams(WelschInfluenceFunc(), gncwelschSigma, max(xgtrange,10.0*sigmaPop), 100),
+                                  model_instance, data, weight=weight, max_niterations=200)
 
         # for the paper let's use IRLS
-        mgncwelsch = IRLS(welschMeanInstance, maxNIterations=200).run()
-        #print("mgncwelsch=",mgncwelsch)
-
-        #print("data: ", data, " sigmaPop: ", sigmaPop, " sigma=", gncwelschSigma, " mgncwelsch=", mgncwelsch, " mgt=", mgt)
+        mgncwelsch = welschIRLSInstance.run()
         vgncwelsch += math.pow(mgncwelsch-mgt, 2.0)
+        welschOptInstance = SupGaussNewton(GNC_WelschParams(WelschInfluenceFunc(), gncwelschSigma, max(xgtrange,10.0*sigmaPop), 100),
+                                           model_instance, data, weight=weight, max_niterations=200)
 
-        #print("Result: m=", mgncwelsch)
-        mean = weightedMean(data, weight)
+        mean = weighted_mean(data, weight)
         vmean += math.pow(mean-mgt, 2.0)
 
         pseudoHuberSigma = sigmaPop/p
-        pseudoHuberParamInstance = WelschParams(pseudoHuberSigma)
-        pseudoHuberMeanInstance = PseudoHuberMean(pseudoHuberParamInstance, data, weight)
-        mhuber = IRLS(pseudoHuberMeanInstance).run()
-        #print("mhuber=",mhuber)
+        pseudoHuberIRLSInstance = IRLS(NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
+                                       model_instance, data, weight=weight)
+        mhuber = pseudoHuberIRLSInstance.run()
         vhuber += math.pow(mhuber-mgt, 2.0)
+        pseudoHuberOptInstance = SupGaussNewton(NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
+                                                model_instance, data, weight=weight)
 
         #trimSize = N//10
-        #print("trimSize=",trimSize)
-        #mtrimmed = trimmedMean(data, trimSize=trimSize)
+        #mtrimmed = trimmed_mean(data, trimSize=trimSize)
         #vtrimmed1 += math.pow(mtrimmed-mgt, 2.0)
 
         trimSize = N//4
-        #print("trimSize=",trimSize)
-        mtrimmed = trimmedMean(data, weight, trimSize=trimSize)
+        mtrimmed = trimmed_mean(data, weight, trimSize=trimSize)
         vtrimmed += math.pow(mtrimmed-mgt, 2.0)
 
         median = np.median(data)
         vmedian += math.pow(median-mgt, 2.0)
 
         gncIrlsp_rscale = 1.0/xgtrange
-        gncIrlsp_epsilonBase = gncIrlsp_rscale*sigmaPop
-        gncIrlsp_epsilonLimit = 1.0
+        gncIrlsp_epsilon_base = gncIrlsp_rscale*sigmaPop
+        gncIrlsp_epsilon_limit = 1.0
         gncIrlsp_p = 0.0
         gncIrlsp_beta = 0.8
-        gncIrlspParamInstance = GNC_IRLSpParams(gncIrlsp_p, gncIrlsp_rscale, gncIrlsp_epsilonBase, gncIrlsp_epsilonLimit, gncIrlsp_beta)
-        gncIrlspMeanInstance = GNC_IRLSpMean(gncIrlspParamInstance, data, weight)
-        mgncirlsp = IRLS(gncIrlspMeanInstance).run()
+        gncIrlspIRLSInstance = IRLS(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
+                                                    gncIrlsp_p, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta),
+                                    model_instance, data, weight=weight)
+        mgncirlsp = gncIrlspIRLSInstance.run()
         vgncirlsp += math.pow(mgncirlsp-mgt, 2.0)
+        gncIrlspOptInstance = SupGaussNewton(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
+                                                             gncIrlsp_p, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta),
+                                             model_instance, data, weight=weight)
 
-        #print("unweightedData:",unweightedData)
         mrme = M_estimator(data, beta=1)
         vrme += math.pow(mrme-mgt, 2.0)
 
@@ -128,20 +129,17 @@ def applyToData(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction, 
                 for d in data:
                     dmin = min(dmin, d)
                     dmax = max(dmax, d)
-                    #print("d=", d[1], " min/max=", dmin, dmax)
 
                 # allow border
                 drange = dmax-dmin
                 xMin = dmin - 0.05*drange
                 xMax = dmax + 0.05*drange
 
-            #print("xMin=", xMin, " xMax=", xMax)
             mlist = np.linspace(xMin, xMax, num=300)
 
             for mx in mlist:
-                yMax = max(yMax, objectiveFunc(mx, welschMeanInstance))
+                yMax = max(yMax, objective_func(mx, welschOptInstance))
 
-            #print("yMin=", yMin, " yMax=", yMax)
             yMin *= 1.1 # allow for a small border
             yMax *= 1.1 # allow for a small border            
 
@@ -150,16 +148,16 @@ def applyToData(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction, 
             #plt.box(False)
             ax.set_ylim((yMin, yMax))
 
-            rmfv = np.vectorize(objectiveFunc, excluded={"algInstance"})
-            pltAlgVis.drawCurve(plt, rmfv(mlist, algInstance=welschMeanInstance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, drawMarkers=False, hlightXValue=mgncwelsch, ax=ax)
+            rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
+            pltAlgVis.drawCurve(plt, rmfv(mlist, optimiser_instance=welschOptInstance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, drawMarkers=False, hlightXValue=mgncwelsch, ax=ax)
 
-            hmfv = np.vectorize(objectiveFunc, excluded={"algInstance"})
-            hmfvScaled = hmfv(mlist, algInstance=pseudoHuberMeanInstance)
+            hmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
+            hmfvScaled = hmfv(mlist, optimiser_instance=pseudoHuberOptInstance)
             hmfvScaled *= 0.5
             pltAlgVis.drawCurve(plt, hmfvScaled, ("IRLS", "PseudoHuber", "Welsch"), xvalues=mlist, drawMarkers=False, hlightXValue=mhuber, ax=ax)
 
-            gmfv = np.vectorize(objectiveFunc, excluded={"algInstance"})
-            gmfvScaled = gmfv(mlist, algInstance=gncIrlspMeanInstance)
+            gmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
+            gmfvScaled = gmfv(mlist, optimiser_instance=gncIrlspOptInstance)
             gmfvScaled *= 0.1
             pltAlgVis.drawCurve(plt, gmfvScaled, ("IRLS", "GNC_IRLSp", "GNC_IRLSp0"), xvalues=mlist, drawMarkers=False, hlightXValue=mgncirlsp, ax=ax)
 

@@ -1,0 +1,153 @@
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+import random
+import argparse
+import sys
+
+sys.path.append("../Library")
+from SupGaussNewton import SupGaussNewton
+from IRLS import IRLS
+from GNC_WelschParams import GNC_WelschParams
+from GNC_IRLSpParams import GNC_IRLSpParams
+from NullParams import NullParams
+from WelschInfluenceFunc import WelschInfluenceFunc
+from PseudoHuberInfluenceFunc import PseudoHuberInfluenceFunc
+from GNC_IRLSpInfluenceFunc import GNC_IRLSpInfluenceFunc
+from draw_functions import drawDataPoints
+import pltAlgVis
+
+from RobustMean import RobustMean
+
+def plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun:bool):
+    if not testrun:
+        print("diffsWelschGN:",diffsWelschGN)
+        print("diffsWelschIRLS:",diffsWelschIRLS)
+        print("diffsHuberGN:",diffsHuberGN)
+        print("diffsHuberIRLS:",diffsHuberIRLS)
+
+    plt.figure(num=1, dpi=240)
+    plt.clf()
+    ax = plt.gca()
+    ax.set_xlim(0,int(max(len(diffsWelschGN),len(diffsWelschIRLS),len(diffsHuberGN),len(diffsHuberIRLS),len(diffsGNCIRLSp0),len(diffsGNCIRLSp1))))
+
+    pltAlgVis.drawCurve(plt, diffsWelschGN,   ("SupGN", "Welsch",      "GNC_Welsch"))
+    pltAlgVis.drawCurve(plt, diffsHuberGN,    ("SupGN", "PseudoHuber", "Welsch"))
+    pltAlgVis.drawCurve(plt, diffsWelschIRLS, ("IRLS",  "Welsch",      "GNC_Welsch"))
+    pltAlgVis.drawCurve(plt, diffsHuberIRLS,  ("IRLS",  "PseudoHuber", "Welsch"))
+    pltAlgVis.drawCurve(plt, diffsGNCIRLSp1,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1"))
+    pltAlgVis.drawCurve(plt, diffsGNCIRLSp0,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0"))
+
+    ax.set_xlabel(r'Iteration count' )
+    ax.set_ylabel(r'log(difference)')
+    #plt.box(False)
+    #ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    #ax.set_xlim(studentTDOFList[0],studentTDOFList[len(studentTDOFList)-1])
+    #ax.set_ylim(0.0,1.1)
+
+    plt.legend()
+    plt.savefig('../../Output/mean-diffs' + '.png', bbox_inches='tight')
+    if not testrun:
+        plt.show()
+    
+def main(testrun:bool):
+    random.seed(0) # We want the numbers to be the same on each run
+    N = 1000
+    sigmaPop = 1.0
+    outlierRatio = 0.0 #0.5
+    k = int(outlierRatio*N+0.5)
+    noise_sigma = 0.5 # noise
+    noise_bound = 5.54*noise_sigma
+    translationBound    = 10.0
+
+    for test_idx in range(0,1):
+        data = np.zeros((N,1))
+        weight = np.zeros(N)
+        mgt = 3.0
+        for i in range(N):
+            data[i] = [random.gauss(mgt, sigmaPop)]
+            weight[i] = 1.0
+
+        diff_thres = 1.e-13
+        num_sigma_steps = 10
+        max_niterations = 200
+        residual_tolerance = 1.0e-8
+        
+        welsch_p = 0.666667
+        welsch_sigma = noise_sigma/welsch_p
+        welsch_sigmaLimit = welsch_sigma #10.0*noise_sigma
+
+        mstart = mgt+0.5 #np.matmul(Rs,R_gt)
+
+        model_instance = RobustMean()
+    
+        welschParamInstance = GNC_WelschParams(WelschInfluenceFunc(), welsch_sigma, welsch_sigmaLimit, num_sigma_steps)
+        m,nIterations,diffsWelschGN,model_list = SupGaussNewton(welschParamInstance, model_instance, data, weight=weight,
+                                                                max_niterations=max_niterations, residual_tolerance=residual_tolerance,
+                                                                lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
+                                                                print_warnings=False, model_start=[mstart], debug=True).run()
+        if not testrun:
+            print("GNC Welsch SUP-GN recovered m=",m,"nIterations=",nIterations)
+            print("GNC Welsch SUP-GN mdiff=",m-mgt)
+            print("GNC Welsch SUP-GN diffs=",diffsWelschGN)
+
+        m,nIterations,diffsWelschIRLS,model_list = IRLS(welschParamInstance, model_instance, data, weight=weight,
+                                                        max_niterations=max_niterations, diff_thres=diff_thres,
+                                                        print_warnings=False, model_start=[mstart], debug=True).run()
+        if not testrun:
+            print("GNC Welsch IRLS recovered m=",m,"nIterations=",nIterations)
+            print("GNC Welsch IRLS mdiff=",m-mgt)
+            print("GNC Welsch IRLS diffs=",diffsWelschIRLS)
+
+        pseudoHuberParamInstance = NullParams(PseudoHuberInfluenceFunc(sigma=welsch_sigma))
+        m,nIterations,diffsHuberGN,model_list = SupGaussNewton(pseudoHuberParamInstance, model_instance, data, weight=weight,
+                                                               max_niterations=max_niterations, residual_tolerance=residual_tolerance,
+                                                               lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
+                                                               print_warnings=False, model_start=[mstart], debug=True).run()
+        if not testrun:
+            print("Pseudo-Huber G-N recovered m=",m,"nIterations=",nIterations)
+            print("Pseudo-Huber G-N mdiff=",m-mgt)
+            print("Pseudo-Huber G-N diffs=",diffsHuberGN)
+
+        m,nIterations,diffsHuberIRLS,model_list = IRLS(pseudoHuberParamInstance, model_instance, data, weight=weight,
+                                                       max_niterations=max_niterations, diff_thres=diff_thres,
+                                                       print_warnings=False, model_start=[mstart], debug=True).run()
+        if not testrun:
+            print("Pseudo-Huber recovered m=",m,"nIterations=",nIterations)
+            print("Pseudo-Huber mdiff=",m-mgt)
+            print("Pseudo-Huber diffs=",diffsHuberIRLS)
+
+        gncIrlsp_rscale = 1.0
+        gncIrlsp_sigma_base = noise_sigma
+        gncIrlsp_epsilon_base = gncIrlsp_rscale*gncIrlsp_sigma_base
+        gncIrlsp_epsilon_limit = gncIrlsp_epsilon_base #gncIrlsp_rscale*gnsIrlsp_sigmaLimit
+        print_warnings = True
+        gncIrlsp_beta = 0.8 #math.exp((math.log(gncIrlsp_sigma_base) - math.log(gncIrlsp_sigmaLimit))/(num_sigma_steps - 1.0))
+        gncIrlspParamInstance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
+                                                0.0, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta)
+        m,nIterations,diffsGNCIRLSp0,model_list = IRLS(gncIrlspParamInstance, model_instance, data, weight=weight,
+                                                       max_niterations=max_niterations, diff_thres=diff_thres,
+                                                       print_warnings=False, model_start=[mstart], debug=True).run()
+        if not testrun:
+            print("GNC IRLS-p0 recovered m=",m,"nIterations=",nIterations)
+            print("GNC IRLS-p0 mdiff=",m-mgt)
+            print("GNC IRLS-p0 diffs=",diffsGNCIRLSp0)
+
+        gncIrlspParamInstance.influence_func_instance.p = 1.0
+        m,nIterations,diffsGNCIRLSp1,model_list = IRLS(gncIrlspParamInstance, model_instance, data, weight=weight,
+                                                       max_niterations=max_niterations, diff_thres=diff_thres,
+                                                       print_warnings=False, model_start=[mstart], debug=True).run()
+        if not testrun:
+            print("GNC IRLS-p1 recovered m=",m,"nIterations=",nIterations)
+            print("GNC IRLS-p1 mdiff=",m-mgt)
+            print("GNC IRLS-p1 diffs=",diffsGNCIRLSp1)
+
+        plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun)
+
+    if testrun:
+        print("OK")
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-t', '--testrun', action="store_true", default=False)
+args = parser.parse_args()
+main(args.testrun)

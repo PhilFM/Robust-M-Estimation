@@ -3,9 +3,12 @@
 requires = ["setuptools"]
 
 [project]
-name = "gnc-smoothie_philfm"
-version = "0.0.1"
+name = "gnc_smoothie_philfm"
+version = "0.0.3"
 authors = [
+  { name="Philip McLauchlan", email="phlip.mclauchlan@gmail.com" },
+]
+maintainers = [
   { name="Philip McLauchlan", email="phlip.mclauchlan@gmail.com" },
 ]
 requires-python = ">=3.10"
@@ -20,5 +23,4 @@ license = "MIT"
 license-files = ["LICEN[CS]E*"]
 
 [project.urls]
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Homepage = "https://github.com/PhilFM/Robust-M-Estimation.git"
