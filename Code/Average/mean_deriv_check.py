@@ -1,19 +1,17 @@
 import numpy as np
-import sys
 import argparse
 
-from RobustMean import RobustMean
+from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
+from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
+from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
+from gnc_smoothie_philfm.check_derivs import check_derivs
 
-sys.path.append("../Library")
-from QuadraticInfluenceFunc import QuadraticInfluenceFunc
-from WelschInfluenceFunc import WelschInfluenceFunc
-from PseudoHuberInfluenceFunc import PseudoHuberInfluenceFunc
-from GemanMcClureInfluenceFunc import GemanMcClureInfluenceFunc
-from GNC_IRLSpInfluenceFunc import GNC_IRLSpInfluenceFunc
-from SupGaussNewton import SupGaussNewton
-from NullParams import NullParams
-from GNC_IRLSpParams import GNC_IRLSpParams
-from check_derivs import check_derivs
+from gncs_robust_mean import RobustMean
 
 def objective_func(m, influence_func_instance):
     return influence_func_instance.objective_func([m])

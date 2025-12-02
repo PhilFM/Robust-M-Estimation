@@ -1,8 +1,6 @@
 import math
 import numpy as np
-import sys
 
-sys.path.append("..")
 from weightedMean import weightedMean
 
 def weightFunc(m, p, epsilon, rscale, d):

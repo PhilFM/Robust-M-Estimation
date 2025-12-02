@@ -2,14 +2,12 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-import sys
-sys.path.append("../Library")
-from SupGaussNewton import SupGaussNewton
-from NullParams import NullParams
-from WelschInfluenceFunc import WelschInfluenceFunc
-from draw_functions import drawDataPoints
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
 
-from RobustMean import RobustMean
+from gncs_robust_mean import RobustMean
 
 def objective_func(m, optimiser_instance):
     return optimiser_instance.base.objective_func([m])
@@ -29,7 +27,7 @@ def plotResult(optimiser_instance, data, weight, m, sigma, label, mgt, testrun:b
     mlist = np.linspace(xMin, xMax, num=300)
 
     plt.figure(num=1, dpi=240)
-    drawDataPoints(plt, data, weight, xMin, xMax, len(data), scale=0.05)
+    gncs_draw_data_points(plt, data, weight, xMin, xMax, len(data), scale=0.05)
     if mgt is not None:
         plt.axvline(x = mgt, color = 'gray', label = 'Ground truth', lw = 1.0, linestyle = 'solid')
 

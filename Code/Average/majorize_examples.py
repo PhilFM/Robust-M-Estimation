@@ -3,18 +3,16 @@ import matplotlib.pyplot as plt
 import sys, os
 import argparse
 
-sys.path.append(os.path.join("..", "Library"))
-from SupGaussNewton import SupGaussNewton
-from GNC_WelschParams import GNC_WelschParams
-from GNC_IRLSpParams import GNC_IRLSpParams
-from NullParams import NullParams
-from WelschInfluenceFunc import WelschInfluenceFunc
-from PseudoHuberInfluenceFunc import PseudoHuberInfluenceFunc
-from GemanMcClureInfluenceFunc import GemanMcClureInfluenceFunc
-from GNC_IRLSpInfluenceFunc import GNC_IRLSpInfluenceFunc
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
+from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
+from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 
-sys.path.append("..")
-from RobustMean import RobustMean
+from gncs_robust_mean import RobustMean
 
 def objective_func(x, optimiser_instance):
     if optimiser_instance.base.param_instance.influence_func_instance.objective_func_sign() < 0.0:

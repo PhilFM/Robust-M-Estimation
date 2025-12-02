@@ -1,15 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import argparse
 
-from flat_welsch_mean import flat_welsch_mean
-from RobustMean import RobustMean
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.null_params import NullParams
 
-sys.path.append("../Library")
-from WelschInfluenceFunc import WelschInfluenceFunc
-from SupGaussNewton import SupGaussNewton
-from NullParams import NullParams
+from flat_welsch_mean import flat_welsch_mean
+from gncs_robust_mean import RobustMean
 
 def main(testrun:bool):
     # configuration

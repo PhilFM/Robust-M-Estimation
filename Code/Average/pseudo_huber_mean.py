@@ -1,9 +1,7 @@
 import numpy as np
 import math
-import sys
 
-sys.path.append("..")
-from weightedMean import weightedMean
+from weighted_mean import weightedMean
 
 class PseudoHuberMean:
     def __init__(self, paramInstance, data, weight=None, scale=None):

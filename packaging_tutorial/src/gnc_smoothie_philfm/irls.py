@@ -59,7 +59,7 @@
 import math
 import numpy as np
 
-from .BaseIRLS import BaseIRLS
+from .base_irls import BaseIRLS
 
 
 class IRLS:

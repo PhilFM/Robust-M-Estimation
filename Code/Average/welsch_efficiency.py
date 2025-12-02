@@ -2,17 +2,15 @@ import numpy as np
 import random
 import math
 import matplotlib.pyplot as plt
-import sys
 import argparse
 
-from RobustMean import RobustMean
+from gnc_smoothie_philfm.irls import IRLS
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
-sys.path.append("../Library")
-from IRLS import IRLS
-from SupGaussNewton import SupGaussNewton
-from GNC_WelschParams import GNC_WelschParams
-from NullParams import NullParams
-from WelschInfluenceFunc import WelschInfluenceFunc
+from gncs_robust_mean import RobustMean
 
 def main(testrun:bool):
     sigma_base = 1.0

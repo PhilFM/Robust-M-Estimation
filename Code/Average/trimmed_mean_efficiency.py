@@ -1,12 +1,9 @@
 import numpy as np
 import random
 import math
-import sys
 import argparse
 
 from trimmed_mean import trimmed_mean
-
-sys.path.append("..")
 from weighted_mean import weighted_mean
 
 def main(testrun:bool):

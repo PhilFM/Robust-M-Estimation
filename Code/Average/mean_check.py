@@ -1,24 +1,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import argparse
 
-sys.path.append("Welsch")
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.irls import IRLS
+from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
+from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
+from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
+from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_vline, gncs_draw_curve
+
 from flat_welsch_mean import flat_welsch_mean
-
-sys.path.append("../Library")
-from SupGaussNewton import SupGaussNewton
-from IRLS import IRLS
-from draw_functions import drawDataPoints
-from GNC_WelschParams import GNC_WelschParams
-from NullParams import NullParams
-from GNC_IRLSpParams import GNC_IRLSpParams
-from WelschInfluenceFunc import WelschInfluenceFunc
-from PseudoHuberInfluenceFunc import PseudoHuberInfluenceFunc
-from GNC_IRLSpInfluenceFunc import GNC_IRLSpInfluenceFunc
-import pltAlgVis
-
-from RobustMean import RobustMean
+from gncs_robust_mean import RobustMean
 
 N = 10
 xrange = 10.0
@@ -54,23 +50,23 @@ def plotResult(data, weight,
     ax = plt.gca()
     rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
     key = ("Flat", "Welsch", "GNC_Welsch")
-    pltAlgVis.drawCurve(plt, rmfv(mlist, optimiser_instance=gncWelschOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mflat, ax=ax)
-    pltAlgVis.drawVLine(plt, mflat,       key, useLabel=False)
+    gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=gncWelschOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mflat, ax=ax)
+    gncs_draw_vline(plt, mflat,       key, useLabel=False)
     key = ("SupGN", "Welsch", "GNC_Welsch")
-    pltAlgVis.drawCurve(plt, rmfv(mlist, optimiser_instance=gncWelschOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=msupgnw, ax=ax)
-    pltAlgVis.drawVLine(plt, msupgnw,     key, useLabel=False)
-    pltAlgVis.drawVLine(plt, mgncw, ("IRLS", "Welsch",      "GNC_Welsch"))
+    gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=gncWelschOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=msupgnw, ax=ax)
+    gncs_draw_vline(plt, msupgnw,     key, useLabel=False)
+    gncs_draw_vline(plt, mgncw, ("IRLS", "Welsch",      "GNC_Welsch"))
     key = ("SupGN", "PseudoHuber", "Welsch")
-    pltAlgVis.drawCurve(plt, 0.03*rmfv(mlist, optimiser_instance=pseudoHuberOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mhuber, ax=ax)
-    pltAlgVis.drawVLine(plt, mhuber,      key, useLabel=False)
-    #pltAlgVis.drawVLine(plt, mirlshuber, ("IRLS", "PseudoHuber", "Welsch"))
+    gncs_draw_curve(plt, 0.03*rmfv(mlist, optimiser_instance=pseudoHuberOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mhuber, ax=ax)
+    gncs_draw_vline(plt, mhuber,      key, useLabel=False)
+    #gncs_draw_vline(plt, mirlshuber, ("IRLS", "PseudoHuber", "Welsch"))
     key = ("IRLS", "GNC_IRLSp", "GNC_IRLSp0")
-    pltAlgVis.drawCurve(plt, 0.02*rmfv(mlist, optimiser_instance=gncIrlspOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mgncirlsp, ax=ax)
-    pltAlgVis.drawVLine(plt, mgncirlsp,   key, useLabel=False)
+    gncs_draw_curve(plt, 0.02*rmfv(mlist, optimiser_instance=gncIrlspOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mgncirlsp, ax=ax)
+    gncs_draw_vline(plt, mgncirlsp,   key, useLabel=False)
 
-    drawDataPoints(plt, data, weight, xMin, xMax, N)
+    gncs_draw_data_points(plt, data, weight, xMin, xMax, N)
     plt.legend()
-    plt.savefig("irlsCheck.png", bbox_inches='tight')
+    plt.savefig("../../Output/irlsCheck.png", bbox_inches='tight')
     if not testrun:
         plt.show()
     

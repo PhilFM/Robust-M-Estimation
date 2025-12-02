@@ -3,21 +3,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 import argparse
-import sys
 
-sys.path.append("../Library")
-from SupGaussNewton import SupGaussNewton
-from IRLS import IRLS
-from GNC_WelschParams import GNC_WelschParams
-from GNC_IRLSpParams import GNC_IRLSpParams
-from NullParams import NullParams
-from WelschInfluenceFunc import WelschInfluenceFunc
-from PseudoHuberInfluenceFunc import PseudoHuberInfluenceFunc
-from GNC_IRLSpInfluenceFunc import GNC_IRLSpInfluenceFunc
-from draw_functions import drawDataPoints
-import pltAlgVis
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.irls import IRLS
+from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
+from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
+from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
-from RobustMean import RobustMean
+from gncs_robust_mean import RobustMean
 
 def plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun:bool):
     if not testrun:
@@ -31,12 +28,12 @@ def plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS
     ax = plt.gca()
     ax.set_xlim(0,int(max(len(diffsWelschGN),len(diffsWelschIRLS),len(diffsHuberGN),len(diffsHuberIRLS),len(diffsGNCIRLSp0),len(diffsGNCIRLSp1))))
 
-    pltAlgVis.drawCurve(plt, diffsWelschGN,   ("SupGN", "Welsch",      "GNC_Welsch"))
-    pltAlgVis.drawCurve(plt, diffsHuberGN,    ("SupGN", "PseudoHuber", "Welsch"))
-    pltAlgVis.drawCurve(plt, diffsWelschIRLS, ("IRLS",  "Welsch",      "GNC_Welsch"))
-    pltAlgVis.drawCurve(plt, diffsHuberIRLS,  ("IRLS",  "PseudoHuber", "Welsch"))
-    pltAlgVis.drawCurve(plt, diffsGNCIRLSp1,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1"))
-    pltAlgVis.drawCurve(plt, diffsGNCIRLSp0,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0"))
+    gncs_draw_curve(plt, diffsWelschGN,   ("SupGN", "Welsch",      "GNC_Welsch"))
+    gncs_draw_curve(plt, diffsHuberGN,    ("SupGN", "PseudoHuber", "Welsch"))
+    gncs_draw_curve(plt, diffsWelschIRLS, ("IRLS",  "Welsch",      "GNC_Welsch"))
+    gncs_draw_curve(plt, diffsHuberIRLS,  ("IRLS",  "PseudoHuber", "Welsch"))
+    gncs_draw_curve(plt, diffsGNCIRLSp1,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1"))
+    gncs_draw_curve(plt, diffsGNCIRLSp0,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0"))
 
     ax.set_xlabel(r'Iteration count' )
     ax.set_ylabel(r'log(difference)')

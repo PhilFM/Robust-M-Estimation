@@ -1,22 +1,20 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import argparse
 
-sys.path.append("../Library")
-from SupGaussNewton import SupGaussNewton
-from IRLS import IRLS
-from GNC_WelschParams import GNC_WelschParams
-from NullParams import NullParams
-from GNC_IRLSpParams import GNC_IRLSpParams
-from WelschInfluenceFunc import WelschInfluenceFunc
-from PseudoHuberInfluenceFunc import PseudoHuberInfluenceFunc
-from GNC_IRLSpInfluenceFunc import GNC_IRLSpInfluenceFunc
-from draw_functions import drawDataPoints
-import pltAlgVis
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.irls import IRLS
+from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
+from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
+from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
+from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_vline, gncs_draw_curve
 
-from RobustMean import RobustMean
+from gncs_robust_mean import RobustMean
 
 N = 10
 xgtrange = 10.0
@@ -55,26 +53,26 @@ def plotResult(data, weight,
     mlist = np.linspace(xMin, xMax, num=300)
 
     plt.figure(num=plot_count, dpi=240)
-    drawDataPoints(plt, data, weight, xMin, xMax, len(data), scale=0.05)
+    gncs_draw_data_points(plt, data, weight, xMin, xMax, len(data), scale=0.05)
     if mgt is not None:
-        pltAlgVis.drawVLine(plt, mgt, ("GroundTruth","",""))
+        gncs_draw_vline(plt, mgt, ("GroundTruth","",""))
 
     ax = plt.gca()
 
     rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
     key = ("SupGN", "Welsch", "GNC_Welsch")
-    pltAlgVis.drawCurve(plt, rmfv(mlist, optimiser_instance=welschOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mwelschopt, ax=ax)
-    pltAlgVis.drawVLine(plt, mwelschopt, key, useLabel=False)
+    gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=welschOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mwelschopt, ax=ax)
+    gncs_draw_vline(plt, mwelschopt, key, useLabel=False)
 
     rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
     key = ("SupGN", "PseudoHuber", "Welsch")
-    pltAlgVis.drawCurve(plt, 0.05*rmfv(mlist, optimiser_instance=pseudoHuberOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mhuber, ax=ax)
-    pltAlgVis.drawVLine(plt, mhuber, key, useLabel=False)
+    gncs_draw_curve(plt, 0.05*rmfv(mlist, optimiser_instance=pseudoHuberOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mhuber, ax=ax)
+    gncs_draw_vline(plt, mhuber, key, useLabel=False)
 
     rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
     key = ("IRLS", "GNC_IRLSp", "GNC_IRLSp0")
-    pltAlgVis.drawCurve(plt, 0.003*rmfv(mlist, optimiser_instance=gncIrlspOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mgncirlsp, ax=ax)
-    pltAlgVis.drawVLine(plt, mgncirlsp, key, useLabel=False)
+    gncs_draw_curve(plt, 0.003*rmfv(mlist, optimiser_instance=gncIrlspOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mgncirlsp, ax=ax)
+    gncs_draw_vline(plt, mgncirlsp, key, useLabel=False)
 
     plt.legend()
     plt.savefig("../../Output/convergence_speed_gnc.png", bbox_inches='tight')

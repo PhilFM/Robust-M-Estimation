@@ -1,92 +1,92 @@
-modelValues = {}
+model_values = {}
 
 key = ("GroundTruth", "", "")
-modelValues[key] = {}
-modelValues[key]["label"] = "Ground truth"
-modelValues[key]["colour"] = "gray"
-modelValues[key]["linestyle"] = "solid"
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "Ground truth"
+model_values[key]["colour"] = "gray"
+model_values[key]["linestyle"] = "solid"
+model_values[key]["lw"] = 1.0
 
 key = ("SupGN", "Welsch", "GNC_Welsch")
-modelValues[key] = {}
-modelValues[key]["label"] = "SUP-GN Welsch"
-modelValues[key]["colour"] = "green"
-modelValues[key]["linestyle"] = "solid"
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "SUP-GN Welsch"
+model_values[key]["colour"] = "green"
+model_values[key]["linestyle"] = "solid"
+model_values[key]["lw"] = 1.0
 
 key = ("IRLS", "Welsch", "GNC_Welsch")
-modelValues[key] = {}
-modelValues[key]["label"] = "GNC-W"
-modelValues[key]["colour"] = "magenta"
-modelValues[key]["linestyle"] = (0, (1, 1))
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "GNC-W"
+model_values[key]["colour"] = "magenta"
+model_values[key]["linestyle"] = (0, (1, 1))
+model_values[key]["lw"] = 1.0
 
 key = ("Flat", "Welsch", "GNC_Welsch")
-modelValues[key] = {}
-modelValues[key]["label"] = "Flat Welsch"
-modelValues[key]["colour"] = "green"
-modelValues[key]["linestyle"] = "dotted"
-modelValues[key]["lw"] = 1.5
+model_values[key] = {}
+model_values[key]["label"] = "Flat Welsch"
+model_values[key]["colour"] = "green"
+model_values[key]["linestyle"] = "dotted"
+model_values[key]["lw"] = 1.5
 
 key = ("SupGN", "PseudoHuber", "Welsch")
-modelValues[key] = {}
-modelValues[key]["label"] = "SUP-GN Pseudo-Huber"
-modelValues[key]["colour"] = "brown"
-modelValues[key]["linestyle"] = "dashed"
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "SUP-GN Pseudo-Huber"
+model_values[key]["colour"] = "brown"
+model_values[key]["linestyle"] = "dashed"
+model_values[key]["lw"] = 1.0
 
 key = ("IRLS", "PseudoHuber", "Welsch")
-modelValues[key] = {}
-modelValues[key]["label"] = "Pseudo-Huber IRLS"
-modelValues[key]["colour"] = "blue"
-modelValues[key]["linestyle"] = (0, (5, 1))
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "Pseudo-Huber IRLS"
+model_values[key]["colour"] = "blue"
+model_values[key]["linestyle"] = (0, (5, 1))
+model_values[key]["lw"] = 1.0
 
 key = ("IRLS", "GNC_IRLSp", "GNC_IRLSp0")
-modelValues[key] = {}
-modelValues[key]["label"] = "GNC IRLS-p0"
-modelValues[key]["colour"] = "purple"
-modelValues[key]["linestyle"] = "dashdot"
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "GNC IRLS-p0"
+model_values[key]["colour"] = "purple"
+model_values[key]["linestyle"] = "dashdot"
+model_values[key]["lw"] = 1.0
 
 key = ("IRLS", "GNC_IRLSp", "GNC_IRLSp1")
-modelValues[key] = {}
-modelValues[key]["label"] = "GNC IRLS-p1"
-modelValues[key]["colour"] = "mediumpurple"
-modelValues[key]["linestyle"] = (0, (5, 1, 1, 1))
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "GNC IRLS-p1"
+model_values[key]["colour"] = "mediumpurple"
+model_values[key]["linestyle"] = (0, (5, 1, 1, 1))
+model_values[key]["lw"] = 1.0
 
 key = ("Mean", "Basic", "")
-modelValues[key] = {}
-modelValues[key]["label"] = "Arithmetic mean"
-modelValues[key]["colour"] = "darkorange"
-modelValues[key]["linestyle"] = (0, (2, 2))
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "Arithmetic mean"
+model_values[key]["colour"] = "darkorange"
+model_values[key]["linestyle"] = (0, (2, 2))
+model_values[key]["lw"] = 1.0
 
 key = ("Mean", "Trimmed", "")
-modelValues[key] = {}
-modelValues[key]["label"] = "Trimmed Mean"
-modelValues[key]["colour"] = "darkkhaki"
-modelValues[key]["linestyle"] = (0, (3, 1))
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "Trimmed Mean"
+model_values[key]["colour"] = "darkkhaki"
+model_values[key]["linestyle"] = (0, (3, 1))
+model_values[key]["lw"] = 1.0
 
 key = ("Median", "Basic", "")
-modelValues[key] = {}
-modelValues[key]["label"] = "Median"
-modelValues[key]["colour"] = "deeppink"
-modelValues[key]["linestyle"] = (0, (3, 1, 1, 1))
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "Median"
+model_values[key]["colour"] = "deeppink"
+model_values[key]["linestyle"] = (0, (3, 1, 1, 1))
+model_values[key]["lw"] = 1.0
 
 key = ("RME", "", "")
-modelValues[key] = {}
-modelValues[key]["label"] = "RME"
-modelValues[key]["colour"] = "deepskyblue"
-modelValues[key]["linestyle"] = (0, (4, 1))
-modelValues[key]["lw"] = 1.0
+model_values[key] = {}
+model_values[key]["label"] = "RME"
+model_values[key]["colour"] = "deepskyblue"
+model_values[key]["linestyle"] = (0, (4, 1))
+model_values[key]["lw"] = 1.0
 
 
-def drawVLine(plt, x: float, key, useLabel: bool = True, useLineStyle: bool = True):
-    values = modelValues[key]
+def gncs_draw_vline(plt, x: float, key, useLabel: bool = True, useLineStyle: bool = True):
+    values = model_values[key]
     if useLabel:
         if useLineStyle:
             plt.axvline(
@@ -114,7 +114,7 @@ def drawVLine(plt, x: float, key, useLabel: bool = True, useLineStyle: bool = Tr
             )  # , marker = 'o', markersize = 2.0)
 
 
-def drawCurve(
+def gncs_draw_curve(
     plt,
     vals,
     key,
@@ -123,7 +123,7 @@ def drawCurve(
     hlightXValue: float = None,
     ax=None,
 ):
-    values = modelValues[key]
+    values = model_values[key]
     if xvalues is None:
         if drawMarkers:
             plt.plot(

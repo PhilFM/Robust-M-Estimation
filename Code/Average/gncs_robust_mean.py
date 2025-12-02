@@ -1,8 +1,5 @@
 import numpy as np
 import math
-import sys
-
-sys.path.append("..")
 
 class RobustMean:
     def __init__(self):

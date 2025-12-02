@@ -2,13 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import json
-import sys
 import argparse
 
-from robust_solver_apply import apply_to_data
+from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
-sys.path.append("../Library")
-import pltAlgVis
+from robust_solver_apply import apply_to_data
 
 def main(testrun:bool):
     sigmaPop = 1.0
@@ -106,13 +104,13 @@ def main(testrun:bool):
         plot_count += 1
         plt.clf()
         ax = plt.gca()
-        pltAlgVis.drawCurve(plt, effgncwelschlist,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=studentTDOFList)
-        pltAlgVis.drawCurve(plt, effmeanlist,         ("Mean",   "Basic",       ""          ), xvalues=studentTDOFList)
-        pltAlgVis.drawCurve(plt, effhuberlist,        ("IRLS",   "PseudoHuber", "Welsch"    ), xvalues=studentTDOFList)
-        pltAlgVis.drawCurve(plt, efftrimmedlist,      ("Mean",   "Trimmed",     ""          ), xvalues=studentTDOFList)
-        pltAlgVis.drawCurve(plt, effmedianlist,       ("Median", "Basic",       ""          ), xvalues=studentTDOFList)
-        pltAlgVis.drawCurve(plt, effgncirlsplist,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), xvalues=studentTDOFList)
-        pltAlgVis.drawCurve(plt, effrmelist,          ("RME",    "",            ""          ), xvalues=studentTDOFList)
+        gncs_draw_curve(plt, effgncwelschlist,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=studentTDOFList)
+        gncs_draw_curve(plt, effmeanlist,         ("Mean",   "Basic",       ""          ), xvalues=studentTDOFList)
+        gncs_draw_curve(plt, effhuberlist,        ("IRLS",   "PseudoHuber", "Welsch"    ), xvalues=studentTDOFList)
+        gncs_draw_curve(plt, efftrimmedlist,      ("Mean",   "Trimmed",     ""          ), xvalues=studentTDOFList)
+        gncs_draw_curve(plt, effmedianlist,       ("Median", "Basic",       ""          ), xvalues=studentTDOFList)
+        gncs_draw_curve(plt, effgncirlsplist,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), xvalues=studentTDOFList)
+        gncs_draw_curve(plt, effrmelist,          ("RME",    "",            ""          ), xvalues=studentTDOFList)
 
         ax.set_xlabel(r'Degrees of freedom' )
         ax.set_ylabel('Relative efficiency')

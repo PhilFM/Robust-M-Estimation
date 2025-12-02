@@ -1,5 +1,5 @@
 # assumes N0 good points are followed by N-N0 bad points where N=len(data)
-def drawDataPoints(plt, data, weight, xMin, xMax, N0, scale=0.1):
+def gncs_draw_data_points(plt, data, weight, xMin, xMax, N0, scale=0.1):
     firstGoodPoint = firstBadPoint = True
     ctr = 0
 

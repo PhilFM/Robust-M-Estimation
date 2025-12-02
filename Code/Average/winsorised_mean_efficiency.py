@@ -1,11 +1,9 @@
 import numpy as np
 import random
 import math
-import sys
 import argparse
 
 from winsorised_mean import winsorised_mean
-sys.path.append("..")
 from weighted_mean import weighted_mean
 
 def main(testrun:bool):

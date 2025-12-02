@@ -1,26 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-import sys
 
-sys.path.append("Trimmed")
-from trimmed_mean import trimmed_mean
-
-sys.path.append("../Library")
-from SupGaussNewton import SupGaussNewton
-from IRLS import IRLS
-from GNC_WelschParams import GNC_WelschParams
-from NullParams import NullParams
-from GNC_IRLSpParams import GNC_IRLSpParams
-from WelschInfluenceFunc import WelschInfluenceFunc
-from PseudoHuberInfluenceFunc import PseudoHuberInfluenceFunc
-from GNC_IRLSpInfluenceFunc import GNC_IRLSpInfluenceFunc
-from draw_functions import drawDataPoints
-import pltAlgVis
-
-from RobustMean import RobustMean
-from weighted_mean import weighted_mean
 from robust_mean import M_estimator
+
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.irls import IRLS
+from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
+from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
+from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
+from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_vline, gncs_draw_curve
+
+from trimmed_mean import trimmed_mean
+from gncs_robust_mean import RobustMean
+from weighted_mean import weighted_mean
 
 showOthers = True
 

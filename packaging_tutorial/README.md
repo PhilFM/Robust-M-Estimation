@@ -228,20 +228,20 @@ class LineFit:
 ```
 In this case the data items will have two values each, for $x,y$. So an example data array could be
 ```
-  data = np.array([[0.0, 0.90], [0.1, 0.95], [0.2, 1.0], [0.3, 1.05], [0.4, 1.1]])
+data = np.array([[0.0, 0.90], [0.1, 0.95], [0.2, 1.0], [0.3, 1.05], [0.4, 1.1]])
 ```
 Then the code to build and run IRLS could look like ths.
 ```
-  from GNC_Smoothie import IRLS
-  from GNC_Smoothie import NullParams
-  from GNC_Smoothie import WelschInfluenceFunc
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.null_params import NullParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 
-  sigma = 0.2
-  param_instance = NullParams(WelschInfluenceFunc(sigma))
-  model_instance = LineFit()
-  optimiser_instance = IRLS(param_instance, model_instance, data)
-  model = optimiser_instance.run()
-  print("line a b:",model)
+sigma = 0.2
+param_instance = NullParams(WelschInfluenceFunc(sigma))
+model_instance = LineFit()
+optimiser_instance = SupGaussNewton(param_instance, model_instance, data)
+model = optimiser_instance.run()
+print("line a b:",model)
 ```
 The correct line parameters should be printed:
 ```

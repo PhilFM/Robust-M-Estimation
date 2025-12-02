@@ -1,15 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import argparse
 
-sys.path.append("../Library")
-from SupGaussNewton import SupGaussNewton
-from IRLS import IRLS
-from GNC_WelschParams import GNC_WelschParams
-from GemanMcClureInfluenceFunc import GemanMcClureInfluenceFunc
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.irls import IRLS
+from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
 
-from RobustMean import RobustMean
+from gncs_robust_mean import RobustMean
 
 def main(testrun:bool):
     # configuration

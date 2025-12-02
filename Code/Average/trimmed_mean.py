@@ -1,8 +1,6 @@
 import math
 import numpy as np
-import sys
 
-sys.path.append("..")
 from weighted_mean import weighted_mean
 
 def trimmed_mean(data, weight, trimSize):
