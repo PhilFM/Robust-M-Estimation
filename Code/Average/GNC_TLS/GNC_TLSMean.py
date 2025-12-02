@@ -21,14 +21,13 @@ class GNC_TLSMean:
     def __init__(self, paramInstance, data, weight=None):
         self.paramInstance = paramInstance
         self.data = data
+        self.weight = weight
         if weight is None:
             self.weight = np.zeros(len(data))
             self.weight[:] = 1.0
         else:
             if len(weight) != len(data):
                 raise ValueError("Inconsistent weight array")
-
-            self.weight = weight
 
     # 1.0 means optimise for minimum, -1.0 means optimise for maximum
     def objectiveFuncSign(self):

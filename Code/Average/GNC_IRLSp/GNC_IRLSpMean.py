@@ -13,14 +13,13 @@ class GNC_IRLSpMean:
     def __init__(self, paramInstance, data, weight=None):
         self.paramInstance = paramInstance
         self.data = data
+        self.weight = weight
         if weight is None:
             self.weight = np.zeros(len(data))
             self.weight[:] = 1.0
         else:
             if len(weight) != len(data):
                 raise ValueError("Inconsistent weight array")
-
-            self.weight = weight
 
     # 1.0 means optimise for minimum, -1.0 means optimise for maximum
     def objectiveFuncSign(self):
@@ -76,64 +75,3 @@ class GNC_IRLSpMean:
                     tot += w*(K + math.pow(r,p)/(rscale*rscale)/p)
 
         return tot
-
-    def gradient(self, state, weight=None, stateRef=None):
-        m = state[0]
-        p = self.paramInstance.p
-        rscale = self.paramInstance.rscale
-        epsilon = self.paramInstance.epsilon
-        if weight is None:
-            weight = self.weight
-
-        tot = 0.0
-        for d,w in zip(self.data,weight, strict=True):
-            tot += w*(m-d)*weightFunc(m,p,epsilon,rscale,d)
-
-        return [tot]
-
-    # for checking algorithms
-    def weightSum(self, state, weight=None):
-        m = state[0]
-        p = self.paramInstance.p
-        rscale = self.paramInstance.rscale
-        epsilon = self.paramInstance.epsilon
-        if weight is None:
-            weight = self.weight
-
-        tot = 0.0
-        for d,w in zip(self.data,weight, strict=True):
-            tot += w*weightFunc(m,p,epsilon,rscale,d)
-
-        return tot
-
-    def secondDeriv(self, state, weight=None, stateRef=None):
-        smallDiff = 1.e-5
-        if weight is None:
-            weight = self.weight
-
-        return [[0.5*(self.gradient([state[0]+smallDiff], weight)[0]
-                      - self.gradient([state[0]-smallDiff], weight)[0])/smallDiff]]
-
-    def weightedDeriv(self, state, lambdaVal: float, weight=None, stateRef=None):
-        if weight is None:
-            weight = self.weight
-
-        return [[(1.0-lambdaVal)*self.weightSum(state,weight) + lambdaVal*self.secondDeriv(state,weight)[0][0]]]
-
-    # unused feature
-    def calcStateRef(self, state, prevStateRef=None):
-        return None
-
-    def updateWeights(self, state, weight):
-        m = state[0]
-        p = self.paramInstance.p
-        rscale = self.paramInstance.rscale
-        epsilon = self.paramInstance.epsilon
-        for i,d in enumerate(self.data):
-            weight[i] = self.weight[i]*weightFunc(m,p,epsilon,rscale,d)
-
-    def weightedFit(self, weight=None):
-        if weight is None:
-            weight = self.weight
-
-        return weightedMean(self.data, weight)

@@ -1,0 +1,24 @@
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools"]
+
+[project]
+name = "gnc-smoothie_philfm"
+version = "0.0.1"
+authors = [
+  { name="Philip McLauchlan", email="phlip.mclauchlan@gmail.com" },
+]
+requires-python = ">=3.10"
+dependencies = ["numpy", "matplotlib"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+description = "Model fitting using IRLS and variants"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/pypa/sampleproject"
+Issues = "https://github.com/pypa/sampleproject/issues"

@@ -9,6 +9,7 @@ class WelschMean:
     def __init__(self, paramInstance, data, weight=None, scale=None):
         self.paramInstance = paramInstance
         self.data = data
+        self.weight = weight
         if weight is None:
             self.weight = np.zeros(len(data))
             self.weight[:] = 1.0
@@ -16,9 +17,14 @@ class WelschMean:
             if len(weight) != len(data):
                 raise ValueError("Inconsistent weight array")
 
-            self.weight = weight
-
         self.scale = scale
+        if scale is not None:
+            if len(scale) != len(data):
+                raise ValueError("Inconsistent scale array")
+
+            for s in scale:
+                if s < 1.0:
+                    raise ValueError("Scale value less than one")
 
     # 1.0 means optimise for minimum, -1.0 means optimise for maximum
     def objectiveFuncSign(self):

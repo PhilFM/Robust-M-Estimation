@@ -4,7 +4,7 @@ Python code and documentation supporting robust M-estimation using Iterated Rewe
 
 ### Dependencies
 
-The main requirements are `numpy` and `matplotlib`. To install these use the command
+The main requirements are Python 3.10+ with `numpy` and `matplotlib`. To install these use the command
 ```
 pip install numpy matplotlib
 ```
