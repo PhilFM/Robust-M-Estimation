@@ -146,30 +146,30 @@ def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction
             ax.set_ylim((yMin, yMax))
 
             rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
-            pltAlgVis.drawCurve(plt, rmfv(mlist, optimiser_instance=welschOptInstance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, drawMarkers=False, hlightXValue=mgncwelsch, ax=ax)
+            gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=welschOptInstance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, drawMarkers=False, hlightXValue=mgncwelsch, ax=ax)
 
             hmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
             hmfvScaled = hmfv(mlist, optimiser_instance=pseudoHuberOptInstance)
             hmfvScaled *= 0.5
-            pltAlgVis.drawCurve(plt, hmfvScaled, ("IRLS", "PseudoHuber", "Welsch"), xvalues=mlist, drawMarkers=False, hlightXValue=mhuber, ax=ax)
+            gncs_draw_curve(plt, hmfvScaled, ("IRLS", "PseudoHuber", "Welsch"), xvalues=mlist, drawMarkers=False, hlightXValue=mhuber, ax=ax)
 
             gmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
             gmfvScaled = gmfv(mlist, optimiser_instance=gncIrlspOptInstance)
             gmfvScaled *= 0.1
-            pltAlgVis.drawCurve(plt, gmfvScaled, ("IRLS", "GNC_IRLSp", "GNC_IRLSp0"), xvalues=mlist, drawMarkers=False, hlightXValue=mgncirlsp, ax=ax)
+            gncs_draw_curve(plt, gmfvScaled, ("IRLS", "GNC_IRLSp", "GNC_IRLSp0"), xvalues=mlist, drawMarkers=False, hlightXValue=mgncirlsp, ax=ax)
 
-            pltAlgVis.drawVLine(plt, mgt, ("GroundTruth", "", ""))
-            pltAlgVis.drawVLine(plt, mgncwelsch, ("IRLS", "Welsch", "GNC_Welsch"), useLabel=False)
+            gncs_draw_vline(plt, mgt, ("GroundTruth", "", ""))
+            gncs_draw_vline(plt, mgncwelsch, ("IRLS", "Welsch", "GNC_Welsch"), useLabel=False)
 
             if showOthers:
-                pltAlgVis.drawVLine(plt, mean,      ("Mean",   "Basic",       ""          ))
-                pltAlgVis.drawVLine(plt, mhuber,    ("IRLS",   "PseudoHuber", "Welsch"    ), useLabel=False)
-                pltAlgVis.drawVLine(plt, mtrimmed,  ("Mean",   "Trimmed",     ""          ))
-                pltAlgVis.drawVLine(plt, median,    ("Median", "Basic",       ""          ))
-                pltAlgVis.drawVLine(plt, mgncirlsp, ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), useLabel=False)
-                pltAlgVis.drawVLine(plt, mrme,      ("RME",    "",            ""          ))
+                gncs_draw_vline(plt, mean,      ("Mean",   "Basic",       ""          ))
+                gncs_draw_vline(plt, mhuber,    ("IRLS",   "PseudoHuber", "Welsch"    ), useLabel=False)
+                gncs_draw_vline(plt, mtrimmed,  ("Mean",   "Trimmed",     ""          ))
+                gncs_draw_vline(plt, median,    ("Median", "Basic",       ""          ))
+                gncs_draw_vline(plt, mgncirlsp, ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), useLabel=False)
+                gncs_draw_vline(plt, mrme,      ("RME",    "",            ""          ))
 
-            drawDataPoints(plt, data, weight, xMin, xMax, N0)
+            gncs_draw_data_points(plt, data, weight, xMin, xMax, N0)
 
             plt.legend()
             plt.savefig(outputFile, bbox_inches='tight')
