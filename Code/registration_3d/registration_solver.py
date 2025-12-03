@@ -5,29 +5,29 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
-sys.path.append("../Library")
-from SupGaussNewton import SupGaussNewton
-from IRLS import IRLS
-from GNC_WelschParams import GNC_WelschParams
-from GNC_IRLSpParams import GNC_IRLSpParams
-from NullParams import NullParams
-from WelschInfluenceFunc import WelschInfluenceFunc
-from PseudoHuberInfluenceFunc import PseudoHuberInfluenceFunc
-from GNC_IRLSpInfluenceFunc import GNC_IRLSpInfluenceFunc
-import pltAlgVis
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.irls import IRLS
+from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
+from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
+from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
-from PointRegistration import PointRegistration
+from point_registration import PointRegistration
 
-def plotDifferences(diffsGNCWelsch, diffsPseudoHuber, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun:bool):
+def plotDifferences(diffsGNCWelsch, diffsPseudoHuber, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun:bool, output_folder:str):
+    plt.close("all")
     plt.figure(num=1, dpi=240)
     plt.clf()
     ax = plt.gca()
     ax.set_xlim(0,max(len(diffsGNCWelsch),len(diffsPseudoHuber),len(diffsGNCIRLSp0),len(diffsGNCIRLSp1)))
 
-    pltAlgVis.drawCurve(plt, diffsGNCWelsch,   ("SupGN", "Welsch",      "GNC_Welsch")     )
-    pltAlgVis.drawCurve(plt, diffsPseudoHuber, ("SupGN", "PseudoHuber", "Welsch")     )
-    pltAlgVis.drawCurve(plt, diffsGNCIRLSp0,   ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0"))
-    pltAlgVis.drawCurve(plt, diffsGNCIRLSp1,   ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1"))
+    gncs_draw_curve(plt, diffsGNCWelsch,   ("SupGN", "Welsch",      "GNC_Welsch")     )
+    gncs_draw_curve(plt, diffsPseudoHuber, ("SupGN", "PseudoHuber", "Welsch")     )
+    gncs_draw_curve(plt, diffsGNCIRLSp0,   ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0"))
+    gncs_draw_curve(plt, diffsGNCIRLSp1,   ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1"))
 
     ax.set_xlabel(r'Iteration count' )
     ax.set_ylabel(r'log(max(rotation/translation difference))')
@@ -37,11 +37,11 @@ def plotDifferences(diffsGNCWelsch, diffsPseudoHuber, diffsGNCIRLSp0, diffsGNCIR
     #ax.set_ylim(0.0,1.1)
 
     plt.legend()
-    plt.savefig('../../Output/registration-diffs' + '.png', bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "registration-diffs.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
     
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
     N = 1000
     outlierRatio = 0.0 #0.5
@@ -156,12 +156,7 @@ def main(testrun:bool):
             print("GNC IRLS-p1 Rdiff=",model_ref-R_gt)
             print("GNC IRLS-p1 tdiff=",model[3:6]-t_gt)
 
-        plotDifferences(diffsGNCWelsch, diffsPseudoHuber, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun)
+        plotDifferences(diffsGNCWelsch, diffsPseudoHuber, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun, output_folder)
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("registration_solver OK")

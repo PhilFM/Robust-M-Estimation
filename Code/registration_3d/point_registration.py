@@ -2,7 +2,7 @@ import math
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
-from LS_Registration import LS_PointCloudRegistration
+from ls_registration import LS_PointCloudRegistration
 
 class PointRegistration:
     def __init__(self):

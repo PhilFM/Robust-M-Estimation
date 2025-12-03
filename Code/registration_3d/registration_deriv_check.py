@@ -2,18 +2,17 @@ import numpy as np
 import math
 from scipy.spatial.transform import Rotation as Rot
 import sys
-import argparse
+import os
 
-from PointRegistration import PointRegistration
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.check_derivs import check_derivs
 
-sys.path.append("../Library")
-from NullParams import NullParams
-from QuadraticInfluenceFunc import QuadraticInfluenceFunc
-from WelschInfluenceFunc import WelschInfluenceFunc
-from SupGaussNewton import SupGaussNewton
-from check_derivs import check_derivs
+from point_registration import PointRegistration
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     N = 10
@@ -52,13 +51,8 @@ def main(testrun:bool):
 
     if all_good:
         if testrun:
-            print("OK")
+            print("registration_deriv_check OK")
         else:
             print("ALL DERIVATIVES OK!!")
     else:
         print("Derivative failure")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)

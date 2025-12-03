@@ -37,9 +37,8 @@ def plotResult(data, weight,
                mhuber,     pseudoHuberOptimiserInstance,
                mgncirlsp,  gncIrlspOptimiserInstance,
                mgt,
-               output_folder : str,
-               plot_count:int,
-               testrun:bool):
+               testrun:bool,
+               output_folder:str):
     dmin = dmax = data[0]
     for d in data:
         dmin = min(dmin, d)
@@ -53,7 +52,8 @@ def plotResult(data, weight,
 
     mlist = np.linspace(xMin, xMax, num=300)
 
-    plt.figure(num=plot_count, dpi=240)
+    plt.close("all")
+    plt.figure(num=1, dpi=240)
     gncs_draw_data_points(plt, data, weight, xMin, xMax, len(data), scale=0.05)
     if mgt is not None:
         gncs_draw_vline(plt, mgt, ("GroundTruth","",""))
@@ -83,7 +83,6 @@ def plotResult(data, weight,
 def main(testrun:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
-    plot_count = 1
     for test_idx in range(0,10):
         N0 = int((1.0-outlierFraction)*N+0.5)
         sigmaPop = 1.0
@@ -153,10 +152,8 @@ def main(testrun:bool, output_folder:str="../../Output"):
                    mhuber,     pseudoHuberSupGNOptimiserInstance,
                    mgncirlsp,  gncIrlspSupGNOptimiserInstance,
                    mgt,
-                   output_folder,
-                   plot_count,
-                   testrun)
-        plot_count += 1
+                   testrun,
+                   output_folder)
 
     if testrun:
         print("convergence_speed_gnc OK")
