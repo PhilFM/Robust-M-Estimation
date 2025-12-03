@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import argparse
+import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
@@ -9,7 +9,7 @@ from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluen
 
 from gncs_robust_mean import RobustMean
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     # configuration
     showSolution = True
 
@@ -45,12 +45,12 @@ def main(testrun:bool):
         print("Supervised Gauss-Newton result: m=", m)
 
     # check derivatives
-    residual = np.array([0.01])
-    rhop, Bterm = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
-    optimiser_instance.base.numeric_derivs_model = True
-    rhopn, Btermn = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
-    if not testrun:
-        print("rhop=",rhop, rhopn, "Bterm=",Bterm,Btermn)
+    #residual = np.array([0.01])
+    #rhop, Bterm = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
+    #optimiser_instance.numeric_derivs_model = True
+    #rhopn, Btermn = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
+    #if not testrun:
+    #    print("rhop=",rhop, rhopn, "Bterm=",Bterm,Btermn)
 
     # check result when scale is included
     scale = np.array([1.0, # good data
@@ -82,7 +82,7 @@ def main(testrun:bool):
     mlist = np.linspace(xMin, xMax, num=300)
 
     def objective_func(m):
-        return optimiser_instance.base.objective_func([m])
+        return optimiser_instance.objective_func([m])
 
     def gradient(m):
         a,AlB = optimiser_instance.weighted_derivs([m],1.0) # lambda_val
@@ -97,6 +97,7 @@ def main(testrun:bool):
     yMin *= 1.01 # allow for a small border
     yMax *= 1.01 # allow for a small border
 
+    plt.close("all")
     plt.figure(num=1, dpi=240)
     ax = plt.gca()
     #plt.box(False)
@@ -112,15 +113,9 @@ def main(testrun:bool):
         plt.axvline(x = m[0], color = 'r', label = 'solution', lw = 1.0)
 
     plt.legend()
-    plt.savefig('../../Output/geman_mcclure_mean.png', bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "geman_mcclure_mean.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
-        
+        print("geman_mcclure_solver OK")

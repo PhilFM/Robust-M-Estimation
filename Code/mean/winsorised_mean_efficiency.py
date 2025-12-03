@@ -1,12 +1,12 @@
 import numpy as np
 import random
 import math
-import argparse
+import os
 
-from trimmed_mean import trimmed_mean
+from winsorised_mean import winsorised_mean
 from weighted_mean import weighted_mean
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     sigma = 1.0
     nSamples = 3000
     smallVal = 1.e-10
@@ -23,8 +23,8 @@ def main(testrun:bool):
                 data[i] = random.gauss(0.0, sigma)
                 weight[i] = 1.0
 
-            mtrimmed = trimmed_mean(data, weight, trimSize=trimSize)
-            tmstot += mtrimmed*mtrimmed
+            mwinsorised = winsorised_mean(data, weight, trimSize=trimSize)
+            tmstot += mwinsorised*mwinsorised
 
             lsm = weighted_mean(data, weight)
             mstot += lsm*lsm
@@ -47,8 +47,8 @@ def main(testrun:bool):
                 data[i] = random.gauss(0.0, sigma)
                 weight[i] = 1.0
 
-            mtrimmed = trimmed_mean(data, weight, trimSize=trimSize)
-            tmstot += mtrimmed*mtrimmed
+            mwinsorised = winsorised_mean(data, weight, trimSize=trimSize)
+            tmstot += mwinsorised*mwinsorised
 
             lsm = weighted_mean(data, weight)
             mstot += lsm*lsm
@@ -62,9 +62,4 @@ def main(testrun:bool):
         print("Theoretical median limit=",2.0/math.pi)
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("winsorised_mean_efficiency OK")

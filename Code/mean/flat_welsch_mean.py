@@ -10,7 +10,7 @@ from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
 from gncs_robust_mean import RobustMean
 
 def objective_func(m, optimiser_instance):
-    return optimiser_instance.base.objective_func([m])
+    return optimiser_instance.objective_func([m])
 
 def plotResult(optimiser_instance, data, weight, m, sigma, label, mgt, testrun:bool):
     dmin = dmax = data[0]
@@ -103,7 +103,7 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
     param_instance = NullParams(WelschInfluenceFunc(sigma=sigma))
     optimiser_instance = SupGaussNewton(param_instance, RobustMean(), data, weight, scale)
     for x in sampleX:
-        v = optimiser_instance.base.objective_func([x])
+        v = optimiser_instance.objective_func([x])
         sampleVal.append(v)
         if v > maxVal:
             maxVal = v
@@ -139,7 +139,7 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
         if print_warnings:
             print("sigma=",sigma," m=",m)
 
-        testVal = optimiser_instance.base.objective_func([m])
+        testVal = optimiser_instance.objective_func([m])
         if testVal > maxVal:
             maxVal = testVal
             maxX = m

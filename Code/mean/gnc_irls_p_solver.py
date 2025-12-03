@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import argparse
+import os
 
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
@@ -10,7 +10,7 @@ from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
 
 from gncs_robust_mean import RobustMean
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     # configuration
     showSolution = True
 
@@ -61,13 +61,13 @@ def main(testrun:bool):
     #print("Result: m=", m)
 
     # check derivatives
-    for r in (0.01, 0.1, 0.5, 2.0):
-        residual = np.array([r])
-        rhop, Bterm = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
-        optimiser_instance.numeric_derivs_model = True
-        rhopn, Btermn = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
-        if not testrun:
-            print("rhop=",rhop, rhopn, "Bterm=",Bterm,Btermn)
+    #for r in (0.01, 0.1, 0.5, 2.0):
+    #    residual = np.array([r])
+    #    rhop, Bterm = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
+    #    optimiser_instance.numeric_derivs_model = True
+    #    rhopn, Btermn = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
+    #    if not testrun:
+    #        print("rhop=",rhop, rhopn, "Bterm=",Bterm,Btermn)
 
     # get min and max of data
     yMin = yMax = 0.0
@@ -91,7 +91,7 @@ def main(testrun:bool):
     mlist = np.linspace(xMin, xMax, num=300)
 
     def objective_func(m):
-        return optimiser_instance.base.objective_func([m])
+        return optimiser_instance.objective_func([m])
 
     for mx in mlist:
         yMax = max(yMax, objective_func(mx))
@@ -102,6 +102,7 @@ def main(testrun:bool):
     yMin *= 1.01 # allow for a small border
     yMax *= 1.01 # allow for a small border
 
+    plt.close("all")
     plt.figure(num=1, dpi=240)
     ax = plt.gca()
     #plt.box(False)
@@ -117,14 +118,9 @@ def main(testrun:bool):
         plt.axvline(x = m[0], color = 'r', label = 'solution', lw = 1.0)
 
     plt.legend()
-    plt.savefig('../../Output/gnc_irls_p_mean.png', bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "gnc_irls_p_mean.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("gnc_irls_p_solver OK")

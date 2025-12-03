@@ -113,7 +113,7 @@ import numpy as np
 from .base_irls import BaseIRLS
 
 
-class SupGaussNewton:
+class SupGaussNewton(BaseIRLS):
     def __init__(
         self,
         param_instance,
@@ -134,7 +134,7 @@ class SupGaussNewton:
         model_ref_start=None,
         debug: bool = False,
     ):
-        self.base = BaseIRLS(
+        BaseIRLS.__init__(self,
             param_instance,
             model_instance,
             data,
@@ -149,55 +149,56 @@ class SupGaussNewton:
             model_ref_start=model_ref_start,
             debug=debug,
         )
-        self.residual_tolerance = residual_tolerance
-        self.lambda_start = lambda_start
-        self.lambda_max = lambda_max
-        self.lambda_scale = lambda_scale
+        self.__residual_tolerance = residual_tolerance
+        self.__lambda_start = lambda_start
+        self.__lambda_max = lambda_max
+        self.__lambda_scale = lambda_scale
 
-    def calc_influence_func_derivatives(
+    def __calc_influence_func_derivatives(
         self, residual: np.array, s: float, small_diff: float = 1.0e-5
     ) -> (float, float):  # scale
         rsqr = residual @ residual
         r = math.sqrt(rsqr)
-        if self.base.numeric_derivs_influence:
-            rho_n = self.base.param_instance.influence_func_instance.rho(
+        if self.numeric_derivs_influence:
+            rho_n = self._param_instance.influence_func_instance.rho(
                 (r - small_diff) ** 2.0, s
             )  # scale
-            rho_p = self.base.param_instance.influence_func_instance.rho(
+            rho_p = self._param_instance.influence_func_instance.rho(
                 (r + small_diff) ** 2.0, s
             )  # scale
             rho_deriv = 0.5 * (rho_p - rho_n) / small_diff
             rhop = rho_deriv / r
-            rho_c = self.base.param_instance.influence_func_instance.rho(
+            rho_c = self._param_instance.influence_func_instance.rho(
                 r * r, s
             )  # scale
             rho_2nd_deriv = (rho_n + rho_p - 2.0 * rho_c) / (small_diff * small_diff)
             Bterm = (r * rho_2nd_deriv - rho_deriv) / (r * r * r)
         else:
-            rhop = self.base.param_instance.influence_func_instance.rhop(
+            rhop = self._param_instance.influence_func_instance.rhop(
                 rsqr, 1.0
             )  # scale
-            Bterm = self.base.param_instance.influence_func_instance.Bterm(
+            Bterm = self._param_instance.influence_func_instance.Bterm(
                 rsqr, 1.0
             )  # scale
 
         return rhop, Bterm
 
+    # weighted_derivs is public to allow derivatives 
     def weighted_derivs(
         self, model, lambda_val: float, weight=None, model_ref=None
     ) -> (np.array, np.array):
         if weight is None:
-            weight = self.base.weight
+            weight = self._weight
 
         atot = np.zeros(len(model))
         AlBtot = np.zeros((len(model), len(model)))
         small_diff = 1.0e-5  # in case numerical differentiation is specified
-        if self.base.scale is None:
-            for d, w in zip(self.base.data, weight, strict=True):
-                residual, residual_gradient, grad = self.base.calc_residual_derivatives(
+        if self._scale is None:
+            for d, w in zip(self._data, weight, strict=True):
+                residual, residual_gradient, grad = self._calc_residual_derivatives(
                     model, d, model_ref=model_ref, small_diff=small_diff
                 )
-                rhop, Bterm = self.calc_influence_func_derivatives(
+                rhop, Bterm = self.__calc_influence_func_derivatives(
                     residual, 1.0, small_diff=small_diff
                 )
                 atot += w * rhop * grad
@@ -208,11 +209,11 @@ class SupGaussNewton:
 
             return atot, AlBtot
         else:
-            for d, w, s in zip(self.base.data, weight, self.base.scale, strict=True):
-                residual, residual_gradient, grad = self.base.calc_residual_derivatives(
+            for d, w, s in zip(self._data, weight, self._scale, strict=True):
+                residual, residual_gradient, grad = self._calc_residual_derivatives(
                     model, d, model_ref=model_ref, small_diff=small_diff
                 )
-                rhop, Bterm = self.calc_influence_func_derivatives(
+                rhop, Bterm = self.__calc_influence_func_derivatives(
                     residual, s, small_diff=small_diff
                 )
                 atot += w * rhop * grad
@@ -224,18 +225,18 @@ class SupGaussNewton:
             return atot, AlBtot
 
     def run(self):
-        self.base.param_instance.reset()
-        lambda_val = self.lambda_start
-        model, model_ref = self.base.init_model()
-        last_tot = self.base.objective_func(model, model_ref=model_ref)
-        update_model_ref = getattr(self.base.model_instance, "update_model_ref", None)
-        if self.base.print_warnings:
+        self._param_instance.reset()
+        lambda_val = self.__lambda_start
+        model, model_ref = self._init_model()
+        last_tot = self.objective_func(model, model_ref=model_ref)
+        update_model_ref = getattr(self._model_instance, "update_model_ref", None)
+        if self._print_warnings:
             a, AlB = self.weighted_derivs(model, lambda_val, model_ref=model_ref)
             print("Initial model=", model)
             print("Initial model_ref=", model_ref)
             print(
                 "Initial params=",
-                self.base.param_instance.influence_func_instance.summary(),
+                self._param_instance.influence_func_instance.summary(),
             )
             print(
                 "Initial tot=",
@@ -243,25 +244,25 @@ class SupGaussNewton:
                 "grad=",
                 a,
                 "diff_thres=",
-                self.base.diff_thres,
+                self._diff_thres,
             )
             print("Initial weighted derivative lambda_val=", lambda_val, ":")
             print("Initial AlB=", AlB)
 
-        if self.base.debug:
+        if self._debug:
             diffs = []
             model_list = []
 
         all_good = True
-        for itn in range(self.base.max_niterations):
+        for itn in range(self._max_niterations):
             model_old = model.copy()
             model_refOld = model_ref
             a, AlB = self.weighted_derivs(model_old, lambda_val, model_ref=model_ref)
             try:
                 at = np.linalg.solve(AlB, a)
             except np.linalg.LinAlgError:
-                lambda_val /= self.lambda_scale
-                if self.base.print_warnings:
+                lambda_val /= self.__lambda_scale
+                if self._print_warnings:
                     print(
                         "Weighted derivative matrix is singular - rejecting new lambda_val=",
                         lambda_val,
@@ -274,21 +275,21 @@ class SupGaussNewton:
                 model_ref = update_model_ref(model, model_ref)
 
             if (
-                self.base.param_instance.at_final_stage()
-                and self.base.diff_thres is not None
+                self._param_instance.at_final_stage()
+                and self._diff_thres is not None
             ):
                 model_max_diff = np.linalg.norm(at, ord=np.inf)
-                if self.base.debug is True and model_max_diff > 0.0:
+                if self._debug is True and model_max_diff > 0.0:
                     diffs.append(math.log10(model_max_diff))
 
-                if model_max_diff < self.base.diff_thres:
-                    if self.base.print_warnings:
+                if model_max_diff < self._diff_thres:
+                    if self._print_warnings:
                         print("Difference threshold reached")
 
                     break
 
-            tot = self.base.objective_func(model, model_ref=model_ref)
-            if self.base.print_warnings:
+            tot = self.objective_func(model, model_ref=model_ref)
+            if self._print_warnings:
                 print(
                     "itn=",
                     itn,
@@ -297,22 +298,22 @@ class SupGaussNewton:
                     "model_old=",
                     model_old,
                     "params=",
-                    self.base.param_instance.influence_func_instance.summary(),
+                    self._param_instance.influence_func_instance.summary(),
                     "tot=",
                     tot,
                 )
 
             if (
                 lambda_val != 0.0
-                and self.base.param_instance.influence_func_instance.objective_func_sign()
+                and self._param_instance.influence_func_instance.objective_func_sign()
                 * (tot - last_tot)
-                > self.residual_tolerance
+                > self.__residual_tolerance
             ):
                 model = model_old
                 model_ref = model_refOld
-                lambda_val /= self.lambda_scale
-                last_tot = self.base.objective_func(model, model_ref=model_ref)
-                if self.base.print_warnings:
+                lambda_val /= self.__lambda_scale
+                last_tot = self.objective_func(model, model_ref=model_ref)
+                if self._print_warnings:
                     print(
                         "Reject new lambda_val=",
                         lambda_val,
@@ -322,29 +323,29 @@ class SupGaussNewton:
                         model,
                     )
             else:
-                lambda_val = min(self.lambda_scale * lambda_val, self.lambda_max)
-                self.base.param_instance.update()
-                if self.base.param_instance.at_final_stage():
+                lambda_val = min(self.__lambda_scale * lambda_val, self.__lambda_max)
+                self._param_instance.update()
+                if self._param_instance.at_final_stage():
                     last_tot = tot
                 else:
-                    last_tot = self.base.objective_func(model, model_ref=model_ref)
+                    last_tot = self.objective_func(model, model_ref=model_ref)
 
-                if self.base.print_warnings:
-                    if lambda_val != 0.0 and self.lambda_scale > 1.0:
+                if self._print_warnings:
+                    if lambda_val != 0.0 and self.__lambda_scale > 1.0:
                         print("Accept new lambda_val=", lambda_val)
 
-            if self.base.debug:
+            if self._debug:
                 model_list.append(
                     (
-                        itn / (self.base.max_niterations - 1),  # alpha
+                        itn / (self._max_niterations - 1),  # alpha
                         np.copy(model),
                     )
                 )
 
-        self.base.param_instance.reset(
+        self._param_instance.reset(
             False
         )  # finish with parameters in correct final model
-        if self.base.debug:
+        if self._debug:
             if model_ref is None:
                 if all_good is True:
                     return model, itn + 1, diffs, model_list

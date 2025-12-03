@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import argparse
+import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
@@ -25,13 +25,13 @@ max_niterations = 100
 diff_thres = 1.0e-15
 
 def objective_func(m, optimiser_instance):
-    return optimiser_instance.base.objective_func([m])
+    return optimiser_instance.objective_func([m])
 
 def plotResult(data, weight,
                gncWelschOptimiserInstance, mgncw, msupgnw, mflat,
                pseudoHuberOptimiserInstance, mhuber, mirlshuber,
                gncIrlspOptimiserInstance, mgncirlsp,
-               plot_count:int,
+               output_folder:str,
                testrun:bool):
     dmin = dmax = data[0][0]
     for d in data:
@@ -46,7 +46,8 @@ def plotResult(data, weight,
 
     mlist = np.linspace(xMin, xMax, num=300)
 
-    plt.figure(num=plot_count, dpi=240)
+    plt.close("all")
+    plt.figure(num=1, dpi=240)
     ax = plt.gca()
     rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
     key = ("Flat", "Welsch", "GNC_Welsch")
@@ -66,14 +67,13 @@ def plotResult(data, weight,
 
     gncs_draw_data_points(plt, data, weight, xMin, xMax, N)
     plt.legend()
-    plt.savefig("../../Output/irlsCheck.png", bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "irlsCheck.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
     
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
-    plot_count = 1
     for test_idx in range(0,10):
         data = np.zeros((N,1))
         weight = np.zeros(N)
@@ -125,13 +125,7 @@ def main(testrun:bool):
                    gncWelschOptimiserInstance, mgncw, msupgnw, mflat,
                    pseudoHuberOptimiserInstance, mhuber, mirlshuber,
                    gncIrlspOptimiserInstance, mgncirlsp,
-                   plot_count, testrun)
-        plot_count += 1
+                   output_folder, testrun)
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("mean_check OK")

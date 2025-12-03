@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-import argparse
+import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
@@ -30,13 +30,14 @@ welsch_p = 0.66666667
 outlierFraction = 0.5
 
 def objective_func(m, optimiser_instance):
-    return optimiser_instance.base.objective_func([m])
+    return optimiser_instance.objective_func([m])
 
 def plotResult(data, weight,
                mwelschopt, welschOptimiserInstance,
                mhuber,     pseudoHuberOptimiserInstance,
                mgncirlsp,  gncIrlspOptimiserInstance,
                mgt,
+               output_folder : str,
                plot_count:int,
                testrun:bool):
     dmin = dmax = data[0]
@@ -75,11 +76,11 @@ def plotResult(data, weight,
     gncs_draw_vline(plt, mgncirlsp, key, useLabel=False)
 
     plt.legend()
-    plt.savefig("../../Output/convergence_speed_gnc.png", bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "convergence_speed_gnc.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     plot_count = 1
@@ -152,14 +153,10 @@ def main(testrun:bool):
                    mhuber,     pseudoHuberSupGNOptimiserInstance,
                    mgncirlsp,  gncIrlspSupGNOptimiserInstance,
                    mgt,
+                   output_folder,
                    plot_count,
                    testrun)
         plot_count += 1
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("convergence_speed_gnc OK")

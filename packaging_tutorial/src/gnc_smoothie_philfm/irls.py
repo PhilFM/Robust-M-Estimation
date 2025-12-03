@@ -62,7 +62,7 @@ import numpy as np
 from .base_irls import BaseIRLS
 
 
-class IRLS:
+class IRLS(BaseIRLS):
     def __init__(
         self,
         param_instance,
@@ -78,7 +78,8 @@ class IRLS:
         model_ref_start=None,
         debug=False,
     ):
-        self.base = BaseIRLS(
+        BaseIRLS.__init__(
+            self,
             param_instance,
             model_instance,
             data,
@@ -93,109 +94,109 @@ class IRLS:
             debug=debug,
         )
 
-    def updated_weight(
+    def __updated_weight(
         self, residual: np.array, scale, small_diff: float = None
     ) -> float:
         rsqr = residual @ residual
-        if self.base.numeric_derivs_influence:
+        if self.numeric_derivs_influence:
             r = math.sqrt(rsqr)
-            rho_n = self.base.param_instance.influence_func_instance.rho(
+            rho_n = self._param_instance.influence_func_instance.rho(
                 (r - small_diff) ** 2.0, scale
             )
-            rho_p = self.base.param_instance.influence_func_instance.rho(
+            rho_p = self._param_instance.influence_func_instance.rho(
                 (r + small_diff) ** 2.0, scale
             )
             rho_deriv = 0.5 * (rho_p - rho_n) / small_diff
             return rho_deriv / r
         else:
-            return self.base.param_instance.influence_func_instance.rhop(rsqr, scale)
+            return self._param_instance.influence_func_instance.rhop(rsqr, scale)
 
-    def updateWeights(self, model, weight, model_ref=None):
+    def __update_weights(self, model, weight, model_ref=None):
         small_diff = 1.0e-5  # in case numerical differentiation is specified
-        if self.base.scale is None:
-            for i, d in enumerate(self.base.data):
-                weight[i] = self.base.weight[i] * self.updated_weight(
-                    self.base.model_instance.residual(model, d, model_ref=model_ref),
+        if self._scale is None:
+            for i, d in enumerate(self._data):
+                weight[i] = self._weight[i] * self.__updated_weight(
+                    self._model_instance.residual(model, d, model_ref=model_ref),
                     1.0,
                     small_diff=small_diff,
                 )
         else:
             for i, (d, s) in enumerate(
-                zip(self.base.data, self.base.scale, strict=True)
+                zip(self._data, self._scale, strict=True)
             ):
-                weight[i] = self.base.weight[i] * self.updated_weight(
-                    self.base.model_instance.residual(model, d, model_ref=model_ref), s
+                weight[i] = self._weight[i] * self.__updated_weight(
+                    self._model_instance.residual(model, d, model_ref=model_ref), s
                 )
 
     def run(self):
-        self.base.param_instance.reset()
-        weight = np.copy(self.base.weight)
-        model, model_ref = self.base.init_model()
-        if self.base.print_warnings:
+        self._param_instance.reset()
+        weight = np.copy(self._weight)
+        model, model_ref = self._init_model()
+        if self._print_warnings:
             print(
                 "Initial model=",
                 model,
                 "params=",
-                self.base.param_instance.influence_func_instance.summary(),
+                self._param_instance.influence_func_instance.summary(),
                 "diff_thres=",
-                self.base.diff_thres,
+                self._diff_thres,
             )
 
-        if self.base.debug:
+        if self._debug:
             diffs = []
             model_list = []
 
-        for itn in range(self.base.max_niterations):
-            self.updateWeights(model, weight, model_ref=model_ref)
+        for itn in range(self._max_niterations):
+            self.__update_weights(model, weight, model_ref=model_ref)
             model_old = model
-            if self.base.model_instance.linear_model_size() > 0:
-                model = self.base.weighted_fit(weight)
+            if self._model_instance.linear_model_size() > 0:
+                model = self.weighted_fit(weight)
             else:
-                model, model_ref = self.base.model_instance.weighted_fit(
-                    self.base.data, weight, self.base.scale
+                model, model_ref = self._model_instance.weighted_fit(
+                    self._data, weight, self._scale
                 )
 
-            if self.base.param_instance.at_final_stage():
-                if self.base.diff_thres is not None:
+            if self._param_instance.at_final_stage():
+                if self._diff_thres is not None:
                     model_max_diff = np.linalg.norm(model - model_old, ord=np.inf)
-                    if self.base.print_warnings:
+                    if self._print_warnings:
                         print("model_max_diff=", model_max_diff)
 
-                    if self.base.debug is True and model_max_diff > 0.0:
-                        if self.base.print_warnings:
+                    if self._debug is True and model_max_diff > 0.0:
+                        if self._print_warnings:
                             print("Adding diff model_max_diff", model_max_diff)
 
                         diffs.append(math.log10(model_max_diff))
 
-                    if model_max_diff < self.base.diff_thres:
-                        if self.base.print_warnings:
+                    if model_max_diff < self._diff_thres:
+                        if self._print_warnings:
                             print("Difference threshold reached")
 
                         break
 
-            if self.base.print_warnings:
+            if self._print_warnings:
                 print(
                     "itn=",
                     itn,
                     "model=",
                     model,
                     "params=",
-                    self.base.param_instance.influence_func_instance.summary(),
+                    self._param_instance.influence_func_instance.summary(),
                 )
 
-            self.base.param_instance.update()
-            if self.base.debug:
+            self._param_instance.update()
+            if self._debug:
                 model_list.append(
                     (
-                        itn / (self.base.max_niterations - 1),  # alpha
+                        itn / (self._max_niterations - 1),  # alpha
                         np.copy(model),
                     )
                 )
 
-        self.base.param_instance.reset(
+        self._param_instance.reset(
             False
         )  # finish with parameters in correct final model
-        if self.base.debug:
+        if self._debug:
             if model_ref is None:
                 return model, itn + 1, diffs, model_list
             else:

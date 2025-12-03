@@ -11,13 +11,13 @@ def check_derivs(
         a, AlB = optimiser_instance.weighted_derivs(
             model, lambda_val, model_ref=model_ref
         )
-        optimiser_instance.base.numeric_derivs_model = True
-        optimiser_instance.base.numeric_derivs_influence = True
+        optimiser_instance.numeric_derivs_model = True
+        optimiser_instance.numeric_derivs_influence = True
         anum, AlBnum = optimiser_instance.weighted_derivs(
             model, lambda_val, model_ref=model_ref
         )
-        optimiser_instance.base.numeric_derivs_model = False
-        optimiser_instance.base.numeric_derivs_influence = False
+        optimiser_instance.numeric_derivs_model = False
+        optimiser_instance.numeric_derivs_influence = False
 
         if print_derivs:
             print("a:", a)

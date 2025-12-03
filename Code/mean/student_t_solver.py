@@ -2,13 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import json
-import argparse
+import os
 
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from robust_solver_apply import apply_to_data
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     sigmaPop = 1.0
     p = 0.5 # 33333333
 
@@ -22,7 +22,6 @@ def main(testrun:bool):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     studentTDOFList = [1,2,3,4,5]
-    plot_count = 1
     sampleSizeArray = [10,20] if testrun else [10,20,50,100]
     for N in sampleSizeArray:
         effgncwelschlist = []
@@ -97,11 +96,11 @@ def main(testrun:bool):
         data_dict['nSamples'] = nSamples
         jstr = json.dumps(data_dict)
         js = json.loads(jstr)
-        with open('../../Output/compareStudentTN' + str(N) + '.json', 'w', encoding='utf-8') as f:
+        with open(os.path.join(output_folder, "compareStudentTN" + str(N) + ".json"), 'w', encoding='utf-8') as f:
             json.dump(js, f, ensure_ascii=False, indent=4)
 
-        plt.figure(num=plot_count, dpi=240)
-        plot_count += 1
+        plt.close("all")
+        plt.figure(num=1, dpi=240)
         plt.clf()
         ax = plt.gca()
         gncs_draw_curve(plt, effgncwelschlist,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=studentTDOFList)
@@ -120,14 +119,9 @@ def main(testrun:bool):
         ax.set_ylim(0.0,1.1)
 
         plt.legend()
-        plt.savefig('../../Output/compareStudentTN' + str(N) + '.png', bbox_inches='tight')
+        plt.savefig(os.path.join(output_folder, "compareStudentTN" + str(N) + ".png"), bbox_inches='tight')
         if not testrun:
             plt.show()
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("student_t_solver OK")

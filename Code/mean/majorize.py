@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-import argparse
+import os
 
 def refFunc(r):
     return 1.0 - math.exp(-0.5*r*r)
@@ -9,10 +9,11 @@ def refFunc(r):
 def majFunc(r):
     return 0.5*r*r*math.exp(-0.5*r*r)
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     rlist = np.linspace(-3.0, 3.0, num=100)
     refFuncV = np.vectorize(refFunc)
     majFuncV = np.vectorize(majFunc)
+    plt.close("all")
     plt.figure(num=1, dpi=240)
 
     ax = plt.gca()
@@ -26,7 +27,7 @@ def main(testrun:bool):
     plt.plot(rlist, majFuncV(rlist), lw = 1.0, color = 'green', label="Maj")
 
     plt.legend()
-    plt.savefig("../../Output/majorize.png", bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "majorize.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
 
@@ -43,14 +44,9 @@ def main(testrun:bool):
     plt.plot(rlist, majFuncV(rlist), lw = 1.0, color = 'green') #, label="Welsch majorize test")
 
     plt.legend()
-    plt.savefig('../../Output/welsch_majorize_test.png', bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "welsch_majorize_test.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("majorize OK")

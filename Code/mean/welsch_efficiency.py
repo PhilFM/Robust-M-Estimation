@@ -2,7 +2,7 @@ import numpy as np
 import random
 import math
 import matplotlib.pyplot as plt
-import argparse
+import os
 
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
@@ -12,7 +12,7 @@ from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
 from gncs_robust_mean import RobustMean
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     sigma_base = 1.0
     sigma_limit = 500.0
     num_sigma_steps = 100
@@ -49,6 +49,7 @@ def main(testrun:bool):
         if not testrun:
             print("m1=",m1," m2=",m2)
 
+    plt.close("all")
     plt.figure(num=1, dpi=240)
     ax = plt.gca()
     ax.set_xlabel(r'$p$')
@@ -90,7 +91,7 @@ def main(testrun:bool):
                 m = smallMean(optimiser_instance)
                 mstot += m*m
 
-                lsm = optimiser_instance.base.weighted_fit()[0]
+                lsm = optimiser_instance.weighted_fit()[0]
                 lsstot += lsm*lsm
 
                 sxemx22s2 = 0.0
@@ -176,14 +177,9 @@ def main(testrun:bool):
     plt.plot(mlist, hmfv(mlist), color = 'b', lw = 1.0, linestyle = 'dashed', label = 'asymptotic')
 
     plt.legend()
-    plt.savefig('../../Output/welsch_efficiency.png', bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "welsch_efficiency.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("welsch_efficiency OK")

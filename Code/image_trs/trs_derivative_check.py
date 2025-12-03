@@ -1,0 +1,42 @@
+import numpy as np
+import math
+import sys
+import os
+
+from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.check_derivs import check_derivs
+
+from trs import TRS
+
+def main(testrun:bool, output_folder:str="../../Output"):
+    np.random.seed(0) # We want the numbers to be the same on each run
+
+    all_good = True
+    for test_idx in range(0,10):
+        data = np.zeros((1,4))
+        weight = np.zeros(1)
+        weight[0] = 1.0
+        for i in range(4):
+            data[0][i] = 2.0*(np.random.rand()-0.5)
+
+        # ground-truth parameters
+        model = np.array([2.0*(np.random.rand()-0.5), # s
+                          2.0*(np.random.rand()-0.5), # c
+                          2.0*(np.random.rand()-0.5), # tx
+                          2.0*(np.random.rand()-0.5)]) # ty
+
+        sigma = 0.1+np.random.rand()
+
+        optimiser_instance = SupGaussNewton(NullParams(WelschInfluenceFunc(sigma=sigma)), TRS(), data, weight=weight)
+        if not check_derivs(optimiser_instance, model, diff_threshold_AlB=1.e-5): #, print_diffs=True, print_derivs=False):
+            all_good = False
+
+    if all_good:
+        if testrun:
+            print("trs_derivative_check OK")
+        else:
+            print("ALL DERIVATIVES OK!!")
+    else:
+        print("Derivative failure")

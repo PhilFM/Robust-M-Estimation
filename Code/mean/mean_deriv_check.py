@@ -1,5 +1,4 @@
 import numpy as np
-import argparse
 
 from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
@@ -18,7 +17,7 @@ def objective_func(m, influence_func_instance):
 
 np.random.seed(0) # We want the numbers to be the same on each run
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     N = 10
     xgtrange = 10.0
     sigmaPop = 1.0
@@ -90,13 +89,8 @@ def main(testrun:bool):
 
     if all_good:
         if testrun:
-            print("OK")
+            print("mean_deriv_check OK")
         else:
             print("ALL DERIVATIVES OK!!")
     else:
         print("Derivative failure")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)

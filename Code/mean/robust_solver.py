@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import json
-import argparse
+import os
 
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from robust_solver_apply import apply_to_data
 
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     sigmaPop = 1.0
     p = 0.66666667
 
@@ -18,7 +18,6 @@ def main(testrun:bool):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     outlierFractionList = [0.0,0.2,0.5] if testrun else [0.0,0.1,0.2,0.3,0.4,0.5]
-    plot_count = 1
     for xgtrange in [3.0,5.0,10.0,30.0,100.0]:
         sampleSizeArray = [10] if testrun else [10,30,100,1000]
         for N in sampleSizeArray:
@@ -94,11 +93,11 @@ def main(testrun:bool):
             data_dict['nSamples'] = nSamples
             jstr = json.dumps(data_dict)
             js = json.loads(jstr)
-            with open('../../Output/compareN' + str(N) + '-range' + str(int(xgtrange)) + '.json', 'w', encoding='utf-8') as f:
+            with open(os.path.join(output_folder, "compareN" + str(N) + "-range" + str(int(xgtrange)) + ".json"), 'w', encoding='utf-8') as f:
                 json.dump(js, f, ensure_ascii=False, indent=4)
 
-            plt.figure(num=plot_count, dpi=240)
-            plot_count += 1
+            plt.close("all")
+            plt.figure(num=1, dpi=240)
             plt.clf()
             ax = plt.gca()
             gncs_draw_curve(plt, effgncwelschlist,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=outlierFractionList)
@@ -116,14 +115,9 @@ def main(testrun:bool):
             ax.set_ylim(0.0,1.1)
 
             plt.legend()
-            plt.savefig('../../Output/compareN' + str(N) + '-range' + str(int(xgtrange)) + '.png', bbox_inches='tight')
+            plt.savefig(os.path.join(output_folder, "compareN" + str(N) + "-range" + str(int(xgtrange)) + ".png"), bbox_inches='tight')
             if not testrun:
                 plt.show()
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("robust_solver OK")

@@ -2,7 +2,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-import argparse
+import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
@@ -16,13 +16,14 @@ from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from gncs_robust_mean import RobustMean
 
-def plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun:bool):
+def plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS, diffsGNCIRLSp0, diffsGNCIRLSp1, output_folder:str, testrun:bool):
     if not testrun:
         print("diffsWelschGN:",diffsWelschGN)
         print("diffsWelschIRLS:",diffsWelschIRLS)
         print("diffsHuberGN:",diffsHuberGN)
         print("diffsHuberIRLS:",diffsHuberIRLS)
 
+    plt.close("all")
     plt.figure(num=1, dpi=240)
     plt.clf()
     ax = plt.gca()
@@ -43,11 +44,11 @@ def plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS
     #ax.set_ylim(0.0,1.1)
 
     plt.legend()
-    plt.savefig('../../Output/mean-diffs' + '.png', bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "mean-diffs.png"), bbox_inches="tight")
     if not testrun:
         plt.show()
     
-def main(testrun:bool):
+def main(testrun:bool, output_folder:str="../../Output"):
     random.seed(0) # We want the numbers to be the same on each run
     N = 1000
     sigmaPop = 1.0
@@ -139,12 +140,7 @@ def main(testrun:bool):
             print("GNC IRLS-p1 mdiff=",m-mgt)
             print("GNC IRLS-p1 diffs=",diffsGNCIRLSp1)
 
-        plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun)
+        plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS, diffsGNCIRLSp0, diffsGNCIRLSp1, output_folder, testrun)
 
     if testrun:
-        print("OK")
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--testrun', action="store_true", default=False)
-args = parser.parse_args()
-main(args.testrun)
+        print("solve_average OK")

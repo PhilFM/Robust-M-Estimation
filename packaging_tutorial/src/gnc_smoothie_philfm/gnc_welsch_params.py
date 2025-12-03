@@ -20,40 +20,40 @@ class GNC_WelschParams:
         max_niterations: int = 1000000,
     ):
         self.influence_func_instance = influence_func_instance
-        self.sigma_base = sigma_base
-        self.sigma_limit = sigma_base if sigma_limit is None else sigma_limit
-        if self.sigma_limit != self.sigma_base:
+        self.__sigma_base = sigma_base
+        self.__sigma_limit = sigma_base if sigma_limit is None else sigma_limit
+        if sigma_limit != sigma_base:
             # GNC schedule for sigma
-            self.num_sigma_steps = (
+            self.__num_sigma_steps = (
                 max_niterations if num_sigma_steps is None else num_sigma_steps
             )
-            if self.num_sigma_steps > max_niterations:
+            if self.__num_sigma_steps > max_niterations:
                 raise ValueError("Too many sigma steps")
 
-            self.beta = math.exp(
-                (math.log(sigma_base) - math.log(self.sigma_limit))
-                / (self.num_sigma_steps - 1.0)
+            self.__beta = math.exp(
+                (math.log(sigma_base) - math.log(self.__sigma_limit))
+                / (self.__num_sigma_steps - 1.0)
             )
         else:
             # fixed sigma
-            self.num_sigma_steps = 0
-            self.beta = 1.0
+            self.__num_sigma_steps = 0
+            self.__beta = 1.0
 
         # set parameters to final values
         self.reset(False)
 
     def reset(self, init: bool = True):
         if init:
-            self.influence_func_instance.sigma = self.sigma_limit
+            self.influence_func_instance.sigma = self.__sigma_limit
         else:
-            self.influence_func_instance.sigma = self.sigma_base
+            self.influence_func_instance.sigma = self.__sigma_base
 
     # whether we have reached the final sigma value
     def at_final_stage(self) -> bool:
-        return True if self.influence_func_instance.sigma <= self.sigma_base else False
+        return True if self.influence_func_instance.sigma <= self.__sigma_base else False
 
     # update sigma to a lower value
     def update(self):
         self.influence_func_instance.sigma = max(
-            self.sigma_base, self.beta * self.influence_func_instance.sigma
+            self.__sigma_base, self.__beta * self.influence_func_instance.sigma
         )
