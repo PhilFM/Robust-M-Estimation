@@ -1,7 +1,9 @@
 # GNC Smoothie package
 
 Python library supporting M-estimation using two algorithms: the well-known Iteratively Reweighted Least Squares (IRLS)
-and our custom Supervised Gauss-Newton algorithm. First some introductory theory.
+and our custom Supervised Gauss-Newton algorithm. Author: Philip McLauchlan.
+
+First some introductory theory.
 
 ## M-estimation
 M-estimation is a generalisation of maximum-likelihood estimation. 
@@ -57,7 +59,7 @@ or
   F({\bf x}) = \sum_{i=1}^n \rho(r_i({\bf x}))
 \\]
 
-In the special case of Normally distributed observation errors, giving rise to standard least-squares,
+In the special case of normally distributed observation errors, this give rise to standard least-squares,
 \\( \rho(r) \sim r^2 \\), the squared error in the observations.
 The development and popularisation of M-estimation was driven by the need to fit models to data with outliers, i.e.
 data not sampled from the population pdf but from a distinct distribution or distributions.
@@ -236,20 +238,6 @@ estimate and increase the damping:
 The advantage of this algorithm over IRLS is that it provides much faster convergence when we are near the solution.
 It is well known that Gauss-Newton iterations can provide quadratic convergence [6], and we are taking advantage of this, whilst
 still maintaining the option of pure IRLS iterations to guarantee convergence.
-  
-## References
-
-[1] Charbonnier et al. in "Deterministic edge-preserving regularization in computed imaging", PAMI 6(2), 1997.
-
-[2] Holland & Welsch "Robust regression using iteratively reweighted least-squares", Communications in Statistics-theory and Methods, 6(9), 1977.
-
-[3] Peng et al. "On the Convergence of IRLS and Its Variants in Outlier-Robust Estimation", CVPR 2023.
-
-[4] Blake & Zisserman "Visual reconstruction", MIT Press, 1987.
-
-[5] K. Levenberg "A method for the solution of certain non – linear problems in least squares", Quarterly of Applied Mathematics, 2, 1944.
-
-[6] A. Björck, "Numerical Methods for Least Squares Problems", (1996)
 
 ## GNC Smoothie software
 
@@ -309,14 +297,14 @@ Now the optional parameters for the `IRLS` class constructor:
 - `scale` An optional array of scale values, indicating that one or more data items are known to
      have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
      to apply to the influence function for that data item.
--  `numeric_derivs_influence` Whether to calculate derivatives of the influence function numerically
+-  `numeric_derivs_influence: bool` Whether to calculate derivatives of the influence function numerically
      from a provided `rho()` function or directly using a provided `rhop()` function.
--  `max_niterations` Maximum number of IRLS iterations to apply before aborting.
--  `diff_thres` Terminate when successful update changes the model model parameters by less than this value.
--  `print_warnings` Whether to print debugging information.
+-  `max_niterations: int` Maximum number of IRLS iterations to apply before aborting.
+-  `diff_thres: float` Terminate when successful update changes the model model parameters by less than this value.
+-  `print_warnings: bool` Whether to print debugging information.
 -  `model_start` Optional starting value for model model parameters
 -  `model_ref_start` Optional starting reference parameters for model, e.g. if optimising rotation
--  `debug` Whether to return extra debugging data on exit:
+-  `debug: bool` Whether to return extra debugging data on exit:
    - The number of iterations actually applied
    - The norm of the model parameters change at each iteration, as a list of difference values
    - A list of the model parameters at each iteration
@@ -359,12 +347,12 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
       - `s` The scale of the data item indicating its known inaccuracy, so a value >= 1.
      Returns the value of the objective function.
    - `rhop(self, rsqr: float, s: float) -> float`
-        The influence function, which is equal to the derivative with respect to $r$
-        of `rho(rsqr,s)` divided by $r$, where $r$ is the L2 norm of the residual vector.
+        The influence function, which is equal to the derivative with respect to \\( r \\)
+        of `rho(rsqr,s)` divided by \\( r \\), where \\( r \\) is the L2 norm of the residual vector.
         If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
-        are calculated numerically from rho() and rhop() is not required.
+        are calculated numerically from `rho()` and `rhop()` is not required.
    - `Bterm(self, rsqr: float, s: float) -> float`
-        Implements $(r*\rho''(r) - \rho'(r))/(r^3)$ where ' indicates derivative.
+        Implements \\( (r*\rho''(r) - \rho'(r))/(r^3) \\) where ' indicates derivative.
         If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
         are calculated numerically from rho() and Bterm() is not required.
    - `summary(self) -> str`
@@ -423,33 +411,33 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
 - `scale` An optional array of scale values, indicating that one or more data items are known to
      have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
      to apply to the influence function for that data item.
-- `numeric_derivs_model` Whether to calculate derivatives of the data residual vector with respect to the
+- `numeric_derivs_model: bool` Whether to calculate derivatives of the data residual vector with respect to the
      model parameters numerically using a provided `residual()` function or directly
      using a provided `residual_gradient()` function.
-- `numeric_derivs_influence` Whether to calculate derivatives of the influence function numerically
+- `numeric_derivs_influence: bool` Whether to calculate derivatives of the influence function numerically
      from a provided `rho()` function or directly using a provided `rhop()` function.
-- `max_niterations` Maximum number of Sup-GN iterations to apply before aborting
-- `residual_tolerance` An optional parameter that is used to terminate Sup-GN when the improvement to the
+- `max_niterations: int` Maximum number of Sup-GN iterations to apply before aborting
+- `residual_tolerance: float` An optional parameter that is used to terminate Sup-GN when the improvement to the
      objective function value is smaller than the provided threshold
-- `lambda_start` Starting value for the Sup-GN damping, similar to Levenberg-Marquart damping.
+- `lambda_start: float` Starting value for the Sup-GN damping, similar to Levenberg-Marquart damping.
      In Sup-GN the level of damping is high when lambda is small, so normally it is
      best to start with an optimistic small value.
-- `lambda_max` Maximum value for lambda in Sup-GN damping. This should be in the range [0,1].
-- `lambda_scale` Scale factor to multiply lambda by when an iteration successfully reduces/increases
+- `lambda_max: float` Maximum value for lambda in Sup-GN damping. This should be in the range [0,1].
+- `lambda_scale: float` Scale factor to multiply lambda by when an iteration successfully reduces/increases
      the objective function (depending on the +/- sign specified by
      `param_instance.influence_func_instance.influence_func_sign()`, see above).
-     When the iteration is not successful, the model change is reverted and $\lambda$ is divided
+     When the iteration is not successful, the model change is reverted and \\( \lambda \\) is divided
      by this factor to increase the damping at the next iteration.
-- `diff_thres` Terminate when successful update changes the model parameters by less than this value.
-- `print_warnings` Whether to print debugging information.
+- `diff_thres: float` Terminate when successful update changes the model parameters by less than this value.
+- `print_warnings: bool` Whether to print debugging information.
 - `model_start` Optional starting value for model parameters
 - `model_ref_start` Optional starting reference parameters for model, e.g. if optimising rotation
-- `debug` Whether to return extra debugging data on exit:
+- `debug: bool` Whether to return extra debugging data on exit:
    - The number of iterations actually applied
    - The norm of the model parameters change at each iteration, as a list of difference values
    - A list of the model parameters at each iteration
 
-### Example code
+### Example code for the `IRLS` and `SupGaussNewton` classes
 
 The simplest non-trivial example of an IRLS/Sup-GN model class
 is to support fitting a straight line through 2D data, with the model \\( y=ax+b \\), where \\( a \\) is the gradient of the line and
@@ -503,4 +491,237 @@ The correct line parameters should be printed:
 ```
 line a b: [0.5 0.9]
 ```
-To use Supervised Gauss-Newton instead simply substitute SupGaussNewton for IRLS in the above code.
+To use Supervised Gauss-Newton instead simply substitute `SupGaussNewton` for `IRLS` in the above code.
+
+### Base class for IRLS and Sup-GN algorithms `base_irls.py`
+
+Implements the many features in common between IRLS and Sup-GN. Should not be used directly in
+your code.
+
+### Checking derivatives: `check_derivs.py`
+
+When you design a model class to be used for Sup-GN optimisation, and have written your `residual()`
+function defining how to calculate the model/data errors, you have a design choice:
+1. Implement the `residual_gradient()` function yourself, first working out the Jacobian matrix of
+   the residual vector.
+1. Calculating the derivatives numerically. This is handled internally by the `SupGaussNewton` class.
+   You just need to pass `numeric_derivs_model=True` in the arguments to the `SupGaussNewton` constructor.
+
+In the former case, you will want to check that your derivative calculation is correct.
+Use the `check_derivs()` function to do this. It calculates derivatives both ways, first calling
+your `residual_gradient()` function and then calculating them numerically, and compares
+them using thresholds. If the error in any derivative is greater than the provided threshold
+the function returns `False`. The required arguments to the function are:
+- `optimiser_instance` An instance of `SupGaussNewton` built with an instance of your model class.
+   The `SupGaussNewton` instance also needs a `param_instance` and some data to construct it - see
+   below for an example of how to do this.
+- `model` An example vector of model parameters.
+
+Optional argmuments that may be required:
+- `model_ref` Reference model parameters, for instance if the model contains rotation parameters.
+- `diff_threshold_a: float` Threshold used for the terms of the \\( {\bf a} \\) vector in
+  the Sup-GN iteration.
+- `diff_threshold_AlB: float` Threshold used for the terms of the \\( A \\) and \\( B \\) matrices in
+  the Sup-GN iteration.
+- `print_diffs: bool` Whether to print the differences between the analytic and numerical
+  derivative estimates.
+- `print_derivs: bool` Whether to print all the derivatives being compared.
+
+For example, to test the derivatives of the `LineFit` class above you could use this code:
+
+```
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.null_params import NullParams
+from gnc_smoothie.quadratic_influence_func import QuadraticInfluenceFunc
+from gnc_smoothie.check_derivs import check_derivs
+
+data = [[2.0, -1.0]] # single data point
+derivs_good = check_derivs(SupGaussNewton(NullParams(QuadraticInfluenceFunc()), LineFit(), data), [1.0, 2.0], # model a,b
+                           diff_threshold_AlB=1.e-4)
+```
+Note that we use the simplest parameter class `NullParams` and influence function class `QuadraticInfluenceFunc` to build
+the `SupGaussNewton` instance, although the derivative testing will work for other classes.
+
+### Welsch influence function `welsch_influence_func.py`
+
+This provides the class `WelschInfluenceFunc`, that implements the Welsch influence function, defined as
+\\[
+  \rho(r) = \frac{\sigma^2}{2} \left( 1 - \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
+\\]
+
+with a single parameter \\( sigma \\). This is the simplest robust influence function.
+We recommend using the Welsch influence function over others because of its simplicity and superior convergence properties
+(details to come). The Welsch influence function is redescending, meaning that the gradient tends to zero at either ends of the range.
+This provides it with remarkable robustness, even in the presence of very bad outliers.
+Wrap it with a `GNC_WelschParams` class to provide it with a GNC schedule and outstanding convergence.
+
+### GNC Welsch schedule class `gnc_welsch_params.py`
+
+Build a parameter class instance by building a `GNC_WelschInfluenceFunc` instance and then
+wrapping it into this `GNC_WelschParams` class to provide the GNC schedule. The `sigma` value
+starts at a high value `sigma_limit` and descends geometrically through `num_sigma_steps`
+values to a low value `sigma_base` that approximates the population error standard deviation.
+
+### Pseudo-Huber influence function `pseudo_huber_influence_func.py`
+
+The class `PseudoHuberInfluenceFunc` implements the fully differentiable
+version [1] of the original Huber influence function [7].
+\\[
+   \rho(r) = \sigma^2 \left( \sqrt{1 + (r/\sigma)^2} - 1 \right)
+\\]
+
+with a single parameter \\( \sigma \\). You can use this influence function if you know that your outliers
+are relatively small. The Pseudo-Huber objective function \\( \rho(r) \\) is convex, so you don't
+need to use a GNC schedule. Instead use it with `NullParams`. On the other hand, if the outliers are
+very bad then it will fail to converge to the correct solution.
+
+### Geman-McClure influence function `geman_mcclure_influence_func.py`
+
+This `GemanMcClureInfluenceFunc` class implements the Geman-McClure influence function [8], defined by
+\\[
+   \rho(r) = \frac{r^2}{\sigma^2 + r^2}
+\\]
+
+with a single parameter \\( \sigma \\). Geman-McClure is another redescending influence function,
+so it is suitable for being embedded in a GNC schedule and handling large outliers. Wrap it in the
+same `GNC_WelschParams` GNC schedule class used for the Welsch influence function if you want
+to try this, but we still recommend using the Welsch influence function over Geman-McClure.
+
+### GNC IRLS-p influence function `gnc_irls_p_influence_func.py`
+
+This `GNC_IRLSpInfluenceFunc` class implements the GNC schedule recommended by Peng et al. in their
+excellent paper [3]. Peng et al. prove that for many IRLS problems, GNC IRLS-p provides guaranteed
+fast convergence. The influence function is more complex than the above alternatives - see the paper
+and the code for details. Combining this class with the GNC schedule class `GNC_IRLSpParams` (see below)
+provides an alternative to our recommended `GNC_WelschParams` + `GNC_WelschInfluenceFunc` combination.
+
+### GNC IRLS-p schedule class `gnc_irls_p_params.py`
+
+Build a parameter class instance by building a `GNC_IRLSpInfluenceFunc` instance and then
+wrapping it into this `GNC_IRLSpParams` class to provide the GNC schedule.
+
+### Quadratic influence function `quadratic_influence_func.py`
+
+This file provides the `QuadraticInfluenceFunc` class that implements the quadratic objective function that
+is used in non-robust least squares. The main use of this class is to provide a simple mechanism for
+building an instance of `SupGaussNewton` for the purpose of checking derivative calculations in the model
+`residual_gradient()` method.
+
+### Null parameter class `null_params.py`
+
+When you want to apply standard IRLS, or use Sup-GN optimisation without GNC, wrap your influence function
+in a `NullParams` instance. 
+
+### Using a model reference `model_ref`
+
+It is usually desirable to model your system with the minimum number of parameters, to avoid redundancy.
+This is sometimes in conflict with symmetry and gauge invariance issues. The canonical example of this
+is estimating a model containing a rotation. Consider the *3D point registration* problem of calculating the rotation and
+translation between two point clouds, where the correspondence is known in advance. There is a closed-form
+solution for this problem [9], but in the case of outliers we should look to implement this in the IRLS
+and Sup-GN frameworks. To represent rotation minimally, we need to use three parameters. These might be
+one of the various three-angle representations, or Rodrigues parameters. However any minimal representation
+will have singularities. Worse than this, the choice of initial coordinate frame will affect the result
+because of the non-linearities present in any minimal representation of rotation [10].
+
+The solution to this problem is to use a non-minimal rotation representation as a "reference" for estimating
+small changes. For instance you can use a rotation matrix, and combine it with a small rotation representation
+such as Rodrigues parameters as implemented in `scipy.spatial.transform.Rotation.from_mrp`.
+The idea is that before each IRLS/Sup-GN iteration, the reference rotation matrix is updated to the latest
+rotation, including the change made at the previous iteration. The residual is calculated by combining
+the reference rotation with the small rotation change at the current iteration. The residual derivatives
+are calculated assuming that the small rotation parameters are zero.
+
+The implementation of model reference in `gnc_smoothie` allows you to control it completely within
+your model class. Here is how an implementation of a model class for 3D point cloud registration might look.
+```
+import numpy as np
+from scipy.spatial.transform import Rotation as Rot
+
+from ls_registration import LS_PointCloudRegistration
+
+class PointRegistration:
+    def __init__(self):
+        pass
+
+    # copy model parameters and apply any internal calculations
+    def cache_model(self, model, model_ref=None):
+        rotd = Rot.from_mrp(-0.25*model[0:3])
+        self.__R = np.matmul(Rot.as_matrix(rotd), model_ref)
+        self.__t = model[3:6]
+
+    # r = y - R*x - t
+    #   = Rs*R0*x + t, Rs = ( 1  -az  ay), R0*x = (R0_xx*x_x + R0_xy*x_y + R0_xz*x_z) = (R0x_x)
+    #                       ( az  1  -ax)         (R0_yx*x_x + R0_yy*x_y + R0_yz*x_z)   (R0x_y)
+    #                       (-ay  ax  1 )         (R0_zx*x_x + R0_zy*x_y + R0_zz*x_z)   (R0x_z)
+    # where R0x = R0*x
+    def residual(self, data_item, data_id:int=None) -> np.array:
+        x = data_item[0]
+        y = data_item[1]
+        return np.array(y - np.matmul(self.__R,x) - self.__t)
+
+    # dr   (  0     R0x_z -R0x_y)          dr
+    # -- = (-R0x_z   0     R0x_x) = Rx_x,  -- = -I_3x3
+    # da   ( R0x_y -R0x_x   0   )          dt
+    def residual_gradient(self, data_item, data_id:int=None) -> np.array:
+        x = data_item[0]
+        Rx = np.matmul(self.__R,x)
+        return np.array([[   0.0,  Rx[2], -Rx[1], -1.0,  0.0,  0.0],
+                         [-Rx[2],    0.0,  Rx[0],  0.0, -1.0,  0.0],
+                         [ Rx[1], -Rx[0],    0.0,  0.0,  0.0, -1.0]])
+
+    def update_model_ref(self, model, prev_model_ref=None):
+        rotd = Rot.from_mrp(-0.25*model[0:3])
+        if prev_model_ref is None:
+            R = Rot.as_matrix(rotd)
+        else:
+            R = np.matmul(Rot.as_matrix(rotd), prev_model_ref)
+
+        # reset model parameters because they are subsumed by reference
+        model[0:3] = 0.0
+
+        # convert to quaternion and back to matrix to ensure orthogonality
+        q = Rot.as_quat(Rot.from_matrix(R))
+        return Rot.as_matrix(Rot.from_quat(q))
+
+    # fits the model to the data
+    def weighted_fit(self, data, data_ids, weight, scale) -> (np.array, np.array):
+        R,t = LS_PointCloudRegistration(data, weight)
+        model = np.zeros(6)
+        model[3:6] = t
+        return model,R
+```
+The reference rotation is first created in the `weighted_fit` function that implements the algorithm of [9]
+to initiate the model. It returns the model and the rotation matrix `R` that is return as the initial `model_ref`.
+In the `cache_model()` method, the reference rotation matrix \\( R_0 \\) and the small rotation \\( R_s \\)
+are combined as a cached rotation \\ R = R_s R_0 \\). This combined \\( R \\) is then used to calculate
+the residual. In the `residual_gradient` function, the derivatives are calculated with respect to the small
+rotation parameters, and a small angle approximation is used. The `update_model_ref` function updates the
+reference rotation matrix \\( R_0 \\) based on the model change (small rotation) and the previous state
+of the rotation reference `prev_model_ref`. The small rotation parameters in the model are reset to zero,
+ready for the next iteration. A necessary refinement is that we should ensure that the rotation reference
+maintains its orthogonality. Because it is computed incrementally, floating point errors could push it
+away from being an actual rotation matrix. We solve this problem by converting into a quaternion and
+back to a matrix.
+
+## References
+
+[1] P. Charbonnier et al. in "Deterministic edge-preserving regularization in computed imaging", PAMI 6(2), 1997.
+
+[2] P.W. Holland & R.E. Welsch "Robust regression using iteratively reweighted least-squares", Communications in Statistics-theory and Methods, 6(9), 1977.
+
+[3] L. Peng et al. "On the Convergence of IRLS and Its Variants in Outlier-Robust Estimation", CVPR 2023.
+
+[4] A. Blake & A. Zisserman "Visual reconstruction", MIT Press, 1987.
+
+[5] K. Levenberg "A method for the solution of certain non – linear problems in least squares", Quarterly of Applied Mathematics, 2, 1944.
+
+[6] A. Björck, "Numerical Methods for Least Squares Problems", (1996)
+
+[7] P.J. Huber, "Robust Estimation of a Location Parameter", The Annals of Mathematical Statistics 35(1), 1964.
+
+[8] D. Geman and S. Geman, "Bayesian image analysis", in "Disordered systems and biological organization", Springer, 1986.
+
+[9] B.K.P. Horn, H.M. Hilden and S. Negahdaripour, "Closed-form solution of absolute orientation using orthonormal matrices", Journal of the Optical Society of America, 5(7), 1988.
+
+[10] P.F. McLauchlan, "Gauge invariance in projective 3D reconstruction", Proceedings IEEE Workshop on Multi-View Modeling and Analysis of Visual Scenes (MVIEW'99), 1999.

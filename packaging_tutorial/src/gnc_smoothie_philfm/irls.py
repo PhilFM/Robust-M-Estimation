@@ -13,13 +13,13 @@ class IRLS(BaseIRLS):
         data_ids=None,
         weight=None,
         scale=None,
-        numeric_derivs_influence=False,
-        max_niterations=50,
-        diff_thres=1.0e-12,
-        print_warnings=False,
+        numeric_derivs_influence: bool = False,
+        max_niterations: int = 50,
+        diff_thres:float = 1.0e-12,
+        print_warnings:bool = False,
         model_start=None,
         model_ref_start=None,
-        debug=False,
+        debug:bool = False,
     ):
         BaseIRLS.__init__(
             self,

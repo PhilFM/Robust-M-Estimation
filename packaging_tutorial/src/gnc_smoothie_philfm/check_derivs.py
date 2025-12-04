@@ -1,3 +1,5 @@
+# Returns True if the derivatives are calculated accurately by the model
+# instance residual_gradient() function
 def check_derivs(
     optimiser_instance,
     model,
@@ -10,6 +12,8 @@ def check_derivs(
 
     # ensure that residual_size is filled in
     v = optimiser_instance.objective_func(model, model_ref=model_ref)
+
+    # test at different lambda values to make sure all derivatives work
     for lambda_val in (1.0, 0.5, 0.0):
         a, AlB = optimiser_instance.weighted_derivs(
             model, lambda_val, model_ref=model_ref

@@ -4,7 +4,7 @@ requires = ["setuptools"]
 
 [project]
 name = "gnc_smoothie_philfm"
-version = "0.0.48"
+version = "0.0.49"
 authors = [
   { name="Philip McLauchlan", email="phlip.mclauchlan@gmail.com" },
 ]

@@ -14,7 +14,7 @@ class SupGaussNewton(BaseIRLS):
         weight=None,
         scale=None,
         numeric_derivs_model: bool = False,
-        numeric_derivs_influence=False,
+        numeric_derivs_influence: bool =False,
         max_niterations: int = 50,
         residual_tolerance: float = 1.0e-8,
         lambda_start: float = 1.0,
