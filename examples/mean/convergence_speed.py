@@ -43,7 +43,7 @@ def plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS
     #ax.set_ylim(0.0,1.1)
 
     plt.legend()
-    plt.savefig(os.path.join(output_folder, "mean-diffs.png"), bbox_inches="tight")
+    plt.savefig(os.path.join(output_folder, "convergence_speed.png"), bbox_inches="tight")
     if not testrun:
         plt.show()
     
@@ -137,7 +137,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
         plotDifferences(diffsWelschGN, diffsWelschIRLS, diffsHuberGN, diffsHuberIRLS, diffsGNCIRLSp0, diffsGNCIRLSp1, output_folder, testrun)
 
     if testrun:
-        print("solve_average OK")
+        print("convergence_speed OK")
 
 if __name__ == "__main__":
     main(False) # testrun

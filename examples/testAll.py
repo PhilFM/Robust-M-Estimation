@@ -7,7 +7,7 @@ import mean.mean_deriv_check
 import mean.convergence_speed_gnc
 import mean.majorize
 import mean.majorize_examples
-import mean.solve_average
+import mean.compare_influence
 import mean.mean_check
 import mean.student_t_solver
 import mean.robust_solver
@@ -24,7 +24,7 @@ mean.mean_deriv_check.main(testrun=True, output_folder="../Output")
 mean.convergence_speed_gnc.main(testrun=True, output_folder="../Output")
 mean.majorize.main(testrun=True, output_folder="../Output")
 mean.majorize_examples.main(testrun=True, output_folder="../Output")
-mean.solve_average.main(testrun=True, output_folder="../Output")
+mean.compare_influence.main(testrun=True, output_folder="../Output")
 mean.mean_check.main(testrun=True, output_folder="../Output")
 mean.student_t_solver.main(testrun=True, output_folder="../Output")
 mean.robust_solver.main(testrun=True, output_folder="../Output")

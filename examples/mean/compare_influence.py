@@ -76,7 +76,7 @@ def plotResult(data, weight,
     gncs_draw_vline(plt, mgncirlsp, key, useLabel=False)
 
     plt.legend()
-    plt.savefig(os.path.join(output_folder, "convergence_speed_gnc.png"), bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "compare_influence.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
 
@@ -156,7 +156,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
                    output_folder)
 
     if testrun:
-        print("convergence_speed_gnc OK")
+        print("compare_influence OK")
 
 if __name__ == "__main__":
     main(False) # testrun
