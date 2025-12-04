@@ -253,13 +253,203 @@ still maintaining the option of pure IRLS iterations to guarantee convergence.
 
 ## GNC Smoothie software
 
-The Python library is based on `numpy` and contains the following components:
+The Python library is based on `numpy` and contains the following top-level modules:
 
-- `IRLS.py` Top-level IRLS class. Build it minimally from a parameter class instance `param_instance`, a model class instance
-`model_instance` and a `data` array. You need to supply `model_instance` and the `data` array yourself; the `param_instance` can be build from a class provided by GNC Smoothie. `model_instance` is an instance of a class you need to design, that implements a couple
-of methods. The precise methods you need to implement are documented in `IRLS.py`.
-- `SupGaussNewton.py` Top-level Supervised Gauss-Newton (Sup-GN) class. The parameters are very similar to the `IRLS` class
-  and are documented in `SupGaussNewton.py`
+### IRLS class: `irls.py`
+
+Top-level 'IRLS' class. Once you have constructed an instance of this class, call the `run()`
+method to run it. Here are the parameters that need to be passed to the `IRLS` class constructor. Optional parameters follow.
+- `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
+   this can be a `NullParams` instance imported from `null_params.py.
+   Should have an internal influence_func_instance
+   that specifies the IRLS influence function to be used. The influence_func_instance
+   should provide the following method:
+   - `summary(self) -> str` Returns a string containing the values of the internal parameters.
+                    `param_instance` itself should provide the following methods:
+   - `reset(self, init: bool = True)`
+           Resets the internal influence_func_instance according to the stage of the
+           GNC schedule indicated by the init parameter. If init is `True`, reset to the
+           starting value to prepare for the GNC process to start. If init is `False`,
+           reset to the final stage of GNC.
+   - `at_final_state(self) -> bool`
+           Returns `True` if the GNC schedule has reached the final stage, `False` otherwise
+   - `update(self)` Update the influence_func_instance to the next step in the GNC schedule.
+- `model_instance` The model being fitted to the data, an instance of a class you design
+     that provides the following methods:
+   - `cache_model(self, model, model_ref=None)`
+     Use this function to cache the model, prior to the `residual()` function being called on each data item.
+   - `residual(self, data_item, data_id:int=None) -> np.array`
+     Calculates the residual (error) of the `data_item` given the model. If the model
+     contains reference parameters e.g. for estimating rotation, these are passed
+     as `model_ref`. If there are different types of data to be handled, the `data_id`
+     is the id of this data item (see the data_ids array below)
+   - `linear_model_size(self) -> int`
+     Returns the number of parameters in the model if the model is linear.
+     The `BaseIRLS` class uses an internal weighted_fit() function to fit a linear model
+     to the data with specified weights, so that the programmer does not have to
+     implement it. If the model is non-linear, don't define this method.
+   - `weighted_fit(self, data, data_ids, weight, scale) -> (np.array, np.array)`
+     If `linear_model_size()` is not provided, the model is not linear. If a closed-form
+     solution for the best model given the data with weights nevertheless exists,
+     implement it in yout class. The `scale` array indicates that certain data items are less accurate and so have a
+     scale value > 1, indicating that the influence function for that data item
+     should be stretched by the given scale factor.
+     For non-linear problems with no closed-form solution, pass a suitable starting
+     point as the model_start (and optionally model_ref_start) parameters, see below.
+     In that case the `weighted_fit()` method is not used.
+- `data` An array of data items. Each data item should itself be an array.
+
+Now the optional parameters for the `IRLS` class constructor:
+- `data_ids` An array of index values, indicating different types of data. The id is to be handled
+     inside your `residual()` methods. You define its meaning.
+     If this array is not provided, all data is assumed to be the same type and zero is passed
+     as the id for all data items.
+- `weight` An optional array of float weight values for each data item.
+     If not provided, weights are initialised to one.
+- `scale` An optional array of scale values, indicating that one or more data items are known to
+     have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
+     to apply to the influence function for that data item.
+-  `numeric_derivs_influence` Whether to calculate derivatives of the influence function numerically
+     from a provided `rho()` function or directly using a provided `rhop()` function.
+-  `max_niterations` Maximum number of IRLS iterations to apply before aborting.
+-  `diff_thres` Terminate when successful update changes the model model parameters by less than this value.
+-  `print_warnings` Whether to print debugging information.
+-  `model_start` Optional starting value for model model parameters
+-  `model_ref_start` Optional starting reference parameters for model, e.g. if optimising rotation
+-  `debug` Whether to return extra debugging data on exit:
+   - The number of iterations actually applied
+   - The norm of the model parameters change at each iteration, as a list of difference values
+   - A list of the model parameters at each iteration
+
+### Supervised Gauss-Newton class: `sup_gauss_newton.py`
+
+Top-level `SupGaussNewton` class, an implementation of Supervised Gauss-Newton (Sup-GN).
+Sup-GN is an alternative to IRLS most suitable for the two cases:
+- Linear model where the data relates to the model via a linear function.
+- Non-linear model where there is no closed-form solution to calculating the
+      model parameters from the weighted data.
+
+Use the basic IRLS in the remaining case where a non-trivial closed-form solution for the model
+is available, such as 3D point cloud registration (SVD solution). IRLS is not suitable for
+non-linear problems where a closed-form solution is not available, but Sup-GN can be used in
+such problems so long as a reasonable starting point for the model can be supplied (see the
+`model_start` and `model_ref_start` parameters below). For linear models Sup-GN provides a simpler
+model implementation than IRLS, since the closed-form solution for the model is calculated
+internally. Also Sup-GN converges quadratically for linear models when close to the solution.
+
+The parameters to the `SupGaussNewton` constructor are very similar to the `IRLS` class,
+but there are some twists due to Sup-GN requiring differentiation of the model residual.
+Here are the parameters you need to pass to the `SupGaussNewton` class:
+- `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
+    this can be a `NullParams` instance imported from `null_params.py.
+    Should have an internal `influence_func_instance`
+    that specifies the IRLS influence function to be used. This `influence_func_instance`
+    should provide these methods:
+   - `objective_func_sign(self) -> float`
+        Returns either one or minus one depending on whether the objective function
+        increases for large residuals (one) or decreases (minus one). Typical IRLS
+        objective functions such as Huber and Geman-McClure increase for large residuals,
+        so most functions will return one. The version of Welsch we have implemented in
+        `gnc_welsch_params.py` uses a nagative sense, which slightly simplifies the
+        implementation, because otherwise we would have to add one to the objective
+        function in order to keep it positive.
+   - `rho(self, rsqr: float, s: float) -> float`
+        The objective function given
+      - `rsqr` The square of the L2 norm of the residual vector
+      - `s` The scale of the data item indicating its known inaccuracy, so a value >= 1.
+     Returns the value of the objective function.
+   - `rhop(self, rsqr: float, s: float) -> float`
+        The influence function, which is equal to the derivative with respect to $r$
+        of `rho(rsqr,s)` divided by $r$, where $r$ is the L2 norm of the residual vector.
+        If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
+        are calculated numerically from rho() and rhop() is not required.
+   - `Bterm(self, rsqr: float, s: float) -> float`
+        Implements $(r*\rho''(r) - \rho'(r))/(r^3)$ where ' indicates derivative.
+        If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
+        are calculated numerically from rho() and Bterm() is not required.
+   - `summary(self) -> str`
+        A string containing the values of the internal parameters.
+
+   param_instance itself shoule provide the following methods:
+   - `reset(self, init: bool = True)`
+     Resets the internal `influence_func_instance` according to the stage of the
+     GNC schedule indicated by the `init` parameter. If `init` is `True`, reset to the
+     starting value to prepare for the GNC process to start. If `init` is `False`,
+     reset to the final stage of GNC.
+   - `at_final_state(self) -> bool`
+     Returns `True` if the GNC schedule has reached the final stage, `False` otherwise.
+   - `update(self)` Update the `influence_func_instance` to the next step in the GNC schedule.
+
+- `model_instance` The model being fitted to the data, an instance of a class you design
+  that provides the following functions:
+   - `cache_model(self, model, model_ref=None)`
+     Use this function to cache the model, prior to `residual()` and `residual_gradient()`
+     functions being called on each data item.
+   - `residual(self, data_item, data_id:int=None) -> np.array`
+     Calculates the residual (error) of the data_item given the model. If the model
+     contains reference parameters e.g. for estimating rotation, these are passed
+     as `model_ref`. If there are different types of data to be handled, the `data_id`
+     is the id of this data item (see the `data_ids` array below)
+   - `residual_gradient(self, data_item, data_id:int=None) -> np.array`
+     The Jacobian or derivative matrix of the residual vector with respect
+     to the model parameters. If the `numeric_derivs_model` parameter is set to `True`
+     (see below) then the derivatives are calculated numerically using the `residual()`
+     function. If there are different types of data to be handled, the `data_id`
+     is the id of this data item (see the `data_ids` array below)
+   - `linear_model_size(self) -> int`
+     Returns the number of parameters in the model if the model is linear.
+     The `BaseIRLS` class uses an internal `weighted_fit()` function to fit a linear model
+     to the data with specified weights, so that the programmer does not have to
+     implement it. If the model is non-linear, don't define this method.
+   - `weighted_fit(self, data, data_ids, weight, scale) -> (np.array, np.array)`
+     If `linear_model_size()` is not provided, the model is not linear. If a closed-form
+     solution for the best model given the data with weights nevertheless exists,
+     implement it in yout class. The `scale`
+     array indicates that certain data items are less accurate and so have a
+     scale value > 1, indicating that the influence function for that data item
+     should be stretched by the given scale factor.
+     For non-linear problems with no closed-form solution, pass a suitable starting
+     point as the `model_start` (and optionally `model_ref_start`) parameters, see below.
+     In that case the `weighted_fit()` method is not used.
+- `data` An array of data items. Each data item should itself be an array.
+
+Now the optional parameters for the `SupGaussNewton` class constructor:
+- `data_ids` An array of index values, indicating different types of data. The id is to be handled
+     inside your `residual()` and `residual_gradient()` methods. You define its meaning.
+     If this array is not provided, all data is assumed to be the same type and zero is passed
+     as the id for all data items.
+- `weight` An optional array of float weight values for each data item.
+     If not provided, weights are initialised to one
+- `scale` An optional array of scale values, indicating that one or more data items are known to
+     have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
+     to apply to the influence function for that data item.
+- `numeric_derivs_model` Whether to calculate derivatives of the data residual vector with respect to the
+     model parameters numerically using a provided `residual()` function or directly
+     using a provided `residual_gradient()` function.
+- `numeric_derivs_influence` Whether to calculate derivatives of the influence function numerically
+     from a provided `rho()` function or directly using a provided `rhop()` function.
+- `max_niterations` Maximum number of Sup-GN iterations to apply before aborting
+- `residual_tolerance` An optional parameter that is used to terminate Sup-GN when the improvement to the
+     objective function value is smaller than the provided threshold
+- `lambda_start` Starting value for the Sup-GN damping, similar to Levenberg-Marquart damping.
+     In Sup-GN the level of damping is high when lambda is small, so normally it is
+     best to start with an optimistic small value.
+- `lambda_max` Maximum value for lambda in Sup-GN damping. This should be in the range [0,1].
+- `lambda_scale` Scale factor to multiply lambda by when an iteration successfully reduces/increases
+     the objective function (depending on the +/- sign specified by
+     `param_instance.influence_func_instance.influence_func_sign()`, see above).
+     When the iteration is not successful, the model change is reverted and $\lambda$ is divided
+     by this factor to increase the damping at the next iteration.
+- `diff_thres` Terminate when successful update changes the model parameters by less than this value.
+- `print_warnings` Whether to print debugging information.
+- `model_start` Optional starting value for model parameters
+- `model_ref_start` Optional starting reference parameters for model, e.g. if optimising rotation
+- `debug` Whether to return extra debugging data on exit:
+   - The number of iterations actually applied
+   - The norm of the model parameters change at each iteration, as a list of difference values
+   - A list of the model parameters at each iteration
+
+### Example code
 
 The simplest non-trivial example of an IRLS/Sup-GN model class
 is to support fitting a straight line through 2D data, with the model \\( y=ax+b \\), where \\( a \\) is the gradient of the line and
