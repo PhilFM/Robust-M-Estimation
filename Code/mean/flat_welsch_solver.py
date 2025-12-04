@@ -49,7 +49,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     # get min and max of data
     yMin = yMax = 0.0
 
-    if xMin == None:
+    if xMin is None:
         if showGradient:
             xMin = -2.0*sigma
             xMax =  2.0*sigma
@@ -76,6 +76,10 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     def objective_func(m):
         return optimiser_instance.objective_func([m])
+
+    def gradient_func(m):
+        a,AlB = optimiser_instance.weighted_derivs([m],1.0) # lambda_val
+        return a[0]
 
     if showGradient:
         for mx in mlist:

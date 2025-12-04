@@ -63,7 +63,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     # get min and max of data
     yMin = yMax = 0.0
 
-    if xMin == None:
+    if xMin is None:
         dmin = dmax = data[0]
         for d in data:
             dmin = min(dmin, d)

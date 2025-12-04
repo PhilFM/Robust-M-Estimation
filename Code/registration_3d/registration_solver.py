@@ -1,8 +1,6 @@
-import math
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 import matplotlib.pyplot as plt
-import sys
 import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
@@ -45,9 +43,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
     N = 1000
     outlierRatio = 0.0 #0.5
-    k = int(outlierRatio*N+0.5)
     noise_sigma = 0.5 # noise
-    noise_bound = 5.54*noise_sigma
     translationBound    = 10.0
 
     for test_idx in range(0,1):
@@ -56,7 +52,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
         t_gt[1] = np.random.normal(0.0, 1.0)
         t_gt[2] = np.random.normal(0.0, 1.0)
         t_gt /= np.linalg.norm(t_gt)
-        t_gt = (translationBound) * np.random.rand() * t_gt;
+        t_gt = (translationBound) * np.random.rand() * t_gt
 
         R_gt = Rot.random().as_matrix()
         if not testrun:
@@ -80,9 +76,9 @@ def main(testrun:bool, output_folder:str="../../Output"):
             weight[i] = 1.0
 
         # add outliers 
-        nrOutliers  = int(N * outlierRatio + 0.5);
+        nrOutliers  = int(N * outlierRatio + 0.5)
         if (N - nrOutliers) < 3:
-            error('Point cloud registration requires minimum 3 inlier correspondences.')
+            raise ValueError("Point cloud registration requires minimum 3 inlier correspondences")
         else:
             if nrOutliers > 0:
                 if not testrun:

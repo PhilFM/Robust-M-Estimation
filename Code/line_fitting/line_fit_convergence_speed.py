@@ -1,8 +1,5 @@
-import math
 import numpy as np
 import matplotlib.pyplot as plt
-import random
-import sys
 import os
 
 from line_fit import LineFit

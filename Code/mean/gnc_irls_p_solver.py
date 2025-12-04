@@ -4,7 +4,6 @@ import os
 
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.null_params import NullParams
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
 
@@ -72,7 +71,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     # get min and max of data
     yMin = yMax = 0.0
 
-    if xMin == None:
+    if xMin is None:
         dmin = dmax = data[0]
         for d in data:
             dmin = min(dmin, d)

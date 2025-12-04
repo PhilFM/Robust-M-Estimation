@@ -1,6 +1,4 @@
 import numpy as np
-import sys
-import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams

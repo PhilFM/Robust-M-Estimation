@@ -1,4 +1,3 @@
-import math
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
@@ -27,7 +26,6 @@ class PointRegistration:
     def residual_gradient(self, model, data_item, model_ref=None) -> np.array:
         rotd = Rot.from_mrp(-0.25*model[0:3])
         R = np.matmul(Rot.as_matrix(rotd), model_ref)
-        t = model[3:6]
         x = data_item[0]
         Rx = np.matmul(R,x)
         return np.array([[   0.0,  Rx[2], -Rx[1], -1.0,  0.0,  0.0],

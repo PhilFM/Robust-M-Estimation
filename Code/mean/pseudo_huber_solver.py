@@ -60,7 +60,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     # get min and max of data
     yMin = yMax = 0.0
 
-    if xMin == None:
+    if xMin is None:
         if showGradient:
             xMin = -2.0*sigma
             xMax =  2.0*sigma

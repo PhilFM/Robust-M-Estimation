@@ -1,5 +1,4 @@
 import numpy as np
-import math
 
 class RobustMean:
     def __init__(self):

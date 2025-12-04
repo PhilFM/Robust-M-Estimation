@@ -1,7 +1,6 @@
 import numpy as np
 import random
 import math
-import os
 
 from winsorised_mean import winsorised_mean
 from weighted_mean import weighted_mean

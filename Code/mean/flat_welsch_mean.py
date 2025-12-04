@@ -31,7 +31,6 @@ def plotResult(optimiser_instance, data, weight, m, sigma, label, mgt, testrun:b
     if mgt is not None:
         plt.axvline(x = mgt, color = 'gray', label = 'Ground truth', lw = 1.0, linestyle = 'solid')
 
-    ax = plt.gca()
     rmfv = np.vectorize(objective_func, excluded="optimiser_instance")
     plt.plot(mlist, rmfv(mlist, optimiser_instance=optimiser_instance), color = 'green', lw = 1.0)
     plt.axvline(x = m,   color = 'green',   label = label,   lw = 1.0, linestyle = 'solid')

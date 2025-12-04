@@ -31,7 +31,6 @@ def LS_RotationSearch(Y, X, weight):
     return np.matmul(np.matmul(U,D),Vt)
 
 def LS_PointCloudRegistration(data, weight):
-    nPoints = len(data)
     X = data[:,0]
     Y = data[:,1]
     #print("data=",data)
@@ -44,11 +43,12 @@ def LS_PointCloudRegistration(data, weight):
     y = np.matmul(weight,Y)/s
     #print("s=",s,"x=",x,"y=",y)
 
-    X_ = X - x; Y_ = Y - y;
+    X_ = X - x
+    Y_ = Y - y
     #print("X_=",X_,"Y_=",Y_)
 
-    R= LS_RotationSearch(Y_, X_, weight); 
+    R= LS_RotationSearch(Y_, X_, weight)
 
-    t = y - np.matmul(R,x);
+    t = y - np.matmul(R,x)
     return R,t
 

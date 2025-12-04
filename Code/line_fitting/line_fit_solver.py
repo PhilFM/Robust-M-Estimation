@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
@@ -31,28 +30,18 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     # get min and max of data
     xmin = xmax = data[0][0]
-    ymin = ymax = data[0][1]
     for d in data:
         xmin = min(xmin, d[0])
         xmax = max(xmax, d[0])
-        ymin = min(ymin, d[1])
-        ymax = max(xmax, d[1])
 
     # allow border
     xrange = xmax-xmin
     xmin -= 0.05*xrange
     xmax += 0.05*xrange
-    yrange = ymax-ymin
-    ymin -= 0.05*yrange
-    ymax += 0.05*yrange
-    xlist = np.linspace(xmin, xmax, num=100)
-    ylist = np.linspace(ymin, ymax, num=100)
-    #rmfv = np.vectorize(WelschLineFit.valFunc, excluded={"sigma","data"})
-    #rmgv = np.vectorize(WelschLineFit.gradient_func, excluded={"sigma","data"})
     plt.close("all")
     plt.figure(num=1, dpi=120)
-    #plt.axline((0,0),(10,10), color = 'b')
-    # change to True if you want to see the progress
+
+    # change to True if you want to see the progress of the algorithm
     if False:
         for line in debugLines:
             if not testrun:
@@ -60,14 +49,11 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
             plt.axline((xmin, line[1][0]*xmin+line[1][1]), (xmax, line[1][0]*xmax+line[1][1]), color = (1.0-line[0], line[0], 1.0), linewidth=0.5)
 
-    #plt.plot(xlist, rmfv(mlist, sigma=sigma_base, data=data))
-    #plt.plot(mlist, mlist*0, "--", label="F=0")
     for d in data:
         plt.plot(d[0], d[1], color = 'b', marker = 'o')
 
     plt.axline((xmin, model[0]*xmin+model[1]), (xmax, model[0]*xmax+model[1]), color = "green", linewidth=1.5)
 
-    #plt.legend()
     plt.savefig(os.path.join(output_folder, "line_fit_solver.png"), bbox_inches='tight')
     if not testrun:
         plt.show()

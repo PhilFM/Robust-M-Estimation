@@ -1,4 +1,3 @@
-import math
 import numpy as np
 
 # Line model is y = a*x + b

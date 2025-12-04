@@ -7,7 +7,6 @@ from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluen
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.null_params import NullParams
-from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
 from gnc_smoothie_philfm.check_derivs import check_derivs
 
 from gncs_robust_mean import RobustMean

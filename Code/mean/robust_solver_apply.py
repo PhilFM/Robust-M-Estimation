@@ -121,7 +121,7 @@ def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction
             #xMin = 0.7
             #xMax = 1.3
 
-            if xMin == None:
+            if xMin is None:
                 dmin = dmax = data[0]
                 for d in data:
                     dmin = min(dmin, d)

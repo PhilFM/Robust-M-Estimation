@@ -16,6 +16,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     sigma_base = 1.0
     sigma_limit = 500.0
     num_sigma_steps = 100
+    max_niterations = 200
     smallVal = 1.e-10
 
     def smallMean(optimiser_instance):
@@ -41,8 +42,8 @@ def main(testrun:bool, output_folder:str="../../Output"):
             weight[i] = 1.0
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(),
-                                         sigma_base, sigma_limit, num_sigma_steps, max_niterations)
-        optimiser_instance = IRLS(param_instance, RobustMean(), data, weight, max_niterations=200)
+                                          sigma_base, sigma_limit, num_sigma_steps, max_niterations=max_niterations)
+        optimiser_instance = IRLS(param_instance, RobustMean(), data, weight, max_niterations=max_niterations)
         m1 = optimiser_instance.run()
         m2 = smallMean(param_instance.influence_func_instance)
 
@@ -132,39 +133,37 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
             effData.append((lsvar+smallVal)/(var+smallVal))
 
-            pA = p/math.sqrt(1.0+2.0*p*p)
-            pB = p/math.sqrt(1.0+p*p)
-            root2pi = math.sqrt(2.0*math.pi)
-            #tNum = N*sigma_base*sigma_base*sigma_base*pa*pa*pa*root2pi
-            #tDen = N*(root2pi*pA*sigma_base + 3.0*root2pi*math.pow(pA,5.0)*sigma_base - 2.0*root2pi*math.pow(pA,3.0)*sigma_base) + 0.5*N*(N-1)*(root2pi*root2pi*pB*pB)
-
             semx2s2Est = math.pow(1.0+2.*p*p, -0.5)
             sx2emx2s2Est = p*p*math.pow(1.0+2.*p*p, -1.5)*sigma_base*sigma_base
             sx4emx2s2Est = 3.0*p*p*p*p*math.pow(1.0+2.*p*p, -2.5)*sigma_base*sigma_base*sigma_base*sigma_base
             semx22s2Est = math.pow(1.0+p*p, -0.5)
             sx2emx22s2Est = p*p*math.pow(1.0+p*p, -1.5)*sigma_base*sigma_base
-            #print("E(e^(-x^2/s^2)) = ", semx2s2Est, " est = ", semx2s2, " ratio = ", semx2s2Est/semx2s2)
-            #print("E(x^2*e^(-x^2/s^2)) = ", sx2emx2s2Est, " est = ", sx2emx2s2, " ratio = ", sx2emx2s2Est/sx2emx2s2)
-            #print("E(x^4*e^(-x^2/s^2)) = ", sx4emx2s2Est, " est = ", sx4emx2s2, " ratio = ", sx4emx2s2Est/sx4emx2s2)
-            #print("E(e^(-x^2/(2*s^2))) = ", semx22s2Est, " est = ", semx22s2, " ratio = ", semx22s2Est/semx22s2)
-            #print("E(x^2*e^(-x^2/(2*s^2))) = ", sx2emx22s2Est, " est = ", sx2emx22s2, " ratio = ", sx2emx22s2Est/sx2emx22s2)
+            if not testrun:
+                print("E(e^(-x^2/s^2)) = ", semx2s2Est, " est = ", semx2s2, " ratio = ", semx2s2Est/semx2s2)
+                print("E(x^2*e^(-x^2/s^2)) = ", sx2emx2s2Est, " est = ", sx2emx2s2, " ratio = ", sx2emx2s2Est/sx2emx2s2)
+                print("E(x^4*e^(-x^2/s^2)) = ", sx4emx2s2Est, " est = ", sx4emx2s2, " ratio = ", sx4emx2s2Est/sx4emx2s2)
+                print("E(e^(-x^2/(2*s^2))) = ", semx22s2Est, " est = ", semx22s2, " ratio = ", semx22s2Est/semx22s2)
+                print("E(x^2*e^(-x^2/(2*s^2))) = ", sx2emx22s2Est, " est = ", sx2emx22s2, " ratio = ", sx2emx22s2Est/sx2emx22s2)
 
             # calculate asymptotic efficiency
             numerator = N*sx2emx2s2Est
             denom1 = N*(semx2s2Est + sx4emx2s2Est*invVariance*invVariance - 2.0*sx2emx2s2Est*invVariance)
             denom2 = N*(N-1.0)*(semx22s2Est*semx22s2Est + sx2emx22s2Est*sx2emx22s2Est*invVariance*invVariance - 2.0*sx2emx22s2Est*semx22s2Est*invVariance)
-            #print("num=",numerator," den1=",denom1," den2=",denom2)
+            if not testrun:
+                print("num=",numerator," den1=",denom1," den2=",denom2)
+
             numeratorp = p*p*math.pow(1.0 + 2.0*p*p, -1.5)
             denom1p = (1.0 + 3.0*p*p*p*p + 2.0*p*p)*math.pow(1.0 + 2.0*p*p, -2.5)
             denom2p = (N-1.0)*math.pow(1.0 + p*p, -3.0)
-            #print("nump=",N*numeratorp," den1p=",N*denom1p," den2p=",N*denom2p)
+            if not testrun:
+                print("nump=",N*numeratorp," den1p=",N*denom1p," den2p=",N*denom2p)
 
             smallMeanVarEst2 = numerator/(denom1+denom2)
             smallMeanVarEst3 = numeratorp/(denom1p+denom2p)
             smallMeanVarEst4 = smallMeanVarNumEst/smallMeanVarDenEst
-            #print("Small mean variance = ", N*smallMeanVar, " est = ", N*smallMeanVarEst, " est2 = ", N*smallMeanVarEst2, " est3 = ", N*smallMeanVarEst3, " est4 = ", N*smallMeanVarEst4)
-            #print("Ratio: ", smallMeanVarEst2/smallMeanVarEst, " numEst=", smallMeanVarNumEst," denEst=", smallMeanVarDenEst)
             if not testrun:
+                print("Small mean variance = ", N*smallMeanVar, " est = ", N*smallMeanVarEst, " est2 = ", N*smallMeanVarEst2, " est3 = ", N*smallMeanVarEst3, " est4 = ", N*smallMeanVarEst4)
+                print("Ratio: ", smallMeanVarEst2/smallMeanVarEst, " numEst=", smallMeanVarNumEst," denEst=", smallMeanVarDenEst)
                 print("p=",p, " asymptotic efficiency=", (smallVal + sigmaPop*sigmaPop/N)/(smallVal + smallMeanVarEst2), " est=", efficiencyEstFunc(p), " estN=", efficiencyEstFuncN(p,N))
 
         plt.plot(splist, effData, color = col, lw = 1.0, label = '$N=$' + str(N), marker = 'o', markersize = 2.0)

@@ -1,8 +1,5 @@
-import math
 import numpy as np
 import matplotlib.pyplot as plt
-import random
-import sys
 import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton

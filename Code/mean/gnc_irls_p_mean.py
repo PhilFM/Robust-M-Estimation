@@ -1,12 +1,6 @@
 import math
 import numpy as np
 
-from weightedMean import weightedMean
-
-def weightFunc(m, p, epsilon, rscale, d):
-    r = rscale*math.fabs(m-d)
-    return math.pow(max(r,epsilon), p-2.0)
-
 class GNC_IRLSpMean:
     def __init__(self, paramInstance, data, weight=None):
         self.paramInstance = paramInstance
@@ -56,7 +50,6 @@ class GNC_IRLSpMean:
             K = 0.5*math.pow(epsilon,p)*math.pow(rscale,p-2.0) - math.pow(rscale,-2.0)*math.log(epsilon)
             #print("K=",K,0.5*math.pow(epsilon,p)*math.pow(rscale,p-2.0),math.pow(rscale,-2.0)*math.log(epsilon))
             for d,w in zip(self.data,weight, strict=True):
-                sgn = np.sign(m-d)
                 r = rscale*math.fabs(m-d)
                 if r < epsilon:
                     tot += w*0.5*math.pow(epsilon, p-2.0)*r*r/(rscale*rscale)
@@ -65,7 +58,6 @@ class GNC_IRLSpMean:
         else:
             K = 0.5*math.pow(epsilon,p)*math.pow(rscale,-2.0) - math.pow(epsilon,p)*math.pow(rscale,-2.0)/p
             for d,w in zip(self.data,weight, strict=True):
-                sgn = np.sign(m-d)
                 r = rscale*math.fabs(m-d)
                 if r < epsilon:
                     tot += w*0.5*math.pow(epsilon, p-2.0)*r*r/(rscale*rscale)

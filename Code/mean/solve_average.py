@@ -1,4 +1,3 @@
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -52,11 +51,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     random.seed(0) # We want the numbers to be the same on each run
     N = 1000
     sigmaPop = 1.0
-    outlierRatio = 0.0 #0.5
-    k = int(outlierRatio*N+0.5)
     noise_sigma = 0.5 # noise
-    noise_bound = 5.54*noise_sigma
-    translationBound    = 10.0
 
     for test_idx in range(0,1):
         data = np.zeros((N,1))
@@ -119,7 +114,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
         gncIrlsp_sigma_base = noise_sigma
         gncIrlsp_epsilon_base = gncIrlsp_rscale*gncIrlsp_sigma_base
         gncIrlsp_epsilon_limit = gncIrlsp_epsilon_base #gncIrlsp_rscale*gnsIrlsp_sigmaLimit
-        print_warnings = True
         gncIrlsp_beta = 0.8 #math.exp((math.log(gncIrlsp_sigma_base) - math.log(gncIrlsp_sigmaLimit))/(num_sigma_steps - 1.0))
         gncIrlspParamInstance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                 0.0, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta)

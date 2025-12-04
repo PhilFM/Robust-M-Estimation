@@ -1,5 +1,4 @@
 import numpy as np
-import math
 
 from weightedMean import weightedMean
 

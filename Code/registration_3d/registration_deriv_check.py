@@ -1,12 +1,8 @@
 import numpy as np
-import math
 from scipy.spatial.transform import Rotation as Rot
-import sys
-import os
 
 from gnc_smoothie_philfm.null_params import NullParams
 from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.check_derivs import check_derivs
 
@@ -17,8 +13,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     N = 10
     noise_sigma = 0.5
-    est_p = 0.66666667
-    sigma = noise_sigma/est_p
 
     for test_idx in range(0,1):
         t = np.zeros(3)
