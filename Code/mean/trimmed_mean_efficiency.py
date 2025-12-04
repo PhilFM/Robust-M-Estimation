@@ -63,3 +63,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     if testrun:
         print("trimmed_mean_efficiency OK")
+
+if __name__ == "__main__":
+    main(False) # testrun

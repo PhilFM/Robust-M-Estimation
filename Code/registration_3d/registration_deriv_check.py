@@ -56,3 +56,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
             print("ALL DERIVATIVES OK!!")
     else:
         print("Derivative failure")
+
+if __name__ == "__main__":
+    main(False) # testrun

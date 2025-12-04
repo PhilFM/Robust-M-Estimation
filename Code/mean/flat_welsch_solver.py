@@ -114,3 +114,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     if testrun:
         print("flat_welsch_solver OK")
+
+if __name__ == "__main__":
+    main(False) # testrun

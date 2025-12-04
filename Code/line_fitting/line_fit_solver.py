@@ -52,16 +52,20 @@ def main(testrun:bool, output_folder:str="../../Output"):
     plt.close("all")
     plt.figure(num=1, dpi=120)
     #plt.axline((0,0),(10,10), color = 'b')
-    for line in debugLines:
-        if not testrun:
-            print(line)
+    # change to True if you want to see the progress
+    if False:
+        for line in debugLines:
+            if not testrun:
+                print(line)
 
-        plt.axline((xmin, line[1][0]*xmin+line[1][1]), (xmax, line[1][0]*xmax+line[1][1]), color = (1.0-line[0], line[0], 1.0), linewidth=1)
+            plt.axline((xmin, line[1][0]*xmin+line[1][1]), (xmax, line[1][0]*xmax+line[1][1]), color = (1.0-line[0], line[0], 1.0), linewidth=0.5)
 
     #plt.plot(xlist, rmfv(mlist, sigma=sigma_base, data=data))
     #plt.plot(mlist, mlist*0, "--", label="F=0")
     for d in data:
         plt.plot(d[0], d[1], color = 'b', marker = 'o')
+
+    plt.axline((xmin, model[0]*xmin+model[1]), (xmax, model[0]*xmax+model[1]), color = "green", linewidth=1.5)
 
     #plt.legend()
     plt.savefig(os.path.join(output_folder, "line_fit_solver.png"), bbox_inches='tight')
@@ -70,3 +74,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     if testrun:
         print("line_fit_solver OK")
+
+if __name__ == "__main__":
+    main(False) # testrun

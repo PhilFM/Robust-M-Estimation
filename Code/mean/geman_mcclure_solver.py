@@ -119,3 +119,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     if testrun:
         print("geman_mcclure_solver OK")
+
+if __name__ == "__main__":
+    main(False) # testrun

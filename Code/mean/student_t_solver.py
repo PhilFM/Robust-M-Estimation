@@ -125,3 +125,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     if testrun:
         print("student_t_solver OK")
+
+if __name__ == "__main__":
+    main(False) # testrun

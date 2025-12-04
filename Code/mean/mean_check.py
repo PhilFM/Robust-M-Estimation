@@ -129,3 +129,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     if testrun:
         print("mean_check OK")
+
+if __name__ == "__main__":
+    main(False) # testrun
