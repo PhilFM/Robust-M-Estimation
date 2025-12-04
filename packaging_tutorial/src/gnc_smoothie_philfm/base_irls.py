@@ -58,7 +58,8 @@ class BaseIRLS:
         self._model_start = model_start
         self._model_ref_start = model_ref_start
         self._debug = debug
-
+        self._linear_model_size = getattr(model_instance, "linear_model_size", None)
+        
     def objective_func_sign(self) -> float:
         return self._param_instance.influence_func_instance.objective_func_sign()
 
@@ -80,7 +81,7 @@ class BaseIRLS:
 
     def _init_model(self):
         if self._model_start is None and self._model_ref_start is None:
-            if self._model_instance.linear_model_size() > 0:
+            if callable(self._linear_model_size):
                 return self.weighted_fit(), None
             else:
                 return self._model_instance.weighted_fit(
@@ -129,7 +130,7 @@ class BaseIRLS:
         if weight is None:
             weight = self._weight
 
-        model = np.zeros(self._model_instance.linear_model_size())
+        model = np.zeros(self._linear_model_size())
 
         # initialize residual_size
         self._model_instance.cache_model(model)

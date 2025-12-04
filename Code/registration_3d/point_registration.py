@@ -47,10 +47,6 @@ class PointRegistration:
         q = Rot.as_quat(Rot.from_matrix(R))
         return Rot.as_matrix(Rot.from_quat(q))
 
-    # return size of model if the model is linear, otherwise return 0
-    def linear_model_size(self) -> int:
-        return 0
-
     # fits the model to the data
     def weighted_fit(self, data, data_ids, weight, scale) -> (np.array, np.array):
         R,t = LS_PointCloudRegistration(data, weight)

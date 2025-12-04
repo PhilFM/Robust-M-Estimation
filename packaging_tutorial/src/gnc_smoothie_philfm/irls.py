@@ -23,23 +23,34 @@
 #                   * update(self): Update the influence_func_instance to the next step in the GNC schedule.
 #   model_instance: The model being fitted to the data, a class instance that provides the following
 #                   functions:
-#                   * residual(self, model, data_item, model_ref=None) -> np.array:
-#                          Calculates the residual (error)
-#                          of the data_item given the model. If the model contains reference parameters
-#                          e.g. for estimating rotation, these are passed as model_ref.
+#                   * cache_model(self, model, model_ref=None):
+#                          Use this function to cache the model, prior to the residual() function
+#                          being called on each data item.
+#                   * residual(self, data_item, data_id:int=None) -> np.array:
+#                          Calculates the residual (error) of the data_item given the model. If the model
+#                          contains reference parameters e.g. for estimating rotation, these are passed
+#                          as model_ref. If there are different types of data to be handled, the data_id
+#                          is the id of this data item (see the data_ids array below)
 #                   * linear_model_size(self) -> int:
-#                          Returns the number of parameters in the model if the
-#                          model is linear, otherwise 0. In the linear case the IRLS class uses an
-#                          internal weighted_fit() function to fit the model to the data with specified
-#                          weights, so that the programmer does not have to implement it.
-#                   * weighted_fit(self, data, weight, scale=None) -> (np.array, np.array):
-#                          If linear_model_size() returns 0, the model is not linear but a closed-form
-#                          solution for the best model given the data with weights can be calculated.
-#                          This function implements the closed-form solution. If provided, the scale
+#                          Returns the number of parameters in the model if the model is linear.
+#                          The BaseIRLS class uses an internal weighted_fit() function to fit a linear model
+#                          to the data with specified weights, so that the programmer does not have to
+#                          implement it. If the model is non-linear, don't define this method.
+#                   * weighted_fit(self, data, data_ids, weight, scale) -> (np.array, np.array):
+#                          If linear_model_size() is not provided, the model is not linear. If a closed-form
+#                          solution for the best model given the data with weights nevertheless exists,
+#                          implement it in yout class. The scale
 #                          array indicates that certain data items are less accurate and so have a
 #                          scale value > 1, indicating that the influence function for that data item
 #                          should be stretched by the given scale factor.
-#  data: An array of data items. Each data item is itself an array.
+#                          For non-linear problems with no closed-form solution, pass a suitable starting
+#                          point as the model_start (and optionally model_ref_start) parameters, see below.
+#                          In that case the weighted_fit() method is not used.
+#  data: An array of data items. Each data item should itself be an array.
+#  data_ids: An array of index values, indicating different types of data. The id is to be handled
+#            inside your residual() and residual_gradient() methods. You define its meaning.
+#            If this array is not provided, all data is assumed to be the same type and zero is passed
+#            as the id for all data items.
 #  weight: An optional array of float weight values for each data item.
 #          If not provided, weights are initialised to one
 #  scale: An optional array of scale values, indicating that one or more data items are known to
@@ -144,7 +155,7 @@ class IRLS(BaseIRLS):
         for itn in range(self._max_niterations):
             self.__update_weights(model, weight, model_ref=model_ref)
             model_old = model
-            if self._model_instance.linear_model_size() > 0:
+            if callable(self._linear_model_size):
                 model = self.weighted_fit(weight)
             else:
                 model, model_ref = self._model_instance.weighted_fit(
