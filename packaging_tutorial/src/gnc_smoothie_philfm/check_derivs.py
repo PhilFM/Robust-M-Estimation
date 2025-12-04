@@ -7,6 +7,9 @@ def check_derivs(
     print_diffs: bool = False,
     print_derivs: bool = False,
 ) -> bool:
+
+    # ensure that residual_size is filled in
+    v = optimiser_instance.objective_func(model, model_ref=model_ref)
     for lambda_val in (1.0, 0.5, 0.0):
         a, AlB = optimiser_instance.weighted_derivs(
             model, lambda_val, model_ref=model_ref

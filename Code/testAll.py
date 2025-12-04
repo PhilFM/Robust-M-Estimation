@@ -39,10 +39,12 @@ mean.winsorised_mean_efficiency.main(testrun=True, output_folder="../Output")
 
 # line fitting tests
 sys.path.append("line_fitting")
+import line_fitting.line_fit_deriv_check
 import line_fitting.line_fit_solver
 import line_fitting.line_fit_convergence_speed
 import line_fitting.line_fit_param_plot
 
+line_fitting.line_fit_deriv_check.main(testrun=True, output_folder="../Output")
 line_fitting.line_fit_solver.main(testrun=True, output_folder="../Output")
 line_fitting.line_fit_convergence_speed.main(testrun=True, output_folder="../Output")
 line_fitting.line_fit_param_plot.main(testrun=True, output_folder="../Output")

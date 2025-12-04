@@ -265,7 +265,6 @@ The simplest non-trivial example of an IRLS/Sup-GN model class
 is to support fitting a straight line through 2D data, with the model \\( y=ax+b \\), where \\( a \\) is the gradient of the line and
 \\( b \\) is the intercept. The model class for line fitting might look like this:
 ```
-import math
 import numpy as np
 
 # Line model is y = a*x + b
@@ -273,16 +272,18 @@ class LineFit:
     def __init__(self):
         pass
 
+    def cache_model(self, model, model_ref=None):
+        self.__a = model[0]
+        self.__b = model[1]
+
     # r = a*xi + b - yi
-    def residual(self, model, data_item, model_ref=None) -> np.array:
-        a = model[0]
-        b = model[1]
+    def residual(self, data_item) -> np.array:
         x = data_item[0]
         y = data_item[1]
-        return np.array([a*x + b - y])
+        return np.array([self.__a*x + self.__b - y])
 
     # dr/d(a b) = (x 1)
-    def residual_gradient(self, model, data_item, model_ref=None) -> np.array:
+    def residual_gradient(self, data_item) -> np.array:
         x = data_item[0]
         return np.array([[x, 1.0]])
 

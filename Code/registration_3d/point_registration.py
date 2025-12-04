@@ -7,27 +7,27 @@ class PointRegistration:
     def __init__(self):
         pass
 
+    def cache_model(self, model, model_ref=None):
+        rotd = Rot.from_mrp(-0.25*model[0:3])
+        self.__R = np.matmul(Rot.as_matrix(rotd), model_ref)
+        self.__t = model[3:6]
+
     # r = y - R*x - t
     #   = Rs*R0*x + t, Rs = ( 1  -az  ay), R0*x = (R0_xx*x_x + R0_xy*x_y + R0_xz*x_z) = (R0x_x)
     #                       ( az  1  -ax)         (R0_yx*x_x + R0_yy*x_y + R0_yz*x_z)   (R0x_y)
     #                       (-ay  ax  1 )         (R0_zx*x_x + R0_zy*x_y + R0_zz*x_z)   (R0x_z)
     # where R0x = R0*x
-    def residual(self, model, data_item, model_ref=None) -> np.array:
-        rotd = Rot.from_mrp(-0.25*model[0:3])
-        R = np.matmul(Rot.as_matrix(rotd), model_ref)
-        t = model[3:6]
+    def residual(self, data_item) -> np.array:
         x = data_item[0]
         y = data_item[1]
-        return np.array(y - np.matmul(R,x) - t)
+        return np.array(y - np.matmul(self.__R,x) - self.__t)
 
     # dr   (  0     R0x_z -R0x_y)          dr
     # -- = (-R0x_z   0     R0x_x) = Rx_x,  -- = -I_3x3
     # da   ( R0x_y -R0x_x   0   )          dt
-    def residual_gradient(self, model, data_item, model_ref=None) -> np.array:
-        rotd = Rot.from_mrp(-0.25*model[0:3])
-        R = np.matmul(Rot.as_matrix(rotd), model_ref)
+    def residual_gradient(self, data_item) -> np.array:
         x = data_item[0]
-        Rx = np.matmul(R,x)
+        Rx = np.matmul(self.__R,x)
         return np.array([[   0.0,  Rx[2], -Rx[1], -1.0,  0.0,  0.0],
                          [-Rx[2],    0.0,  Rx[0],  0.0, -1.0,  0.0],
                          [ Rx[1], -Rx[0],    0.0,  0.0,  0.0, -1.0]])

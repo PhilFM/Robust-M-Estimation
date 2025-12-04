@@ -57,19 +57,21 @@ class BaseIRLS:
             weight = self._weight
 
         tot = 0.0
+        self._model_instance.cache_model(model, model_ref=model_ref)
         if self._scale is None:
             for d, w in zip(self._data, weight, strict=True):
-                residual = self._model_instance.residual(model, d, model_ref)
+                residual = self._model_instance.residual(d)
                 tot += w * self._param_instance.influence_func_instance.rho(
                     residual @ residual, 1.0
                 )  # scale
         else:
             for d, w, s in zip(self._data, weight, self._scale, strict=True):
-                residual = self._model_instance.residual(model, d, model_ref)
+                residual = self._model_instance.residual(d)
                 tot += w * self._param_instance.influence_func_instance.rho(
                     residual @ residual, s
                 )  # scale
 
+        self._residual_size = len(residual)
         return tot
 
     def _init_model(self):
@@ -83,70 +85,71 @@ class BaseIRLS:
         else:
             return self._model_start, self._model_ref_start
 
-    def __residual_gradient_numerical(
-        self, model, d, residual_size: int, model_ref=None, small_diff: float = 1.0e-5
-    ) -> np.array:
-        residual_gradient = np.zeros((residual_size, len(model)))
-        model_copy = np.copy(model)
-        for i in range(len(model)):
-            model_copy[i] -= small_diff
-            residualn = self._model_instance.residual(model_copy, d, model_ref)
-            model_copy[i] += 2.0 * small_diff
-            residualp = self._model_instance.residual(model_copy, d, model_ref)
-            model_copy[i] = model[i]
-            for j in range(residual_size):
-                residual_gradient[j][i] = (
-                    0.5 * (residualp[j] - residualn[j]) / small_diff
-                )
+    def _calc_residual_derivatives(self, model, model_ref = None, small_diff = 1.0e-5):
+        # build arrays of residuals and gradients per data item
+        residual_arr = np.zeros((len(self._data), self._residual_size))
+        residual_gradient_arr = np.zeros((len(self._data), self._residual_size, len(model)))
 
-        return residual_gradient
+        # first the residuals
+        self._model_instance.cache_model(model, model_ref=model_ref)
+        for i,d in enumerate(self._data):
+            residual = self._model_instance.residual(d)
+            residual_arr[i] = residual
 
-    def _calc_residual_derivatives(
-        self, model, data_item, model_ref=None, small_diff: float = 1.0e-5
-    ) -> (np.array, np.array, np.array):
-        residual = self._model_instance.residual(model, data_item, model_ref)
+        # now the gradients
         if self.numeric_derivs_model:
-            residual_gradient = self.__residual_gradient_numerical(
-                model,
-                data_item,
-                residual.shape[0],
-                model_ref=model_ref,
-                small_diff=small_diff,
-            )
-        else:
-            residual_gradient = self._model_instance.residual_gradient(
-                model, data_item, model_ref=model_ref
-            )
+            model_copy = np.copy(model)
+            for i in range(len(model)):
+                model_copy[i] -= small_diff
+                self._model_instance.cache_model(model_copy, model_ref=model_ref)
+                residual_n_arr = np.zeros((len(self._data), self._residual_size))
+                for j,d in enumerate(self._data):
+                    residual = self._model_instance.residual(d)
+                    residual_n_arr[j] = residual
 
-        grad = np.matmul(np.transpose(residual_gradient), residual)
-        return residual, residual_gradient, grad
+                model_copy[i] += 2.0 * small_diff
+                self._model_instance.cache_model(model_copy, model_ref=model_ref)
+                for j,d in enumerate(self._data):
+                    residual = self._model_instance.residual(d)
+                    for k in range(self._residual_size):
+                        residual_gradient_arr[(j,k,i)] = 0.5*(residual[k] - residual_n_arr[j][k]) / small_diff
+                    
+                model_copy[i] = model[i]
+        else:
+            for j,d in enumerate(self._data):
+                residual_gradient_arr[j] = self._model_instance.residual_gradient(d)
+
+        return residual_arr, residual_gradient_arr
 
     def weighted_fit(self, weight=None) -> np.array:
         if weight is None:
             weight = self._weight
 
         model = np.zeros(self._model_instance.linear_model_size())
+
+        # initialize residual_size
+        self._model_instance.cache_model(model)
+        residual = self._model_instance.residual(self._data[0])
+        self._residual_size = len(residual)
+
         atot = np.zeros(len(model))
         Atot = np.zeros((len(model), len(model)))
         small_diff = 1.0e-5  # in case numerical differentiation is specified
+        residual_arr, residual_gradient_arr = self._calc_residual_derivatives(model, small_diff)
         if self._scale is None:
-            for d, w in zip(self._data, weight, strict=True):
-                residual, residual_gradient, grad = self._calc_residual_derivatives(
-                    model, d, model_ref=None, small_diff=small_diff
-                )
+            for i,w in enumerate(weight):
+                grad = np.matmul(np.transpose(residual_gradient_arr[i]), residual_arr[i])
                 atot += w * grad
                 Atot += w * np.matmul(
-                    np.transpose(residual_gradient), residual_gradient
+                    np.transpose(residual_gradient_arr[i]), residual_gradient_arr[i]
                 )
         else:
-            for d, w, s in zip(self._data, weight, self._scale, strict=True):
-                residual, residual_gradient, grad = self._calc_residual_derivatives(
-                    model, d, model_ref=None, small_diff=small_diff
-                )
+            for i,(w,s) in enumerate(zip(weight, self._scale, strict=True)):
+                grad = np.matmul(np.transpose(residual_gradient_arr[i]), residual_arr[i])
                 w /= s * s
                 atot += w * grad
                 Atot += w * np.matmul(
-                    np.transpose(residual_gradient), residual_gradient
+                    np.transpose(residual_gradient_arr[i]), residual_gradient_arr[i]
                 )
 
         return -np.linalg.solve(Atot, atot)
