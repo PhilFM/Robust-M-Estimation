@@ -7,6 +7,7 @@ class PointRegistration:
     def __init__(self):
         pass
 
+    # copy model parameters and apply any internal calculations
     def cache_model(self, model, model_ref=None):
         rotd = Rot.from_mrp(-0.25*model[0:3])
         self.__R = np.matmul(Rot.as_matrix(rotd), model_ref)
@@ -17,7 +18,7 @@ class PointRegistration:
     #                       ( az  1  -ax)         (R0_yx*x_x + R0_yy*x_y + R0_yz*x_z)   (R0x_y)
     #                       (-ay  ax  1 )         (R0_zx*x_x + R0_zy*x_y + R0_zz*x_z)   (R0x_z)
     # where R0x = R0*x
-    def residual(self, data_item) -> np.array:
+    def residual(self, data_item, data_id:int=None) -> np.array:
         x = data_item[0]
         y = data_item[1]
         return np.array(y - np.matmul(self.__R,x) - self.__t)
@@ -25,7 +26,7 @@ class PointRegistration:
     # dr   (  0     R0x_z -R0x_y)          dr
     # -- = (-R0x_z   0     R0x_x) = Rx_x,  -- = -I_3x3
     # da   ( R0x_y -R0x_x   0   )          dt
-    def residual_gradient(self, data_item) -> np.array:
+    def residual_gradient(self, data_item, data_id:int=None) -> np.array:
         x = data_item[0]
         Rx = np.matmul(self.__R,x)
         return np.array([[   0.0,  Rx[2], -Rx[1], -1.0,  0.0,  0.0],
@@ -51,7 +52,7 @@ class PointRegistration:
         return 0
 
     # fits the model to the data
-    def weighted_fit(self, data, weight, scale=None) -> (np.array, np.array):
+    def weighted_fit(self, data, data_ids, weight, scale) -> (np.array, np.array):
         R,t = LS_PointCloudRegistration(data, weight)
         model = np.zeros(6)
         model[3:6] = t

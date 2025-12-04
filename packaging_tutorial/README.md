@@ -272,6 +272,7 @@ class LineFit:
     def __init__(self):
         pass
 
+    # copy model parameters and apply any internal calculations
     def cache_model(self, model, model_ref=None):
         self.__a = model[0]
         self.__b = model[1]

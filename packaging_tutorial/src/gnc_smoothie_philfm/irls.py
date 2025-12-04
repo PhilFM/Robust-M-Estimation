@@ -68,6 +68,7 @@ class IRLS(BaseIRLS):
         param_instance,
         model_instance,
         data,
+        data_ids=None,
         weight=None,
         scale=None,
         numeric_derivs_influence=False,
@@ -83,6 +84,7 @@ class IRLS(BaseIRLS):
             param_instance,
             model_instance,
             data,
+            data_ids,
             weight=weight,
             scale=scale,
             numeric_derivs_influence=numeric_derivs_influence,
@@ -114,19 +116,11 @@ class IRLS(BaseIRLS):
     def __update_weights(self, model, weight, model_ref=None):
         small_diff = 1.0e-5  # in case numerical differentiation is specified
         self._model_instance.cache_model(model, model_ref=model_ref)
-        if self._scale is None:
-            for i, d in enumerate(self._data):
-                weight[i] = self._weight[i] * self.__updated_weight(
-                    self._model_instance.residual(d),
-                    1.0,
-                    small_diff=small_diff,
-                )
-        else:
-            for i, (d, s) in enumerate(
-                zip(self._data, self._scale, strict=True)
+        for i, (d, di, s) in enumerate(
+                zip(self._data, self._data_ids, self._scale, strict=True)
             ):
                 weight[i] = self._weight[i] * self.__updated_weight(
-                    self._model_instance.residual(d), s
+                    self._model_instance.residual(d, di), s
                 )
 
     def run(self):
@@ -154,7 +148,7 @@ class IRLS(BaseIRLS):
                 model = self.weighted_fit(weight)
             else:
                 model, model_ref = self._model_instance.weighted_fit(
-                    self._data, weight, self._scale
+                    self._data, self._data_ids, weight, self._scale
                 )
 
             if self._param_instance.at_final_stage():

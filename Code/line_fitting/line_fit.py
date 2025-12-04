@@ -5,18 +5,19 @@ class LineFit:
     def __init__(self):
         pass
 
+    # copy model parameters and apply any internal calculations
     def cache_model(self, model, model_ref=None):
         self.__a = model[0]
         self.__b = model[1]
 
     # r = a*xi + b - yi
-    def residual(self, data_item) -> np.array:
+    def residual(self, data_item, data_id:int=None) -> np.array:
         x = data_item[0]
         y = data_item[1]
         return np.array([self.__a*x + self.__b - y])
 
     # dr/d(a b) = (x 1)
-    def residual_gradient(self, data_item) -> np.array:
+    def residual_gradient(self, data_item, data_id:int=None) -> np.array:
         x = data_item[0]
         return np.array([[x, 1.0]])
 
