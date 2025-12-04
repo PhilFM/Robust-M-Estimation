@@ -1,7 +1,7 @@
 # GNC Smoothie package
 
 Python library supporting M-estimation using two algorithms: the well-known Iteratively Reweighted Least Squares (IRLS)
-and our custom Supervised Gauss-Newton algorithm. Author: Philip McLauchlan.
+and our custom Supervised Gauss-Newton algorithm. Author: Philip McLauchlan `phlip.mclauchlan@gmail.com`.
 
 First some introductory theory.
 
