@@ -106,7 +106,7 @@ class SupGaussNewton(BaseIRLS):
 
         return atot, AlBtot
 
-    def run(self):
+    def run(self) -> bool:
         self._param_instance.reset()
         lambda_val = self.__lambda_start
         model, model_ref = self._init_model()
@@ -133,10 +133,16 @@ class SupGaussNewton(BaseIRLS):
             print("Initial AlB=", AlB)
 
         if self._debug:
-            diffs = []
-            model_list = []
+            self.debug_diffs = []
+            self.debug_model_list = []
+            self.debug_model_list.append(
+                (
+                    0.0,  # alpha
+                    np.copy(model),
+                )
+            )
 
-        all_good = True
+        all_good = False
         for itn in range(self._max_niterations):
             model_old = model.copy()
             model_refOld = model_ref
@@ -163,12 +169,13 @@ class SupGaussNewton(BaseIRLS):
             ):
                 model_max_diff = np.linalg.norm(at, ord=np.inf)
                 if self._debug is True and model_max_diff > 0.0:
-                    diffs.append(math.log10(model_max_diff))
+                    self.debug_diffs.append(math.log10(model_max_diff))
 
                 if model_max_diff < self._diff_thres:
                     if self._print_warnings:
                         print("Difference threshold reached")
 
+                    all_good = True
                     break
 
             tot = self.objective_func(model, model_ref=model_ref)
@@ -218,9 +225,9 @@ class SupGaussNewton(BaseIRLS):
                         print("Accept new lambda_val=", lambda_val)
 
             if self._debug:
-                model_list.append(
+                self.debug_model_list.append(
                     (
-                        itn / (self._max_niterations - 1),  # alpha
+                        (1+itn) / (self._max_niterations - 1),  # alpha
                         np.copy(model),
                     )
                 )
@@ -228,25 +235,11 @@ class SupGaussNewton(BaseIRLS):
         self._param_instance.reset(
             False
         )  # finish with parameters in correct final model
+
         if self._debug:
-            if model_ref is None:
-                if all_good is True:
-                    return model, itn + 1, diffs, model_list
-                else:
-                    return None, None, None, None
-            else:
-                if all_good is True:
-                    return model, model_ref, itn + 1, diffs, model_list
-                else:
-                    return None, None, None, None, None
-        else:
-            if model_ref is None:
-                if all_good is True:
-                    return model
-                else:
-                    return None
-            else:
-                if all_good is True:
-                    return model, model_ref
-                else:
-                    return None, None
+            self.debug_n_iterations = itn + 1
+
+        self.final_model = model
+        self.final_model_ref = model_ref
+
+        return all_good

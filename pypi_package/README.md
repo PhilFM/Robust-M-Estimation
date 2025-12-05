@@ -246,7 +246,11 @@ The Python library is based on `numpy` and contains the following top-level modu
 ### IRLS class: `irls.py`
 
 Top-level 'IRLS' class. Once you have constructed an instance of this class, call the `run()`
-method to run it. Here are the parameters that need to be passed to the `IRLS` class constructor. Optional parameters follow.
+method to run it. This returns `True` on successful convergence, `False` on failure.
+The final model and model reference (see below) are stored in `final_model` and `final_model_ref`,
+whether the `run()` function succeeds or not.
+
+Here are the parameters that need to be passed to the `IRLS` class constructor. Optional parameters follow.
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
    this can be a `NullParams` instance imported from `null_params.py.
    Should have an internal influence_func_instance
@@ -324,6 +328,11 @@ such problems so long as a reasonable starting point for the model can be suppli
 `model_start` and `model_ref_start` parameters below). For linear models Sup-GN provides a simpler
 model implementation than IRLS, since the closed-form solution for the model is calculated
 internally. Also Sup-GN converges quadratically for linear models when close to the solution.
+
+Once you have constructed an instance of the `SupGaussNewton` class, call the `run()`
+method to run it. This returns `True` on successful convergence, `False` on failure.
+The final model and model reference (see below) are stored in `final_model` and `final_model_ref`,
+whether the `run()` function succeeds or not.
 
 The parameters to the `SupGaussNewton` constructor are very similar to the `IRLS` class,
 but there are some twists due to Sup-GN requiring differentiation of the model residual.
@@ -484,8 +493,9 @@ sigma = 0.2
 param_instance = NullParams(WelschInfluenceFunc(sigma))
 model_instance = LineFit()
 optimiser_instance = SupGaussNewton(param_instance, model_instance, data)
-model = optimiser_instance.run()
-print("line a b:",model)
+if optimiser_instance.run():
+    model = optimiser_instance.final_model
+    print("line a b:",model)
 ```
 The correct line parameters should be printed:
 ```

@@ -113,15 +113,17 @@ def main(testrun:bool, output_folder:str="../../Output"):
                                                  max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                                  lambda_start=lambda_start, lambda_scale=lambda_scale, diff_thres=diff_thres,
                                                  print_warnings=print_warnings)
-        mwelschopt = welschOptimiserInstance.run()
-        if not testrun:
-            print("mwelschopt-mgt=",mwelschopt-mgt)
+        if welschOptimiserInstance.run():
+            mwelschopt = welschOptimiserInstance.final_model
+            if not testrun:
+                print("mwelschopt-mgt=",mwelschopt-mgt)
 
         pseudoHuberOptimiserInstance = IRLS(NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)), model_instance, data, weight=weight,
                                             max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
-        mhuber = pseudoHuberOptimiserInstance.run()
-        if not testrun:
-            print("mhuber-mgt=",mhuber-mgt)
+        if pseudoHuberOptimiserInstance.run():
+            mhuber = pseudoHuberOptimiserInstance.final_model
+            if not testrun:
+                print("mhuber-mgt=",mhuber-mgt)
 
         pseudoHuberSupGNOptimiserInstance = SupGaussNewton(NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)), model_instance, data, weight=weight,
                                                            max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
@@ -135,17 +137,19 @@ def main(testrun:bool, output_folder:str="../../Output"):
                                                 gncIrlsp_p, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta)
         gncIrlspOptimiserInstance = IRLS(gncIrlspParamInstance, model_instance, data, weight=weight,
                                          max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
-        mgncirlsp = gncIrlspOptimiserInstance.run()
-        if not testrun:
-            print("mgncirlsp-mgt=",mgncirlsp-mgt)
+        if gncIrlspOptimiserInstance.run():
+            mgncirlsp = gncIrlspOptimiserInstance.final_model
+            if not testrun:
+                print("mgncirlsp-mgt=",mgncirlsp-mgt)
 
         gncIrlspSupGNOptimiserInstance = SupGaussNewton(gncIrlspParamInstance, model_instance, data, weight=weight,
                                                         max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                                         lambda_start=lambda_start, lambda_scale=lambda_scale, diff_thres=diff_thres,
                                                         print_warnings=print_warnings)
-        mgncirlspopt = gncIrlspSupGNOptimiserInstance.run()
-        if not testrun:
-            print("mgncirlspopt-mgt=",mgncirlspopt-mgt)
+        if gncIrlspSupGNOptimiserInstance.run():
+            mgncirlspopt = gncIrlspSupGNOptimiserInstance.final_model
+            if not testrun:
+                print("mgncirlspopt-mgt=",mgncirlspopt-mgt)
 
         plotResult(data, weight,
                    mwelschopt, welschOptimiserInstance,

@@ -44,7 +44,9 @@ def main(testrun:bool, output_folder:str="../../Output"):
         param_instance = GNC_WelschParams(WelschInfluenceFunc(),
                                           sigma_base, sigma_limit, num_sigma_steps, max_niterations=max_niterations)
         optimiser_instance = IRLS(param_instance, RobustMean(), data, weight, max_niterations=max_niterations)
-        m1 = optimiser_instance.run()
+        if optimiser_instance.run():
+            m1 = optimiser_instance.final_model
+
         m2 = smallMean(param_instance.influence_func_instance)
 
         if not testrun:

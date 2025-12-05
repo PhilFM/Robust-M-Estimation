@@ -71,15 +71,18 @@ def main(testrun:bool, output_folder:str="../../Output"):
         model_instance = TRS()
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
-        model,nIterations,diffsWelschGN,model_list = SupGaussNewton(param_instance, model_instance, data,
-                                                                    max_niterations=max_niterations, diff_thres=diff_thres,
-                                                                    print_warnings=print_warnings, model_start=model_start, debug=True,
-                                                                    lambda_start=1.0).run()
+        sup_gn_instance = SupGaussNewton(param_instance, model_instance, data,
+                                         max_niterations=max_niterations, diff_thres=diff_thres,
+                                         print_warnings=print_warnings, model_start=model_start, debug=True,
+                                         lambda_start=1.0)
+        if sup_gn_instance.run():
+            diffsWelschGN = sup_gn_instance.debug_diffs
 
-        #param_instance = WelschParams(sigma_base)
-        model,nIterations,diffsWelschIRLS,model_list = IRLS(param_instance, model_instance, data,
-                                                            max_niterations=max_niterations, diff_thres=diff_thres,
-                                                            print_warnings=print_warnings, model_start=model_start, debug=True).run()
+        irls_instance = IRLS(param_instance, model_instance, data,
+                             max_niterations=max_niterations, diff_thres=diff_thres,
+                             print_warnings=print_warnings, model_start=model_start, debug=True)
+        irls_instance.run() # this can fail but we don't care in this context
+        diffsWelschIRLS = irls_instance.debug_diffs
     
         plotDifferences(diffsWelschGN, diffsWelschIRLS, testrun, output_folder)
 

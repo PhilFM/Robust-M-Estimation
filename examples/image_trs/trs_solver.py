@@ -32,7 +32,10 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
         influence_func_instance = WelschInfluenceFunc()
         param_instance = GNC_WelschParams(influence_func_instance, 0.2, 10.0, 50) # sigma_base, sigma_limit, num_sigma_steps
-        model = SupGaussNewton(param_instance, TRS(), data, max_niterations=100).run()
+        sup_gn_instance = SupGaussNewton(param_instance, TRS(), data, max_niterations=100)
+        if sup_gn_instance.run():
+            model = sup_gn_instance.final_model
+
         if not testrun:
             print("modelGT=",modelGT,"model=",model)
             print("modelDiff=",model-modelGT)

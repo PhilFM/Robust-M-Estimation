@@ -110,22 +110,30 @@ def main(testrun:bool, output_folder:str="../../Output"):
                                            max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                            lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres, print_warnings=print_warnings,
                                            model_start=model_start, model_ref_start=model_ref_start, debug=True)
-        model,model_ref,nIterations,diffsGNCWelsch,model_list = optimiser_instance.run()
-        if not testrun:
-            #print("diffsGNCWelsch=",diffsGNCWelsch)
-            print("GNC Welsch recovered R=",model_ref,"t=",model[3:6],"nIterations=",nIterations)
-            print("GNC Welsch Rdiff=",model_ref-R_gt)
-            print("GNC Welsch tdiff=",model[3:6]-t_gt)
+        if optimiser_instance.run():
+            model = optimiser_instance.final_model
+            model_ref = optimiser_instance.final_model_ref
+            n_iterations = optimiser_instance.debug_n_iterations
+            diffsGNCWelsch = optimiser_instance.debug_diffs
+            if not testrun:
+                #print("diffsGNCWelsch=",diffsGNCWelsch)
+                print("GNC Welsch recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
+                print("GNC Welsch Rdiff=",model_ref-R_gt)
+                print("GNC Welsch tdiff=",model[3:6]-t_gt)
 
         optimiser_instance = IRLS(NullParams(PseudoHuberInfluenceFunc(noise_sigma/welsch_p)),
                                  PointRegistration(), data, weight=weight,
                                  max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
                                  model_start=model_start, model_ref_start=model_ref_start, debug=True)
-        model,model_ref,nIterations,diffsPseudoHuber,model_list = optimiser_instance.run()
-        if not testrun:
-            print("Pseudo-Huber recovered R=",model_ref,"t=",model[3:6],"nIterations=",nIterations)
-            print("Pseudo-Huber Rdiff=",model_ref-R_gt)
-            print("Pseudo-Huber tdiff=",model[3:6]-t_gt)
+        if optimiser_instance.run():
+            model = optimiser_instance.final_model
+            model_ref = optimiser_instance.final_model_ref
+            n_iterations = optimiser_instance.debug_n_iterations
+            diffsPseudoHuber = optimiser_instance.debug_diffs
+            if not testrun:
+                print("Pseudo-Huber recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
+                print("Pseudo-Huber Rdiff=",model_ref-R_gt)
+                print("Pseudo-Huber tdiff=",model[3:6]-t_gt)
 
         gncIrlsp_rscale = 1.0
         gncIrlsp_sigma_base = noise_sigma
@@ -136,21 +144,29 @@ def main(testrun:bool, output_folder:str="../../Output"):
         optimiser_instance = IRLS(gncIrlspParamInstance, PointRegistration(), data, weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
                                   model_start=model_start, model_ref_start=model_ref_start, debug=True)
-        model,model_ref,nIterations,diffsGNCIRLSp0,model_list = optimiser_instance.run()
-        if not testrun:
-            print("GNC IRLS-p0 recovered R=",model_ref,"t=",model[3:6],"nIterations=",nIterations)
-            print("GNC IRLS-p0 Rdiff=",model_ref-R_gt)
-            print("GNC IRLS-p0 tdiff=",model[3:6]-t_gt)
+        if optimiser_instance.run():
+            model = optimiser_instance.final_model
+            model_ref = optimiser_instance.final_model_ref
+            n_iterations = optimiser_instance.debug_n_iterations
+            diffsGNCIRLSp0 = optimiser_instance.debug_diffs
+            if not testrun:
+                print("GNC IRLS-p0 recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
+                print("GNC IRLS-p0 Rdiff=",model_ref-R_gt)
+                print("GNC IRLS-p0 tdiff=",model[3:6]-t_gt)
 
         gncIrlspParamInstance.influence_func_instance.p = 1.0
         optimiser_instance = IRLS(gncIrlspParamInstance, PointRegistration(), data, weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
                                   model_start=model_start, model_ref_start=model_ref_start, debug=True)
-        model,model_ref,nIterations,diffsGNCIRLSp1,model_list = optimiser_instance.run()
-        if not testrun:
-            print("GNC IRLS-p1 recovered R=",model_ref,"t=",model[3:6],"nIterations=",nIterations)
-            print("GNC IRLS-p1 Rdiff=",model_ref-R_gt)
-            print("GNC IRLS-p1 tdiff=",model[3:6]-t_gt)
+        if optimiser_instance.run():
+            model = optimiser_instance.final_model
+            model_ref = optimiser_instance.final_model_ref
+            n_iterations = optimiser_instance.debug_n_iterations
+            diffsGNCIRLSp1 = optimiser_instance.debug_diffs
+            if not testrun:
+                print("GNC IRLS-p1 recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
+                print("GNC IRLS-p1 Rdiff=",model_ref-R_gt)
+                print("GNC IRLS-p1 tdiff=",model[3:6]-t_gt)
 
         plotDifferences(diffsGNCWelsch, diffsPseudoHuber, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun, output_folder)
 

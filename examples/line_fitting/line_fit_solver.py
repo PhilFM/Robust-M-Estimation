@@ -23,7 +23,9 @@ def main(testrun:bool, output_folder:str="../../Output"):
     sigma_base = 0.2
     param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, 50.0, 20) # sigma_base, sigma_limit, num_sigma_steps
     optimiser_instance = SupGaussNewton(param_instance, LineFit(), data, debug=True)
-    model,nIterations,diffs,debugLines = optimiser_instance.run()
+    if optimiser_instance.run():
+        model = optimiser_instance.final_model
+        debug_lines = optimiser_instance.debug_model_list
 
     if not testrun:
         print("Result: a,b=", model)
@@ -43,7 +45,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     # change to True if you want to see the progress of the algorithm
     if False:
-        for line in debugLines:
+        for line in debug_lines:
             if not testrun:
                 print(line)
 

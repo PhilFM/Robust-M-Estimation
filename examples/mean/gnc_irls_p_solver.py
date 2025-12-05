@@ -35,10 +35,11 @@ def main(testrun:bool, output_folder:str="../../Output"):
     model_instance = RobustMean()
     influence_func_instance = GNC_IRLSpInfluenceFunc()
     param_instance = GNC_IRLSpParams(influence_func_instance, p, rscale, epsilon_base, epsilon_limit, beta)
-    irlsInstance = IRLS(param_instance, model_instance, data, weight, print_warnings=False)
-    m = irlsInstance.run()
-    if not testrun:
-        print("IRLS Result: m=", m)
+    irls_instance = IRLS(param_instance, model_instance, data, weight, print_warnings=False)
+    if irls_instance.run():
+        m = irls_instance.final_model
+        if not testrun:
+            print("IRLS Result: m=", m)
 
     # for checkout derivatives
     #print("rhop=",irlsInstance.updated_weight(np.array([2]),1.0,1.e-5))
@@ -54,19 +55,6 @@ def main(testrun:bool, output_folder:str="../../Output"):
                                                                                     
     # for graph plotting
     optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight, print_warnings=True)
-
-    # Check supervised G-N algorithm
-    #m = optimiser_instance.run()
-    #print("Result: m=", m)
-
-    # check derivatives
-    #for r in (0.01, 0.1, 0.5, 2.0):
-    #    residual = np.array([r])
-    #    rhop, Bterm = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
-    #    optimiser_instance.numeric_derivs_model = True
-    #    rhopn, Btermn = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
-    #    if not testrun:
-    #        print("rhop=",rhop, rhopn, "Bterm=",Bterm,Btermn)
 
     # get min and max of data
     yMin = yMax = 0.0
@@ -89,7 +77,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     mlist = np.linspace(xMin, xMax, num=300)
 
-    def objective_func(m):
+    def objective_func(m) -> float:
         return optimiser_instance.objective_func([m])
 
     for mx in mlist:

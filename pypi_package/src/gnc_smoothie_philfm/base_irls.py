@@ -79,7 +79,7 @@ class BaseIRLS:
         self._residual_size = len(residual)
         return tot
 
-    def _init_model(self):
+    def _init_model(self) -> None:
         if self._model_start is None and self._model_ref_start is None:
             if callable(self._linear_model_size):
                 return self.weighted_fit(), None
@@ -90,7 +90,7 @@ class BaseIRLS:
         else:
             return self._model_start, self._model_ref_start
 
-    def _calc_residual_derivatives(self, model, model_ref = None, small_diff = 1.0e-5):
+    def _calc_residual_derivatives(self, model, model_ref = None, small_diff = 1.0e-5) -> (np.array, np.array):
         # build arrays of residuals and gradients per data item
         residual_arr = np.zeros((len(self._data), self._residual_size))
         residual_gradient_arr = np.zeros((len(self._data), self._residual_size, len(model)))

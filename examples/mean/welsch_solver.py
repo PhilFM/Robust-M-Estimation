@@ -40,14 +40,17 @@ def main(testrun:bool, output_folder:str="../../Output"):
     model_instance = RobustMean()
     param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit,
                                       num_sigma_steps=num_sigma_steps, max_niterations=max_niterations)
-    m = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False).run()
-    if not testrun:
-        print("IRLS result: m=", m)
+    irls_instance = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
+    if irls_instance.run():
+        m = irls_instance.final_model
+        if not testrun:
+            print("IRLS result: m=", m)
 
     optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
-    m = optimiser_instance.run()
-    if not testrun:
-        print("Supervised Gauss-Newton optimisation result: m=", m)
+    if optimiser_instance.run():
+        m = optimiser_instance.final_model
+        if not testrun:
+            print("Supervised Gauss-Newton optimisation result: m=", m)
 
     # check result when scale is included
     if showGradient:
@@ -57,9 +60,11 @@ def main(testrun:bool, output_folder:str="../../Output"):
         scale = np.array([1.0, # good data
                           1.0]) # bad data
 
-    mscale = SupGaussNewton(param_instance, model_instance, data, weight=weight, scale=scale, max_niterations=max_niterations).run()
-    if not testrun:
-        print("Scale result difference=", mscale-m)
+    optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight, scale=scale, max_niterations=max_niterations)
+    if optimiser_instance.run():
+        mscale = optimiser_instance.final_model
+        if not testrun:
+            print("Scale result difference=", mscale-m)
 
     # get min and max of data
     yMin = yMax = 0.0

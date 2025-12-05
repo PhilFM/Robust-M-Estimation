@@ -35,20 +35,23 @@ def main(testrun:bool, output_folder:str="../../Output"):
     model_instance = RobustMean()
     influence_func_instance = GemanMcClureInfluenceFunc(sigma=sigma_base)
     param_instance = GNC_WelschParams(influence_func_instance, sigma_base, sigma_limit, num_sigma_steps, max_niterations)
-    m = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False).run()
-    if not testrun:
-        print("IRLS result: m=", m)
+    irls_instance = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
+    if irls_instance.run():
+        m = irls_instance.final_model
+        if not testrun:
+            print("IRLS result: m=", m)
 
-    optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
-    m = optimiser_instance.run()
-    if not testrun:
-        print("Supervised Gauss-Newton result: m=", m)
+    sup_gn_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
+    if sup_gn_instance.run():
+        m = sup_gn_instance.final_model
+        if not testrun:
+            print("Supervised Gauss-Newton result: m=", m)
 
     # check derivatives
     #residual = np.array([0.01])
-    #rhop, Bterm = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
-    #optimiser_instance.numeric_derivs_model = True
-    #rhopn, Btermn = optimiser_instance.calc_influence_func_derivatives(residual, 1.0) # scale
+    #rhop, Bterm = sup_gn_instance.calc_influence_func_derivatives(residual, 1.0) # scale
+    #sup_gn_instance.numeric_derivs_model = True
+    #rhopn, Btermn = sup_gn_instance.calc_influence_func_derivatives(residual, 1.0) # scale
     #if not testrun:
     #    print("rhop=",rhop, rhopn, "Bterm=",Bterm,Btermn)
 
@@ -56,9 +59,11 @@ def main(testrun:bool, output_folder:str="../../Output"):
     scale = np.array([1.0, # good data
                       1.0]) # bad data
 
-    mscale = IRLS(param_instance, model_instance, data, weight=weight, scale=scale, max_niterations=max_niterations).run()
-    if not testrun:
-        print("Scale result difference=", mscale-m)
+    irls_instance = IRLS(param_instance, model_instance, data, weight=weight, scale=scale, max_niterations=max_niterations)
+    if irls_instance.run():
+        mscale = irls_instance.final_model
+        if not testrun:
+            print("Scale result difference=", mscale-m)
 
     # get min and max of data
     yMin = yMax = 0.0
@@ -82,10 +87,10 @@ def main(testrun:bool, output_folder:str="../../Output"):
     mlist = np.linspace(xMin, xMax, num=300)
 
     def objective_func(m):
-        return optimiser_instance.objective_func([m])
+        return sup_gn_instance.objective_func([m])
 
     def gradient(m):
-        a,AlB = optimiser_instance.weighted_derivs([m],1.0) # lambda_val
+        a,AlB = sup_gn_instance.weighted_derivs([m],1.0) # lambda_val
         return a[0]
 
     for mx in mlist:

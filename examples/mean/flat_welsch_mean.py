@@ -9,10 +9,10 @@ from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
 
 from gncs_robust_mean import RobustMean
 
-def objective_func(m, optimiser_instance):
+def objective_func(m, optimiser_instance) -> float:
     return optimiser_instance.objective_func([m])
 
-def plotResult(optimiser_instance, data, weight, m, sigma, label, mgt, testrun:bool):
+def plotResult(optimiser_instance, data, weight, m, sigma, label, mgt, testrun:bool) -> None:
     dmin = dmax = data[0]
     for d in data:
         dmin = min(dmin, d)
@@ -40,7 +40,7 @@ def plotResult(optimiser_instance, data, weight, m, sigma, label, mgt, testrun:b
     if not testrun:
         plt.show()
 
-def merge(intervals):
+def merge(intervals) -> [[float,float]]:
     intervals.sort(key=lambda x: x[0])
     merged = []
 
@@ -53,7 +53,7 @@ def merge(intervals):
     
     return merged
 
-def mergeOverlap(arr):
+def mergeOverlap(arr) -> [[float,float]]:
     
     # Sort intervals based on start values
     arr.sort()
@@ -75,7 +75,7 @@ def mergeOverlap(arr):
     return res
 
 def flat_welsch_mean(data, sigma, weight=None, scale=None,
-                     max_niterations=50, residual_tolerance=1.e-8, diff_thres=1.e-10, print_warnings=False, mgt=None, testrun:bool=False):
+                     max_niterations=50, residual_tolerance=1.e-8, diff_thres=1.e-10, print_warnings=False, mgt=None, testrun:bool=False) -> float:
     # build +/- sigma intervals around data points
     intervals = [] #np.zeros((0,2))
     for d in data:
@@ -131,20 +131,22 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
             print("scale=",scale)
             plotResult(optimiser_instance, data, weight, x, sigma, "Init m", mgt, testrun)
 
-        m = SupGaussNewton(param_instance, RobustMean(), data, weight=weight, scale=scale,
-                           max_niterations=max_niterations, residual_tolerance=residual_tolerance,
-                           lambda_start=0.99, lambda_max=0.99, diff_thres=diff_thres,
-                           model_start=[x], print_warnings=print_warnings).run()
-        if print_warnings:
-            print("sigma=",sigma," m=",m)
+        sup_gn_instance = SupGaussNewton(param_instance, RobustMean(), data, weight=weight, scale=scale,
+                                         max_niterations=max_niterations, residual_tolerance=residual_tolerance,
+                                         lambda_start=0.99, lambda_max=0.99, diff_thres=diff_thres,
+                                         model_start=[x], print_warnings=print_warnings)
+        if sup_gn_instance.run():
+            m = sup_gn_instance.final_model
+            if print_warnings:
+                print("sigma=",sigma," m=",m)
 
-        testVal = optimiser_instance.objective_func([m])
-        if testVal > maxVal:
-            maxVal = testVal
-            maxX = m
+            testVal = optimiser_instance.objective_func([m])
+            if testVal > maxVal:
+                maxVal = testVal
+                maxX = m
 
-        if print_warnings:
-            print("testVal=",testVal," maxVal=",maxVal," maxX=",maxX)
-            plotResult(optimiser_instance, data, weight, m, sigma, "New m", mgt, testrun)
+            if print_warnings:
+                print("testVal=",testVal," maxVal=",maxVal," maxX=",maxX)
+                plotResult(optimiser_instance, data, weight, m, sigma, "New m", mgt, testrun)
 
     return maxX

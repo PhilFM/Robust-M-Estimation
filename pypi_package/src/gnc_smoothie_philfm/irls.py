@@ -55,7 +55,7 @@ class IRLS(BaseIRLS):
         else:
             return self._param_instance.influence_func_instance.rhop(rsqr, scale)
 
-    def __update_weights(self, model, weight, model_ref=None):
+    def __update_weights(self, model, weight, model_ref=None) -> None:
         small_diff = 1.0e-5  # in case numerical differentiation is specified
         self._model_instance.cache_model(model, model_ref=model_ref)
         for i, (d, di, s) in enumerate(
@@ -65,7 +65,7 @@ class IRLS(BaseIRLS):
                     self._model_instance.residual(d, di), s
                 )
 
-    def run(self):
+    def run(self) -> bool:
         self._param_instance.reset()
         weight = np.copy(self._weight)
         model, model_ref = self._init_model()
@@ -80,9 +80,16 @@ class IRLS(BaseIRLS):
             )
 
         if self._debug:
-            diffs = []
-            model_list = []
+            self.debug_diffs = []
+            self.debug_model_list = []
+            self.debug_model_list.append(
+                (
+                    0.0,  # alpha
+                    np.copy(model),
+                )
+            )
 
+        all_good = False
         for itn in range(self._max_niterations):
             self.__update_weights(model, weight, model_ref=model_ref)
             model_old = model
@@ -103,12 +110,13 @@ class IRLS(BaseIRLS):
                         if self._print_warnings:
                             print("Adding diff model_max_diff", model_max_diff)
 
-                        diffs.append(math.log10(model_max_diff))
+                        self.debug_diffs.append(math.log10(model_max_diff))
 
                     if model_max_diff < self._diff_thres:
                         if self._print_warnings:
                             print("Difference threshold reached")
 
+                        all_good = True
                         break
 
             if self._print_warnings:
@@ -123,9 +131,9 @@ class IRLS(BaseIRLS):
 
             self._param_instance.update()
             if self._debug:
-                model_list.append(
+                self.debug_model_list.append(
                     (
-                        itn / (self._max_niterations - 1),  # alpha
+                        (1+itn) / (self._max_niterations - 1),  # alpha
                         np.copy(model),
                     )
                 )
@@ -133,13 +141,11 @@ class IRLS(BaseIRLS):
         self._param_instance.reset(
             False
         )  # finish with parameters in correct final model
+
+        self.final_model = model
+        self.final_model_ref = model_ref
+
         if self._debug:
-            if model_ref is None:
-                return model, itn + 1, diffs, model_list
-            else:
-                return model, model_ref, itn + 1, diffs, model_list
-        else:
-            if model_ref is None:
-                return model
-            else:
-                return model, model_ref
+            self.debug_n_iterations = itn + 1
+
+        return all_good

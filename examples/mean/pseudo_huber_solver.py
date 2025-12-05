@@ -38,9 +38,11 @@ def main(testrun:bool, output_folder:str="../../Output"):
     model_instance = RobustMean()
     influence_func_instance = PseudoHuberInfluenceFunc(sigma=sigma)
     param_instance = NullParams(influence_func_instance)
-    m = IRLS(param_instance, model_instance, data, weight=weight, print_warnings=False).run()
-    if not testrun:
-        print("Result: m=", m)
+    irls_instance = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=200, print_warnings=False)
+    if irls_instance.run():
+        m = irls_instance.final_model
+        if not testrun:
+            print("Result: m=", m)
 
     # for graph plotting
     optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight, print_warnings=False)
@@ -53,9 +55,11 @@ def main(testrun:bool, output_folder:str="../../Output"):
         scale = np.array([1.0, 1.0, 1.0, 1.0, 1.0, # good data
                           1.0, 1.0, 1.0, 1.0]) # bad data
 
-    mscale = IRLS(NullParams(influence_func_instance), model_instance, data, weight=weight, scale=scale).run()
-    if not testrun:
-        print("Scale result difference=", mscale-m)
+    irls_instance = IRLS(NullParams(influence_func_instance), model_instance, data, weight=weight, scale=scale)
+    if irls_instance.run():
+        mscale = irls_instance.final_model
+        if not testrun:
+            print("Scale result difference=", mscale-m)
 
     # get min and max of data
     yMin = yMax = 0.0

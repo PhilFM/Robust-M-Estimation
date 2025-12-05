@@ -69,7 +69,9 @@ def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction
                                   model_instance, data, weight=weight, max_niterations=200)
 
         # for the paper let's use IRLS
-        mgncwelsch = welschIRLSInstance.run()
+        if welschIRLSInstance.run():
+            mgncwelsch = welschIRLSInstance.final_model
+
         vgncwelsch += math.pow(mgncwelsch-mgt, 2.0)
         welschOptInstance = SupGaussNewton(GNC_WelschParams(WelschInfluenceFunc(), gncwelschSigma, max(xgtrange,10.0*sigmaPop), 100),
                                            model_instance, data, weight=weight, max_niterations=200)
@@ -80,7 +82,9 @@ def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction
         pseudoHuberSigma = sigmaPop/p
         pseudoHuberIRLSInstance = IRLS(NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
                                        model_instance, data, weight=weight)
-        mhuber = pseudoHuberIRLSInstance.run()
+        if pseudoHuberIRLSInstance.run():
+            mhuber = pseudoHuberIRLSInstance.final_model
+
         vhuber += math.pow(mhuber-mgt, 2.0)
         pseudoHuberOptInstance = SupGaussNewton(NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
                                                 model_instance, data, weight=weight)
@@ -104,7 +108,9 @@ def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction
         gncIrlspIRLSInstance = IRLS(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                     gncIrlsp_p, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta),
                                     model_instance, data, weight=weight)
-        mgncirlsp = gncIrlspIRLSInstance.run()
+        gncIrlspIRLSInstance.run() # this can fail but let's use the result anyway
+        mgncirlsp = gncIrlspIRLSInstance.final_model
+
         vgncirlsp += math.pow(mgncirlsp-mgt, 2.0)
         gncIrlspOptInstance = SupGaussNewton(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                              gncIrlsp_p, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta),

@@ -63,13 +63,17 @@ def main(testrun:bool, output_folder:str="../../Output"):
             model_start[i] = modelGT[i] + 0.02
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
-        model,nIterations,diffsWelschGN,model_list = SupGaussNewton(param_instance, LineFit(), data,
-                                                                    max_niterations=max_niterations, diff_thres=diff_thres,
-                                                                    print_warnings=print_warnings, model_start=model_start, debug=True).run()
+        sup_gn_instance = SupGaussNewton(param_instance, LineFit(), data,
+                                         max_niterations=max_niterations, diff_thres=diff_thres,
+                                         print_warnings=print_warnings, model_start=model_start, debug=True)
+        if sup_gn_instance.run():
+            diffsWelschGN = sup_gn_instance.debug_diffs
 
-        model,nIterations,diffsWelschIRLS,model_list = IRLS(param_instance, LineFit(), data,
-                                                            max_niterations=max_niterations, diff_thres=diff_thres,
-                                                            print_warnings=print_warnings, model_start=model_start, debug=True).run()
+        irls_instance = IRLS(param_instance, LineFit(), data,
+                             max_niterations=max_niterations, diff_thres=diff_thres,
+                             print_warnings=print_warnings, model_start=model_start, debug=True)
+        if irls_instance.run():
+            diffsWelschIRLS = irls_instance.debug_diffs
     
         plotDifferences(diffsWelschGN, diffsWelschIRLS, testrun, output_folder)
 
