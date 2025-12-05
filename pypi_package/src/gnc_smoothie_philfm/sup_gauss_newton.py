@@ -22,8 +22,9 @@ class SupGaussNewton(BaseIRLS):
         lambda_scale: float = 1.2,
         diff_thres: float = 1.0e-10,
         print_warnings: bool = False,
-        model_start=None,
-        model_ref_start=None,
+        model_start = None,
+        model_ref_start = None,
+        model_range = None,
         debug: bool = False,
     ):
         BaseIRLS.__init__(self,
@@ -46,6 +47,7 @@ class SupGaussNewton(BaseIRLS):
         self.__lambda_start = lambda_start
         self.__lambda_max = lambda_max
         self.__lambda_scale = lambda_scale
+        self.__model_range = model_range
 
     def __calc_influence_func_derivatives(
         self, residual: np.array, s: float, small_diff: float = 1.0e-5
@@ -163,10 +165,35 @@ class SupGaussNewton(BaseIRLS):
             if callable(update_model_ref):
                 model_ref = update_model_ref(model, model_ref)
 
-            if (
-                self._param_instance.at_final_stage()
-                and self._diff_thres is not None
-            ):
+            # compare against any provided range
+            if self.__model_range is not None:
+                all_good_range = True
+                for i in range(len(model)):
+                    this_range = self.__model_range[i]
+                    if this_range is not None:
+                        if model[i] < this_range[0] or model[i] > this_range[1]:
+                            # outside range - revert
+                            if self._print_warnings:
+                                print(
+                                    "Reject lambda_val=",
+                                    lambda_val,
+                                    "outside range ",
+                                    model[i],
+                                    " at model parameter ",
+                                    i,
+                                    ": reverting to model",
+                                    model_old
+                                )
+
+                            model = model_old
+                            model_ref = model_refOld
+                            lambda_val /= self.__lambda_scale
+                            all_good_range = False
+
+                if not all_good_range:
+                    continue
+
+            if self._diff_thres is not None:
                 model_max_diff = np.linalg.norm(at, ord=np.inf)
                 if self._debug is True and model_max_diff > 0.0:
                     self.debug_diffs.append(math.log10(model_max_diff))
@@ -199,30 +226,30 @@ class SupGaussNewton(BaseIRLS):
                 * (tot - last_tot)
                 > self.__residual_tolerance
             ):
-                model = model_old
-                model_ref = model_refOld
-                lambda_val /= self.__lambda_scale
-                last_tot = self.objective_func(model, model_ref=model_ref)
                 if self._print_warnings:
                     print(
-                        "Reject new lambda_val=",
+                        "Reject lambda_val=",
                         lambda_val,
                         "diff=",
                         last_tot - tot,
                         "reverting to model",
-                        model,
+                        model_old,
                     )
+
+                model = model_old
+                model_ref = model_refOld
+                lambda_val /= self.__lambda_scale
+                last_tot = self.objective_func(model, model_ref=model_ref)
             else:
+                if self._print_warnings:
+                    print("Accept lambda_val=", lambda_val, "model=", model)
+
                 lambda_val = min(self.__lambda_scale * lambda_val, self.__lambda_max)
                 self._param_instance.update()
                 if self._param_instance.at_final_stage():
                     last_tot = tot
                 else:
                     last_tot = self.objective_func(model, model_ref=model_ref)
-
-                if self._print_warnings:
-                    if lambda_val != 0.0 and self.__lambda_scale > 1.0:
-                        print("Accept new lambda_val=", lambda_val)
 
             if self._debug:
                 self.debug_model_list.append(
