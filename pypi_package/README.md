@@ -10,65 +10,65 @@ M-estimation is a generalisation of maximum-likelihood estimation.
 We assume a known population probability density function (PDF) \\( f(.) \\), parametrised by a vector of parameters \\( {\bf x} \\),
 and a set of independent and identically distributed data \\( {\bf z}_i \\), \\( i=1,...,n \\) sampled from the population.
 The general model for the observations is
-\\[
+\[
   {\bf z}_i = {\bf h}_i({\bf x}) + \text{noise}
-\\]
-for some observation model function \\( {\bf h}_i({\bf x}) \\).
+\]
+for some observation model function \( {\bf h}_i({\bf x}) \).
 The distribution of the noise determined by the population PDF, which is defined as some function
-\\[
+\[
   f({\bf z}_i - {\bf h}_i({\bf x})) = f({\bf r}_i)
-\\]
-defining the \\( i \\)'th data error or "residual" vector \\( {\bf r}_i \\) as
-\\[
+\]
+defining the \( i \)'th data error or "residual" vector \( {\bf r}_i \) as
+\[
   {\bf r}_i({\bf x}) = {\bf z}_i - {\bf h}_i({\bf x})
-\\]
+\]
 
-For instance for Normal distributed observation errors with standard deviation \\( \sigma \\) we would have
-\\[
+For instance for Normal distributed observation errors with standard deviation \( \sigma \) we would have
+\[
   f({\bf r}_i) = \\,\mathrm{e}^{-\frac{|| {\bf r}_i ||^2}{2\sigma^2}}
-\\]
+\]
 
-The maximum likelihood estimator of \\( {\bf x} \\) can be computed as 
+The maximum likelihood estimator of \( {\bf x} \) can be computed as 
 
-\\[
+\[
   \widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{max}} \left( \prod_{i=1}^n f({\bf r}_i({\bf x})) \right)
-\\]
+\]
 
 or equivalently,
-\\[
+\[
   \widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n - \log f({\bf r}_i({\bf x})) \right)
-\\]
+\]
 
 M-estimation generalises this method by substituting a different function into the above sum, so we instead compute
-\\[
+\[
   \widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n \rho(|| {\bf r}_i({\bf x}) ||) \right)
-\\]
-for some function \\( \rho(r_i) \\) where
-\\[
+\]
+for some function \( \rho(r_i) \) where
+\[
   r_i = || {\bf r}_i({\bf x}) ||
-\\]
+\]
 
 We write the objective function above as
 
-\\[
+\[
   F({\bf x}) = \sum_{i=1}^n \rho(|| {\bf r}_i({\bf x}) ||)
-\\]
+\]
 
 or
-\\[
+\[
   F({\bf x}) = \sum_{i=1}^n \rho(r_i({\bf x}))
-\\]
+\]
 
 In the special case of normally distributed observation errors, this give rise to standard least-squares,
-\\( \rho(r) \sim r^2 \\), the squared error in the observations.
+\( \rho(r) \sim r^2 \), the squared error in the observations.
 The development and popularisation of M-estimation was driven by the need to fit models to data with outliers, i.e.
 data not sampled from the population pdf but from a distinct distribution or distributions.
 When outliers are present the least-squares method breaks down because single outliers
-can have a huge influence, leading to a wildly incorrect value for \\( \widehat{\bf x} \\).
-To allow for outliers \\( \rho(r) \\) is shaped by reducing the value of \\( \rho(r) \\) for large \\( r \\) error values.
-The choice of influence function \\( \psi(r) = d\rho(r)/dr \\) is driven by a trade-off between the desire to
+can have a huge influence, leading to a wildly incorrect value for \( \widehat{\bf x} \).
+To allow for outliers \( \rho(r) \) is shaped by reducing the value of \( \rho(r) \) for large \( r \) error values.
+The choice of influence function \( \psi(r) = d\rho(r)/dr \) is driven by a trade-off between the desire to
 provide a good accuracy in the resulting
-estimate for \\( \widehat{\bf x} \\) while providing robustness to noise in the data.
+estimate for \( \widehat{\bf x} \) while providing robustness to noise in the data.
 For instance, instead of the quadratic function required for least-squares, the pseudo-Huber influence
 function [1] is asymptotically linear in order to provide some level of robustness. 
 
@@ -78,17 +78,17 @@ Redescending influence functions have the property that their gradient tends to 
 This allows them to be robust to outliers with large errors. On the negative side, redescending influence functions
 have the problem that the objective function above minimised by M-estimation may have multiple local minima.
 It is difficult to ensure that the global minimum is reached. When the standard method "iteratively reweighted least-squares"
-(IRLS) is used, the result will depend on the quality of the initial value of \\( {\bf x} \\)
+(IRLS) is used, the result will depend on the quality of the initial value of \( {\bf x} \)
 used for the iteration.
     
 We start with the Welsch influence function [2]. This uses a negative Gaussian:
-\\[
+\[
   \rho(r) = \frac{\sigma^2}{2} \left( 1 - \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
-\\]
-\\[
+\]
+\[
   \psi(r) = \frac{d\rho(r)}{dr} = \frac{r}{2} \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
-\\]
-where the width \\( \sigma \\) of the Gaussian is known as the "wavelength" of the Welsch influence function.
+\]
+where the width \( \sigma \) of the Gaussian is known as the "wavelength" of the Welsch influence function.
 Using a Gaussian influence function, whose gradient tends to zero for large errors, ensures robustness to large errors,
 because their influence on the solution will be very small.
 However in general it is presumed in the literature that solving M-estimation using redescending influence functions
@@ -100,139 +100,139 @@ achieve the *global* optimum solution without any initial model estimate being p
 
 IRLS is the standard technique used to solve the non-linear optimisation problems that arise in M-estimation using robust
 influence functions. IRLS assumes that the non-robust least-squares solution
-for \\( {\bf x} \\) is soluble in closed form, given some "weights" assigned
+for \( {\bf x} \) is soluble in closed form, given some "weights" assigned
 to the data points. In other words there is a (simple) algorithm that can be used to solve the optimisation problem
 
-\\[
+\[
   \widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n w_i || {\bf z}_i - {\bf h}_i({\bf x}) ||^2)\right)
-\\]
+\]
 
 or
-\\[
+\[
   \widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( F_{\text{LS}}({\bf x}) \right)
-\\]
+\]
 
 where
-\\[
+\[
   F_{\text{LS}}({\bf x}) = \sum_{i=1}^n w_i r_i({\bf x})^2 = \sum_{i=1}^n w_i ||{\bf z}_i - {\bf h}_i({\bf x})||^2
-\\]
+\]
 
-for weights \\( w_i \\).
-IRLS is based on the observation that the solution \\( \widehat{\bf x} \\) must be a stationary point of the
-objective function \\( F_{\text{LS}} \\) in the above equation, so we must have
+for weights \( w_i \).
+IRLS is based on the observation that the solution \( \widehat{\bf x} \) must be a stationary point of the
+objective function \( F_{\text{LS}} \) in the above equation, so we must have
 
-\\[
+\[
   \frac{dF_{\text{LS}}}{d{\bf x}} = \sum_{i=1}^n w_i r_i \frac{dr_i}{d{\bf x}} = {\bf 0}
-\\]
+\]
 
-The stationary point condition for solving the original optimisation problem for \\( \widehat{\bf x} \\) is the similar equation
-\\[
+The stationary point condition for solving the original optimisation problem for \( \widehat{\bf x} \) is the similar equation
+\[
   \frac{dF}{d{\bf x}} = \sum_{i=1}^n \frac{d\rho(r_i)}{d{\bf x}} = \sum_{i=1}^n \frac{d\rho(r_i)}{dr_i}\frac{dr_i}{d{\bf x}} = \sum_{i=1}^n \psi(r_i)\frac{dr_i}{d{\bf x}} = {\bf 0}
-\\]
+\]
 
-Comparing the equations involving \\( \frac{dF_{\text{LS}}}{d{\bf x}} \\) and \\( \frac{dF}{d{\bf x}} \\) above,
+Comparing the equations involving \( \frac{dF_{\text{LS}}}{d{\bf x}} \) and \( \frac{dF}{d{\bf x}} \) above,
 we see that the appropriate weight to use is
-\\[
+\[
   w_i = \frac{1}{r_i} \psi(r_i)
-\\]
+\]
 
-This choice will ensure that solving for \\( \frac{dF_{\text{LS}}}{d{\bf x}} \\) will also solve for \\( \frac{dF}{d{\bf x}} \\)
+This choice will ensure that solving for \( \frac{dF_{\text{LS}}}{d{\bf x}} \) will also solve for \( \frac{dF}{d{\bf x}} \)
 to first order, and hopefully improve the solution.
-IRLS repeats the following two steps to convergence, given an initial state estimate \\( \widehat{\bf x} \\):
-1. Estimate weights using the above equation for \\( w_i \\) for each data item, to be used when calculating the next value
-   for \\( \widehat{\bf x} \\).
-   \\( r_i \\) and its derivative are evaluated at the current solution \\( \widehat{\bf x} \\).
-1. Calculate the next estimate for \\( \widehat{\bf x} \\), using the updated weights \\( w_i \\) from the previous step.
+IRLS repeats the following two steps to convergence, given an initial state estimate \( \widehat{\bf x} \):
+1. Estimate weights using the above equation for \( w_i \) for each data item, to be used when calculating the next value
+   for \( \widehat{\bf x} \).
+   \( r_i \) and its derivative are evaluated at the current solution \( \widehat{\bf x} \).
+1. Calculate the next estimate for \( \widehat{\bf x} \), using the updated weights \( w_i \) from the previous step.
 
-IRLS normally requires a good initial estimate \\( \widehat{\bf x} \\) of \\( {\bf x} \\) to avoid local
+IRLS normally requires a good initial estimate \( \widehat{\bf x} \) of \( {\bf x} \) to avoid local
 minimal in the objective function.
 
 ## Supervised Gauss-Newton algorithm (Sup-GN)
 
-Beginning with the objective function \\( F({\bf x}) \\), let us assume that we have an existing estimate \\( \widehat{\bf x}^{\*} \\)
-of \\( {\bf x} \\). We can then try to improve this estimate by solving
-\\[
+Beginning with the objective function \( F({\bf x}) \), let us assume that we have an existing estimate \( \widehat{\bf x}^{\*} \)
+of \( {\bf x} \). We can then try to improve this estimate by solving
+\[
   \frac{dF({\bf x})}{d{\bf x}} = {\bf 0}
-\\]
-We then build the first-order approximation to the weighting function \\( \psi(r) \\) that solves for an improved \\( \widehat{\bf x} \\):
-\\[
+\]
+We then build the first-order approximation to the weighting function \( \psi(r) \) that solves for an improved \( \widehat{\bf x} \):
+\[
   \frac{dF({\bf x})}{d{\bf x}} + \frac{d^2 F}{d{\bf x}^2} (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
-\\]
+\]
 
-where the derivatives are evaluated at \\( {\bf x}=\widehat{\bf x}^{\*} \\), or
-\\[
+where the derivatives are evaluated at \( {\bf x}=\widehat{\bf x}^{\*} \), or
+\[
   \sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + \sum_{i=1}^n \left( \frac{d^2\rho(r_i)}{dr_i^2} \frac{d r_i}{d{\bf x}}^\intercal \frac{d r_i}{d{\bf x}} + \psi(r_i) \frac{d^2 r_i}{d{\bf x}^2} \right) (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
-\\]
-where \\( r_i \\) and the derivatives are again evaluated at \\( {\bf x}=\widehat{\bf x}^{\*} \\).
-Noting the equation for \\( r_i \\) in the section above, we can write
+\]
+where \( r_i \) and the derivatives are again evaluated at \( {\bf x}=\widehat{\bf x}^{\*} \).
+Noting the equation for \( r_i \) in the section above, we can write
 
-\\[
+\[
   \frac{dr_i}{d{\bf x}} = \frac{dr_i}{d{\bf r}_i} \frac{d{\bf r}_i}{d{\bf x}} = \frac{1}{r_i} {\bf r}_i^\intercal \frac{d{\bf r}_i}{d{\bf x}}
-\\]
+\]
 
 and from this derive
 
-\\[
+\[
   \frac{d^2 r_i}{d{\bf x}^2} = \frac{1}{r_i^3} \left( \frac{d{\bf r}_i}{d{\bf x}} \right)^{\intercal} \left( r_i^2 I - {\bf r}_i {\bf r}_i^\intercal \right) \frac{d{\bf r}_i}{d{\bf x}} + \frac{1}{r_i} {\bf r}_i^{\intercal} \frac{d^2{\bf r}_i}{d{\bf x}^2}
-\\]
+\]
 
-We assume that the data error \\( {\bf r}_{i} \\) is a smooth function of \\( {\bf x} \\) and so ignore the second
-derivative term involving \\( d^2{\bf r}_i/d{\bf x}^2 \\).
-Substituting the above (without the second term) into the equation for \\( \widehat{\bf x} - \widehat{\bf x}^{\*} \\) above
-and combining with the equation for \\( \frac{dr_i}{d{\bf x}} \\) provides the result
+We assume that the data error \( {\bf r}_{i} \) is a smooth function of \( {\bf x} \) and so ignore the second
+derivative term involving \( d^2{\bf r}_i/d{\bf x}^2 \).
+Substituting the above (without the second term) into the equation for \( \widehat{\bf x} - \widehat{\bf x}^{\*} \) above
+and combining with the equation for \( \frac{dr_i}{d{\bf x}} \) provides the result
 
-\\[
+\[
   \sum_{i=1}^n {\bf a} + (A + B) (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
-\\]
+\]
 
 where
 
-\\[
+\[
   {\bf a} = \sum_{i=1}^n \frac{1}{r_i} \psi(r_i) {\bf r}_i^\intercal \frac{d{\bf r}_i}{d{\bf x}}
-\\]
+\]
 
-\\[
+\[
   A = \sum_{i=1}^n \frac{1}{r_i} \psi(r_i) \left(\frac{d{\bf r}_i}{d{\bf x}}\right)^\intercal \frac{d{\bf r}_i}{d{\bf x}}
-\\]
+\]
 
-\\[
+\[
   B = \sum_{i=1}^n \frac{1}{r_i^3} \left(r_i\frac{d^2\rho}{dr_i^2} - \psi(r_i) \right) \left(\frac{d{\bf r}_i}{d{\bf x}}\right)^\intercal {\bf r}_i {\bf r}_i^\intercal \frac{d{\bf r}_i}{d{\bf x}}
-\\]
+\]
 
 For the Welsch influence function we obtain
 
-\\[
+\[
   \frac{1}{r_i} \psi(r_i) = \frac{1}{2} \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
-\\]
+\]
 
-\\[
+\[
   \frac{1}{r_i^3} \left(r_i\frac{d^2\rho}{dr_i^2} - \psi(r_i) \right) = -\frac{1}{2\sigma^2} \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
-\\]
+\]
 
 We can solve the Gauss-Newton update equations to provide
-updated parameters \\( \widehat{\bf x} \\) given residuals, derivatives and
-hence matrices \\( A \\), \\( B \\) evaluated at the previous parameters \\( \widehat{\bf x}^{\*} \\).
+updated parameters \( \widehat{\bf x} \) given residuals, derivatives and
+hence matrices \( A \), \( B \) evaluated at the previous parameters \( \widehat{\bf x}^{\*} \).
 However a direct Gauss-Newton iteration gives no guarantee of
 convergence. We propose the following "damped" Gauss-Newton updates, in the manner of Levenberg-Marquardt [5] damping:
-\\[
+\[
   \sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + (A + \lambda B) (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
-\\]
+\]
 
-where \\( \lambda \\) in the range \\( [0,1] \\) is a damping factor. When \\( \lambda=1 \\) (no damping)
-we have a pure Gauss-Newton update. When \\( \lambda=0 \\) (maximum damping), we apply an update that is
+where \( \lambda \) in the range \( [0,1] \) is a damping factor. When \( \lambda=1 \) (no damping)
+we have a pure Gauss-Newton update. When \( \lambda=0 \) (maximum damping), we apply an update that is
 exactly equivalent to IRLS for linear data models (proof omitted).
-As a result we can treat the extreme value \\( \lambda=0 \\) as a "safe" iteration
+As a result we can treat the extreme value \( \lambda=0 \) as a "safe" iteration
 that will guarantee, at least for linear models, a convergent update.
 The Sup-GN algorithm then proceeeds as follows:
 
-First initialize \\( \widehat{\bf x}^{\*} \\) in the same way as IRLS (least-squares solution with weights \\( w_i \\) set to one), and
-set \\( \lambda=1 \\). Then given a damping adjustment factor \\( k<1 \\):
-1. Solve the damped Gauss-Newton update equation above to produce an updated estimate \\( \widehat{\bf x} \\).
-1. Check the objective function \\( F() \\) evaluated at \\( \widehat{\bf x}^{\*} \\) and \\( \widehat{\bf x} \\).
+First initialize \( \widehat{\bf x}^{\*} \) in the same way as IRLS (least-squares solution with weights \( w_i \) set to one), and
+set \( \lambda=1 \). Then given a damping adjustment factor \( k<1 \):
+1. Solve the damped Gauss-Newton update equation above to produce an updated estimate \( \widehat{\bf x} \).
+1. Check the objective function \( F() \) evaluated at \( \widehat{\bf x}^{\*} \) and \( \widehat{\bf x} \).
 If we managed to improve the objective function, we can reduce the damping, otherwise we need to reject the new
 estimate and increase the damping:
-   - If \\( F(\widehat{\bf x}) < F(\widehat{\bf x}^{\*}) \\), set \\( \lambda \leftarrow k\lambda \\) and \\( \widehat{\bf x}^{\*} \leftarrow \widehat{\bf x} \\).
-   - Else set \\( \lambda \leftarrow \min(1,\frac{\lambda}{k}) \\).
+   - If \( F(\widehat{\bf x}) < F(\widehat{\bf x}^{\*}) \), set \( \lambda \leftarrow k\lambda \) and \( \widehat{\bf x}^{\*} \leftarrow \widehat{\bf x} \).
+   - Else set \( \lambda \leftarrow \min(1,\frac{\lambda}{k}) \).
 1. Iterate to convergence.
 
 The advantage of this algorithm over IRLS is that it provides much faster convergence when we are near the solution.
@@ -248,7 +248,7 @@ The Python library is based on `numpy` and contains the following top-level modu
 Top-level 'IRLS' class. Once you have constructed an instance of this class, call the `run()`
 method to run it. This returns `True` on successful convergence, `False` on failure.
 The final model and model reference (see below) are stored in `final_model` and `final_model_ref`,
-whether the `run()` function succeeds or not.
+whether the `run()` method succeeds or not.
 
 Here are the parameters that need to be passed to the `IRLS` class constructor. Optional parameters follow.
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
@@ -269,7 +269,7 @@ Here are the parameters that need to be passed to the `IRLS` class constructor. 
 - `model_instance` The model being fitted to the data, an instance of a class you design
      that provides the following methods:
    - `cache_model(self, model, model_ref=None)`
-     Use this function to cache the model, prior to the `residual()` function being called on each data item.
+     Use this method to cache the model, prior to the `residual()` method being called on each data item.
    - `residual(self, data_item, data_id:int=None) -> np.array`
      Calculates the residual (error) of the `data_item` given the model. If the model
      contains reference parameters e.g. for estimating rotation, these are passed
@@ -277,7 +277,7 @@ Here are the parameters that need to be passed to the `IRLS` class constructor. 
      is the id of this data item (see the data_ids array below)
    - `linear_model_size(self) -> int`
      Returns the number of parameters in the model if the model is linear.
-     The `BaseIRLS` class uses an internal weighted_fit() function to fit a linear model
+     The `BaseIRLS` class uses an internal weighted_fit() method to fit a linear model
      to the data with specified weights, so that the programmer does not have to
      implement it. If the model is non-linear, don't define this method.
    - `weighted_fit(self, data, data_ids, weight, scale) -> (np.array, np.array)`
@@ -302,7 +302,7 @@ Now the optional parameters for the `IRLS` class constructor:
      have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
      to apply to the influence function for that data item.
 -  `numeric_derivs_influence: bool` Whether to calculate derivatives of the influence function numerically
-     from a provided `rho()` function or directly using a provided `rhop()` function.
+     from a provided `rho()` method or directly using a provided `rhop()` method.
 -  `max_niterations: int` Maximum number of IRLS iterations to apply before aborting.
 -  `diff_thres: float` Terminate when successful update changes the model model parameters by less than this value.
 -  `print_warnings: bool` Whether to print debugging information.
@@ -332,7 +332,7 @@ internally. Also Sup-GN converges quadratically for linear models when close to 
 Once you have constructed an instance of the `SupGaussNewton` class, call the `run()`
 method to run it. This returns `True` on successful convergence, `False` on failure.
 The final model and model reference (see below) are stored in `final_model` and `final_model_ref`,
-whether the `run()` function succeeds or not.
+whether the `run()` method succeeds or not.
 
 The parameters to the `SupGaussNewton` constructor are very similar to the `IRLS` class,
 but there are some twists due to Sup-GN requiring differentiation of the model residual.
@@ -356,12 +356,12 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
       - `s` The scale of the data item indicating its known inaccuracy, so a value >= 1.
      Returns the value of the objective function.
    - `rhop(self, rsqr: float, s: float) -> float`
-        The influence function, which is equal to the derivative with respect to \\( r \\)
-        of `rho(rsqr,s)` divided by \\( r \\), where \\( r \\) is the L2 norm of the residual vector.
+        The influence function, which is equal to the derivative with respect to \( r \)
+        of `rho(rsqr,s)` divided by \( r \), where \( r \) is the L2 norm of the residual vector.
         If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
         are calculated numerically from `rho()` and `rhop()` is not required.
    - `Bterm(self, rsqr: float, s: float) -> float`
-        Implements \\( (r*\rho''(r) - \rho'(r))/(r^3) \\) where ' indicates derivative.
+        Implements \( (r*\rho''(r) - \rho'(r))/(r^3) \) where ' indicates derivative.
         If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
         are calculated numerically from rho() and Bterm() is not required.
    - `summary(self) -> str`
@@ -378,10 +378,10 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
    - `update(self)` Update the `influence_func_instance` to the next step in the GNC schedule.
 
 - `model_instance` The model being fitted to the data, an instance of a class you design
-  that provides the following functions:
+  that provides the following methods:
    - `cache_model(self, model, model_ref=None)`
-     Use this function to cache the model, prior to `residual()` and `residual_gradient()`
-     functions being called on each data item.
+     Use this method to cache the model, prior to `residual()` and `residual_gradient()`
+     methods being called on each data item.
    - `residual(self, data_item, data_id:int=None) -> np.array`
      Calculates the residual (error) of the data_item given the model. If the model
      contains reference parameters e.g. for estimating rotation, these are passed
@@ -391,11 +391,11 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
      The Jacobian or derivative matrix of the residual vector with respect
      to the model parameters. If the `numeric_derivs_model` parameter is set to `True`
      (see below) then the derivatives are calculated numerically using the `residual()`
-     function. If there are different types of data to be handled, the `data_id`
+     method. If there are different types of data to be handled, the `data_id`
      is the id of this data item (see the `data_ids` array below)
    - `linear_model_size(self) -> int`
      Returns the number of parameters in the model if the model is linear.
-     The `BaseIRLS` class uses an internal `weighted_fit()` function to fit a linear model
+     The `BaseIRLS` class uses an internal `weighted_fit()` method to fit a linear model
      to the data with specified weights, so that the programmer does not have to
      implement it. If the model is non-linear, don't define this method.
    - `weighted_fit(self, data, data_ids, weight, scale) -> (np.array, np.array)`
@@ -421,10 +421,10 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
      have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
      to apply to the influence function for that data item.
 - `numeric_derivs_model: bool` Whether to calculate derivatives of the data residual vector with respect to the
-     model parameters numerically using a provided `residual()` function or directly
-     using a provided `residual_gradient()` function.
+     model parameters numerically using a provided `residual()` method or directly
+     using a provided `residual_gradient()` method.
 - `numeric_derivs_influence: bool` Whether to calculate derivatives of the influence function numerically
-     from a provided `rho()` function or directly using a provided `rhop()` function.
+     from a provided `rho()` method or directly using a provided `rhop()` method.
 - `max_niterations: int` Maximum number of Sup-GN iterations to apply before aborting
 - `residual_tolerance: float` An optional parameter that is used to terminate Sup-GN when the improvement to the
      objective function value is smaller than the provided threshold
@@ -435,7 +435,7 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
 - `lambda_scale: float` Scale factor to multiply lambda by when an iteration successfully reduces/increases
      the objective function (depending on the +/- sign specified by
      `param_instance.influence_func_instance.influence_func_sign()`, see above).
-     When the iteration is not successful, the model change is reverted and \\( \lambda \\) is divided
+     When the iteration is not successful, the model change is reverted and \( \lambda \) is divided
      by this factor to increase the damping at the next iteration.
 - `diff_thres: float` Terminate when successful update changes the model parameters by less than this value.
 - `print_warnings: bool` Whether to print debugging information.
@@ -449,8 +449,8 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
 ### Example code for the `IRLS` and `SupGaussNewton` classes
 
 The simplest non-trivial example of an IRLS/Sup-GN model class
-is to support fitting a straight line through 2D data, with the model \\( y=ax+b \\), where \\( a \\) is the gradient of the line and
-\\( b \\) is the intercept. The model class for line fitting might look like this:
+is to support fitting a straight line through 2D data, with the model \( y=ax+b \), where \( a \) is the gradient of the line and
+\( b \) is the intercept. The model class for line fitting might look like this:
 ```
 import numpy as np
 
@@ -475,11 +475,12 @@ class LineFit:
         x = data_item[0]
         return np.array([[x, 1.0]])
 
-    # return size of model if the model is linear, otherwise return 0
+    # return number of parameters in model if the model is linear,
+    # otherwise don't define this method
     def linear_model_size(self) -> int:
         return 2 # a,b
 ```
-In this case the data items will have two values each, for \\( x,y \\). So an example data array could be
+In this case the data items will have two values each, for \( x,y \). So an example data array could be
 ```
 data = np.array([[0.0, 0.90], [0.1, 0.95], [0.2, 1.0], [0.3, 1.05], [0.4, 1.1]])
 ```
@@ -511,17 +512,17 @@ your code.
 ### Checking derivatives: `check_derivs.py`
 
 When you design a model class to be used for Sup-GN optimisation, and have written your `residual()`
-function defining how to calculate the model/data errors, you have a design choice:
-1. Implement the `residual_gradient()` function yourself, first working out the Jacobian matrix of
+method defining how to calculate the model/data errors, you have a design choice:
+1. Implement the `residual_gradient()` method yourself, first working out the Jacobian matrix of
    the residual vector.
 1. Calculating the derivatives numerically. This is handled internally by the `SupGaussNewton` class.
    You just need to pass `numeric_derivs_model=True` in the arguments to the `SupGaussNewton` constructor.
 
 In the former case, you will want to check that your derivative calculation is correct.
-Use the `check_derivs()` function to do this. It calculates derivatives both ways, first calling
-your `residual_gradient()` function and then calculating them numerically, and compares
+Use the `check_derivs()` method to do this. It calculates derivatives both ways, first calling
+your `residual_gradient()` method and then calculating them numerically, and compares
 them using thresholds. If the error in any derivative is greater than the provided threshold
-the function returns `False`. The required arguments to the function are:
+the method returns `False`. The required arguments to the method are:
 - `optimiser_instance` An instance of `SupGaussNewton` built with an instance of your model class.
    The `SupGaussNewton` instance also needs a `param_instance` and some data to construct it - see
    below for an example of how to do this.
@@ -529,9 +530,9 @@ the function returns `False`. The required arguments to the function are:
 
 Optional argmuments that may be required:
 - `model_ref` Reference model parameters, for instance if the model contains rotation parameters.
-- `diff_threshold_a: float` Threshold used for the terms of the \\( {\bf a} \\) vector in
+- `diff_threshold_a: float` Threshold used for the terms of the \( {\bf a} \) vector in
   the Sup-GN iteration.
-- `diff_threshold_AlB: float` Threshold used for the terms of the \\( A \\) and \\( B \\) matrices in
+- `diff_threshold_AlB: float` Threshold used for the terms of the \( A \) and \( B \) matrices in
   the Sup-GN iteration.
 - `print_diffs: bool` Whether to print the differences between the analytic and numerical
   derivative estimates.
@@ -555,11 +556,11 @@ the `SupGaussNewton` instance, although the derivative testing will work for oth
 ### Welsch influence function `welsch_influence_func.py`
 
 This provides the class `WelschInfluenceFunc`, that implements the Welsch influence function, defined as
-\\[
+\[
   \rho(r) = \frac{\sigma^2}{2} \left( 1 - \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
-\\]
+\]
 
-with a single parameter \\( sigma \\). This is the simplest robust influence function.
+with a single parameter \( sigma \). This is the simplest robust influence function.
 We recommend using the Welsch influence function over others because of its simplicity and superior convergence properties
 (details to come). The Welsch influence function is redescending, meaning that the gradient tends to zero at either ends of the range.
 This provides it with remarkable robustness, even in the presence of very bad outliers.
@@ -576,23 +577,23 @@ values to a low value `sigma_base` that approximates the population error standa
 
 The class `PseudoHuberInfluenceFunc` implements the fully differentiable
 version [1] of the original Huber influence function [7].
-\\[
+\[
    \rho(r) = \sigma^2 \left( \sqrt{1 + (r/\sigma)^2} - 1 \right)
-\\]
+\]
 
-with a single parameter \\( \sigma \\). You can use this influence function if you know that your outliers
-are relatively small. The Pseudo-Huber objective function \\( \rho(r) \\) is convex, so you don't
+with a single parameter \( \sigma \). You can use this influence function if you know that your outliers
+are relatively small. The Pseudo-Huber objective function \( \rho(r) \) is convex, so you don't
 need to use a GNC schedule. Instead use it with `NullParams`. On the other hand, if the outliers are
 very bad then it will fail to converge to the correct solution.
 
 ### Geman-McClure influence function `geman_mcclure_influence_func.py`
 
 This `GemanMcClureInfluenceFunc` class implements the Geman-McClure influence function [8], defined by
-\\[
+\[
    \rho(r) = \frac{r^2}{\sigma^2 + r^2}
 \\]
 
-with a single parameter \\( \sigma \\). Geman-McClure is another redescending influence function,
+with a single parameter \( \sigma \). Geman-McClure is another redescending influence function,
 so it is suitable for being embedded in a GNC schedule and handling large outliers. Wrap it in the
 same `GNC_WelschParams` GNC schedule class used for the Welsch influence function if you want
 to try this, but we still recommend using the Welsch influence function over Geman-McClure.
@@ -701,13 +702,13 @@ class PointRegistration:
         model[3:6] = t
         return model,R
 ```
-The reference rotation is first created in the `weighted_fit` function that implements the algorithm of [9]
+The reference rotation is first created in the `weighted_fit` method that implements the algorithm of [9]
 to initiate the model. It returns the model and the rotation matrix `R` that is return as the initial `model_ref`.
-In the `cache_model()` method, the reference rotation matrix \\( R_0 \\) and the small rotation \\( R_s \\)
-are combined as a cached rotation \\ R = R_s R_0 \\). This combined \\( R \\) is then used to calculate
-the residual. In the `residual_gradient` function, the derivatives are calculated with respect to the small
-rotation parameters, and a small angle approximation is used. The `update_model_ref` function updates the
-reference rotation matrix \\( R_0 \\) based on the model change (small rotation) and the previous state
+In the `cache_model()` method, the reference rotation matrix \( R_0 \) and the small rotation \( R_s \)
+are combined as a cached rotation \\ R = R_s R_0 \). This combined \( R \) is then used to calculate
+the residual. In the `residual_gradient` method, the derivatives are calculated with respect to the small
+rotation parameters, and a small angle approximation is used. The `update_model_ref` method updates the
+reference rotation matrix \( R_0 \\) based on the model change (small rotation) and the previous state
 of the rotation reference `prev_model_ref`. The small rotation parameters in the model are reset to zero,
 ready for the next iteration. A necessary refinement is that we should ensure that the rotation reference
 maintains its orthogonality. Because it is computed incrementally, floating point errors could push it

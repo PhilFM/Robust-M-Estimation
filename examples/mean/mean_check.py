@@ -67,7 +67,7 @@ def plotResult(data, weight,
 
     gncs_draw_data_points(plt, data, weight, xMin, xMax, N)
     plt.legend()
-    plt.savefig(os.path.join(output_folder, "irlsCheck.png"), bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "mean_check.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
     

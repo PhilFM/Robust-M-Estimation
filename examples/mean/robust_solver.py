@@ -3,9 +3,6 @@ import matplotlib.pyplot as plt
 import json
 import os
 
-import sys
-sys.path.append("../../pypi_package/src")
-
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from robust_solver_apply import apply_to_data

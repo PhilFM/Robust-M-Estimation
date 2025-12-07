@@ -4,12 +4,12 @@ requires = ["setuptools"]
 
 [project]
 name = "gnc_smoothie_philfm"
-version = "0.0.49"
+version = "0.0.50"
 authors = [
-  { name="Philip McLauchlan", email="phlip.mclauchlan@gmail.com" },
+  { name="Philip McLauchlan", email="philipmclauchlan6@gmail.com" },
 ]
 maintainers = [
-  { name="Philip McLauchlan", email="phlip.mclauchlan@gmail.com" },
+  { name="Philip McLauchlan", email="philipmclauchlan6@gmail.com" },
 ]
 requires-python = ">=3.10"
 dependencies = ["numpy", "matplotlib"]

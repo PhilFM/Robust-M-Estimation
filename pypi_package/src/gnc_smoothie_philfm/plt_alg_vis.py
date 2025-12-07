@@ -9,14 +9,14 @@ model_values[key]["lw"] = 1.0
 
 key = ("SupGN", "Welsch", "GNC_Welsch")
 model_values[key] = {}
-model_values[key]["label"] = "SUP-GN Welsch"
+model_values[key]["label"] = "GNC SUP-GN Welsch"
 model_values[key]["colour"] = "green"
 model_values[key]["linestyle"] = "solid"
 model_values[key]["lw"] = 1.0
 
 key = ("IRLS", "Welsch", "GNC_Welsch")
 model_values[key] = {}
-model_values[key]["label"] = "GNC-W"
+model_values[key]["label"] = "GNC IRLS Welsch"
 model_values[key]["colour"] = "magenta"
 model_values[key]["linestyle"] = (0, (1, 1))
 model_values[key]["lw"] = 1.0
@@ -37,7 +37,7 @@ model_values[key]["lw"] = 1.0
 
 key = ("IRLS", "PseudoHuber", "Welsch")
 model_values[key] = {}
-model_values[key]["label"] = "Pseudo-Huber IRLS"
+model_values[key]["label"] = "IRLS Pseudo-Huber"
 model_values[key]["colour"] = "blue"
 model_values[key]["linestyle"] = (0, (5, 1))
 model_values[key]["lw"] = 1.0

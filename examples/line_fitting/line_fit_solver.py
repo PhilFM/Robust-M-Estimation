@@ -20,7 +20,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     data = np.array([[0.0, 0.90], [0.1, 0.95], [0.2, 1.0], [0.3, 1.05], [0.4, 1.1], # good data
                      [0.05, 10.0], [0.15, 2.0], [0.25, 2.5], [0.35, 3.2]]) # bad data
 
-    sigma_base = 0.2
+    sigma_base = 2
     param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, 50.0, 20) # sigma_base, sigma_limit, num_sigma_steps
     optimiser_instance = SupGaussNewton(param_instance, LineFit(), data, debug=True)
     if optimiser_instance.run():
