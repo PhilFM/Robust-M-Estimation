@@ -6,7 +6,7 @@ Some code uses Timothee Mathieu's `robust_mean` package [RobustMeanEstimator](ht
 Top-level example code:
 - [welsch_solver.py](welsch_solver.py) Example code that generates simulated data and runs IRLS and Sup-GN with the Welsch influence function.
 
-Other runnable examples:
+Other runnable example code samples:
 - [mean_deriv_check.py](mean_deriv_check.py) Run this to check that the derivative formula implemented in the mean estimation
   algorithm class `RobustMean` in `gncs_robust_mean.py` is correct. This is done by comparing with numerically calculated derivatives.
 - [convergence_speed.py](convergence_speed.py) Measures the convergence speed of various implementations of IRLS and Sup-GN.
@@ -28,6 +28,6 @@ Other runnable examples:
 
 Support code:
 - [gncs_robust_mean.py](gncs_robust_mean.py) Model class for robust mean estimation.
-- [flat_welsch_mean](float_welsch_mean.py) Calculation of global optimum mean estimate using 1D search, without using a GNC schedule.
+- [flat_welsch_mean](flat_welsch_mean.py) Calculation of global optimum mean estimate using 1D search, without using a GNC schedule.
 - [trimmed_mean.py](trimmed_mean.py) Calculation of the trimmed mean with the level of trimming specified  the `trim_size` parameter.
 - [winsorised_mean.py](winsorised_mean.py) Calculation of the Winsorised mean with the level of trimming specified  the `trim_size` parameter.
