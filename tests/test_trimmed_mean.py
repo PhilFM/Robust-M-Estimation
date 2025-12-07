@@ -27,3 +27,6 @@ def test_answer():
 
         m = trimmed_mean(data, weight, trim_size)
         assert(m[0] == pytest.approx(m_gt))
+
+if __name__ == "__main__":
+    test_answer()

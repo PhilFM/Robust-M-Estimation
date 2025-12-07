@@ -30,7 +30,6 @@ class BaseIRLS:
             if len(data_ids) != len(data):
                 raise ValueError("Inconsistent data ID array")
 
-        self._weight = weight
         if weight is None:
             self._weight = np.zeros(len(data))
             self._weight[:] = 1.0
@@ -38,7 +37,8 @@ class BaseIRLS:
             if len(weight) != len(data):
                 raise ValueError("Inconsistent weight array")
 
-        self._scale = scale
+            self._weight = weight
+
         if scale is None:
             self._scale = np.zeros(len(data))
             self._scale[:] = 1.0
@@ -49,6 +49,8 @@ class BaseIRLS:
             for s in scale:
                 if s < 1.0:
                     raise ValueError("Scale value less than one")
+
+            self._scale = scale
 
         self.numeric_derivs_model = numeric_derivs_model
         self.numeric_derivs_influence = numeric_derivs_influence

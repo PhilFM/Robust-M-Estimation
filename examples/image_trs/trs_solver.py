@@ -10,7 +10,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     for test_idx in range(0,1):
-        modelGT = [2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5)]
+        model_gt = [2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5)]
         N = 6
         data = np.zeros((N*N,4))
         outlier_fraction = 0.5
@@ -20,8 +20,8 @@ def main(testrun:bool, output_folder:str="../../Output"):
                 data[xyi][0] = j
                 data[xyi][1] = i
                 if xyi < (1.0-outlier_fraction)*N*N:
-                    data[xyi][2] = modelGT[1]*j - modelGT[0]*i + modelGT[2]
-                    data[xyi][3] = modelGT[0]*j + modelGT[1]*i + modelGT[3]
+                    data[xyi][2] = model_gt[1]*j - model_gt[0]*i + model_gt[2]
+                    data[xyi][3] = model_gt[0]*j + model_gt[1]*i + model_gt[3]
                 else:
                     # add outlier
                     data[xyi][2] = 10.0*2.0*(np.random.rand()-0.5)
@@ -37,8 +37,8 @@ def main(testrun:bool, output_folder:str="../../Output"):
             model = sup_gn_instance.final_model
 
         if not testrun:
-            print("modelGT=",modelGT,"model=",model)
-            print("modelDiff=",model-modelGT)
+            print("model_gt=",model_gt,"model=",model)
+            print("modelDiff=",model-model_gt)
 
     if testrun:
         print("trs_solver OK")
