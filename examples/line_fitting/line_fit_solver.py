@@ -8,20 +8,19 @@ from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
 from line_fit import LineFit
 
-def objective_func(a, b, optimiser_instance):
+def objective_func(a:float, b:float, optimiser_instance):
     return optimiser_instance.objective_func([a,b])
 
-def gradient_func(a, b, optimiser_instance):
+def gradient_func(a:float, b:float, optimiser_instance):
     a,AlB = optimiser_instance.weighted_derivs([a,b])
     return a
 
-def main(testrun:bool, output_folder:str="../../Output"):
+def test_with_sigma(sigma: float, output_folder: str, testrun: bool):
     # data is a list of [x,y] pairs
     data = np.array([[0.0, 0.90], [0.1, 0.95], [0.2, 1.0], [0.3, 1.05], [0.4, 1.1], # good data
                      [0.05, 10.0], [0.15, 2.0], [0.25, 2.5], [0.35, 3.2]]) # bad data
 
-    sigma_base = 2
-    param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, 50.0, 20) # sigma_base, sigma_limit, num_sigma_steps
+    param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma, 50.0, 20) # sigma_base, sigma_limit, num_sigma_steps
     optimiser_instance = SupGaussNewton(param_instance, LineFit(), data, debug=True)
     if optimiser_instance.run():
         model = optimiser_instance.final_model
@@ -59,6 +58,13 @@ def main(testrun:bool, output_folder:str="../../Output"):
     plt.savefig(os.path.join(output_folder, "line_fit_solver.png"), bbox_inches='tight')
     if not testrun:
         plt.show()
+
+def main(testrun:bool, output_folder:str="../../Output"):
+    # with small error estimate we will fit to the good data only
+    test_with_sigma(0.2, output_folder, testrun)
+
+    # with a larger error estimate the points close to the good data will influence the result
+    test_with_sigma(2.0, output_folder, testrun)
 
     if testrun:
         print("line_fit_solver OK")

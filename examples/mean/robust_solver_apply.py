@@ -77,7 +77,7 @@ def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction
                                            model_instance, data, weight=weight, max_niterations=200)
 
         mean = weighted_mean(data, weight)
-        vmean += math.pow(mean-mgt, 2.0)
+        vmean += math.pow(mean[0]-mgt, 2.0)
 
         pseudoHuberSigma = sigmaPop/p
         pseudoHuberIRLSInstance = IRLS(NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
@@ -89,12 +89,12 @@ def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction
         pseudoHuberOptInstance = SupGaussNewton(NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
                                                 model_instance, data, weight=weight)
 
-        #trimSize = N//10
-        #mtrimmed = trimmed_mean(data, trimSize=trimSize)
+        #trim_size = N//10
+        #mtrimmed = trimmed_mean(data, trim_size=trim_size)
         #vtrimmed1 += math.pow(mtrimmed-mgt, 2.0)
 
-        trimSize = N//4
-        mtrimmed = trimmed_mean(data, weight, trimSize=trimSize)
+        trim_size = N//4
+        mtrimmed = trimmed_mean(data, weight, trim_size=trim_size)
         vtrimmed += math.pow(mtrimmed-mgt, 2.0)
 
         median = np.median(data)

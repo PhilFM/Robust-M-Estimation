@@ -14,7 +14,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     for N in Narray:
         tmstot = 0.0
         mstot = 0.0
-        trimSize = 2*(N//5)
+        trim_size = 2*(N//5)
         for test_idx in range(nSamples):
             data = np.zeros(N)
             weight = np.zeros(N)
@@ -22,7 +22,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
                 data[i] = random.gauss(0.0, sigma)
                 weight[i] = 1.0
 
-            mwinsorised = winsorised_mean(data, weight, trimSize=trimSize)
+            mwinsorised = winsorised_mean(data, weight, trim_size=trim_size)
             tmstot += mwinsorised*mwinsorised
 
             lsm = weighted_mean(data, weight)
@@ -31,14 +31,14 @@ def main(testrun:bool, output_folder:str="../../Output"):
         mlsvar = N*mstot/nSamples
         var = N*tmstot/nSamples
         if not testrun:
-            print("N=",N," trimSize=",trimSize," efficiency=", (mlsvar+smallVal)/(var+smallVal))
+            print("N=",N," trim_size=",trim_size," efficiency=", (mlsvar+smallVal)/(var+smallVal))
 
     # test median
     Narray = [5,9,49,99,999]
     for N in Narray:
         tmstot = 0.0
         mstot = 0.0
-        trimSize = N-1
+        trim_size = N-1
         for test_idx in range(nSamples):
             data = np.zeros(N)
             weight = np.zeros(N)
@@ -46,7 +46,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
                 data[i] = random.gauss(0.0, sigma)
                 weight[i] = 1.0
 
-            mwinsorised = winsorised_mean(data, weight, trimSize=trimSize)
+            mwinsorised = winsorised_mean(data, weight, trim_size=trim_size)
             tmstot += mwinsorised*mwinsorised
 
             lsm = weighted_mean(data, weight)

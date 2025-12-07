@@ -5,7 +5,6 @@ sys.path.append("../pypi_package/src")
 sys.path.append("mean")
 import mean.mean_deriv_check
 import mean.convergence_speed
-import mean.majorize
 import mean.majorize_examples
 import mean.compare_influence
 import mean.mean_check
@@ -22,7 +21,6 @@ import mean.winsorised_mean_efficiency
 
 mean.mean_deriv_check.main(testrun=True, output_folder="../Output")
 mean.convergence_speed.main(testrun=True, output_folder="../Output")
-mean.majorize.main(testrun=True, output_folder="../Output")
 mean.majorize_examples.main(testrun=True, output_folder="../Output")
 mean.compare_influence.main(testrun=True, output_folder="../Output")
 mean.mean_check.main(testrun=True, output_folder="../Output")

@@ -79,19 +79,20 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
     # build +/- sigma intervals around data points
     intervals = [] #np.zeros((0,2))
     for d in data:
-        intervals.append([d-sigma,d+sigma])
+        intervals.append([d[0]-sigma,d[0]+sigma])
 
     # build samples separated by sigma covering merged intervals
     mergedIntervals = merge(intervals)
     #print("mergedIntervals=",mergedIntervals)
     sampleX = None
     for interval in mergedIntervals:
-        h = np.linspace(interval[0], interval[1], num=1+int((interval[1]-interval[0])/sigma))
+        #print("interval:",interval)
+        harr = np.linspace(interval[0], interval[1], 1+int((interval[1]-interval[0])/sigma))
         #print("linspace", np.shape(h), h)
         if sampleX is None:
-            sampleX = h
+            sampleX = harr
         else:
-            sampleX = np.concatenate((sampleX, h))
+            sampleX = np.concatenate((sampleX, harr))
 
     #print("sampleX=",sampleX)
 

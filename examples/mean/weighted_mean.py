@@ -8,12 +8,11 @@ def weighted_mean(data, weight, scale=None):
             totx += w*d
             totw += w
 
-        return np.array([totx/totw])
     else:
         for d,w,s in zip(data,weight,scale, strict=True):
             w /= s*s
             totx += w*d
             totw += w
 
-    return np.array([totx/totw])
+    return np.array(totx/totw)
 
