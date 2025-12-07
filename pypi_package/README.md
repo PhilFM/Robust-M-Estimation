@@ -1,14 +1,14 @@
 # GNC Smoothie package
 
 Python library supporting M-estimation using two algorithms: the well-known Iteratively Reweighted Least Squares (IRLS)
-and our custom Supervised Gauss-Newton algorithm. Author: Philip McLauchlan `phlip.mclauchlan@gmail.com`.
+and our custom Supervised Gauss-Newton algorithm. Author: Philip McLauchlan `philipmclauchlan6@gmail.com`.
 
 First some introductory theory.
 
 ## M-estimation
 M-estimation is a generalisation of maximum-likelihood estimation. 
-We assume a known population probability density function (PDF) \\( f(.) \\), parametrised by a vector of parameters \\( {\bf x} \\),
-and a set of independent and identically distributed data \\( {\bf z}_i \\), \\( i=1,...,n \\) sampled from the population.
+We assume a known population probability density function (PDF) \( f(.) \), parametrised by a vector of parameters \( {\bf x} \),
+and a set of independent and identically distributed data \( {\bf z}_i \), \( i=1,...,n \) sampled from the population.
 The general model for the observations is
 \[
   {\bf z}_i = {\bf h}_i({\bf x}) + \text{noise}
@@ -708,7 +708,7 @@ In the `cache_model()` method, the reference rotation matrix \( R_0 \) and the s
 are combined as a cached rotation \\ R = R_s R_0 \). This combined \( R \) is then used to calculate
 the residual. In the `residual_gradient` method, the derivatives are calculated with respect to the small
 rotation parameters, and a small angle approximation is used. The `update_model_ref` method updates the
-reference rotation matrix \( R_0 \\) based on the model change (small rotation) and the previous state
+reference rotation matrix \( R_0 \) based on the model change (small rotation) and the previous state
 of the rotation reference `prev_model_ref`. The small rotation parameters in the model are reset to zero,
 ready for the next iteration. A necessary refinement is that we should ensure that the rotation reference
 maintains its orthogonality. Because it is computed incrementally, floating point errors could push it

@@ -8,6 +8,7 @@ Top-level example code:
 
 Other runnable examples:
 - [mean_deriv_check.py](mean_deriv_check.py) Run this to check that the derivative formula implemented in the mean estimation
+  algorithm class `RobustMean` in `gncs_robust_mean.py` is correct. This is done by comparing with numerically calculated derivatives.
 - [convergence_speed.py](convergence_speed.py) Measures the convergence speed of various implementations of IRLS and Sup-GN.
 - [majorize_examples.py](majorize_examples.py) Examples showing the technique of quadratic majorization for influence functions implemented in this package.
 - [compare_influence.py](compare_influence.py) Compare results with a variety of influence functions.
@@ -26,8 +27,7 @@ Other runnable examples:
 - [winsorised_mean_efficiency.py](winsorised_mean_efficiency.py) Calculation of the efficiency of the Winsorised mean with simulated data.
 
 Support code:
-- [gncs_robust_mean.py](gncs_robust_mean.py) Model class
-  algorithm class `RobustMean` in `gncs_robust_mean.py` is correct. This is done by comparing with numerically calculated derivatives.
+- [gncs_robust_mean.py](gncs_robust_mean.py) Model class for robust mean estimation.
 - [flat_welsch_mean](float_welsch_mean.py) Calculation of global optimum mean estimate using 1D search, without using a GNC schedule.
-- [trimmed_mean.py](trimmed_mean.py) Calculation of the trimmed mean with the level of trimming specified  the `trim_size` parameter
-- [winsorised_mean.py](winsorised_mean.py) Calculation of the Winsorised mean with the level of trimming specified  the `trim_size` parameter
+- [trimmed_mean.py](trimmed_mean.py) Calculation of the trimmed mean with the level of trimming specified  the `trim_size` parameter.
+- [winsorised_mean.py](winsorised_mean.py) Calculation of the Winsorised mean with the level of trimming specified  the `trim_size` parameter.
