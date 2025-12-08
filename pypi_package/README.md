@@ -256,16 +256,21 @@ Here are the parameters that need to be passed to the `IRLS` class constructor. 
    Should have an internal influence_func_instance
    that specifies the IRLS influence function to be used. The influence_func_instance
    should provide the following method:
-   - `summary(self) -> str` Returns a string containing the values of the internal parameters.
-                    `param_instance` itself should provide the following methods:
-   - `reset(self, init: bool = True)`
+   - `summary(self) -> str`
+           Returns a string containing the values of the internal parameters.
+
+   `param_instance` itself should provide the following methods:
+   - `reset(self, init: bool = True) -> None`
            Resets the internal influence_func_instance according to the stage of the
            GNC schedule indicated by the init parameter. If init is `True`, reset to the
            starting value to prepare for the GNC process to start. If init is `False`,
            reset to the final stage of GNC.
-   - `at_final_state(self) -> bool`
-           Returns `True` if the GNC schedule has reached the final stage, `False` otherwise
-   - `update(self)` Update the influence_func_instance to the next step in the GNC schedule.
+   - `n_steps(self) -> int:`
+           Returns the number of steps in the GNC schedule.
+   - `alpha(self) -> float`
+           Returns the stage reached in the GNC schedule, as a value between zero (start)
+	   and one (end)
+   - `increment(self) -> None` Updates the influence_func_instance to the next step in the GNC schedule.
 - `model_instance` The model being fitted to the data, an instance of a class you design
      that provides the following methods:
    - `cache_model(self, model, model_ref=None)`
@@ -365,17 +370,20 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
         If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
         are calculated numerically from rho() and Bterm() is not required.
    - `summary(self) -> str`
-        A string containing the values of the internal parameters.
+        Returns a string containing the values of the internal parameters.
 
-   param_instance itself shoule provide the following methods:
-   - `reset(self, init: bool = True)`
-     Resets the internal `influence_func_instance` according to the stage of the
-     GNC schedule indicated by the `init` parameter. If `init` is `True`, reset to the
-     starting value to prepare for the GNC process to start. If `init` is `False`,
-     reset to the final stage of GNC.
-   - `at_final_state(self) -> bool`
-     Returns `True` if the GNC schedule has reached the final stage, `False` otherwise.
-   - `update(self)` Update the `influence_func_instance` to the next step in the GNC schedule.
+   `param_instance` itself should provide the following methods:
+   - `reset(self, init: bool = True) -> None`
+           Resets the internal influence_func_instance according to the stage of the
+           GNC schedule indicated by the init parameter. If init is `True`, reset to the
+           starting value to prepare for the GNC process to start. If init is `False`,
+           reset to the final stage of GNC.
+   - `n_steps(self) -> int:`
+           Returns the number of steps in the GNC schedule.
+   - `alpha(self) -> float`
+           Returns the stage reached in the GNC schedule, as a value between zero (start)
+	   and one (end)
+   - `increment(self) -> None` Updates the influence_func_instance to the next step in the GNC schedule.
 
 - `model_instance` The model being fitted to the data, an instance of a class you design
   that provides the following methods:
