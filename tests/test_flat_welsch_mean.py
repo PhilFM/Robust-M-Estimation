@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 sys.path.append("../pypi_package/src")
 from gnc_smoothie_philfm.base_irls import BaseIRLS
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
 
@@ -60,7 +60,7 @@ def test_answer():
             sigma = 0.1+np.random.rand()
 
             # determine ground truth by sampling
-            param_instance = NullParams(WelschInfluenceFunc(sigma))
+            param_instance = GNC_NullParams(WelschInfluenceFunc(sigma))
             optimiser_instance = BaseIRLS(param_instance, RobustMean(), data, weight=weight, scale=scale)
 
             n_samples = 200

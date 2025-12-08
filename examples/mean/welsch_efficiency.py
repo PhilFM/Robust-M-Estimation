@@ -7,7 +7,7 @@ import os
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
 from gncs_robust_mean import RobustMean
@@ -88,7 +88,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
                     weight[i] = 1.0
 
                 influence_func_instance = WelschInfluenceFunc(sigma=sigma_base)
-                param_instance = NullParams(influence_func_instance)
+                param_instance = GNC_NullParams(influence_func_instance)
                 optimiser_instance = SupGaussNewton(param_instance, RobustMean(), data, weight=weight, max_niterations=200)
 
                 m = smallMean(optimiser_instance)

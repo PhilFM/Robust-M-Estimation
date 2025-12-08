@@ -6,7 +6,7 @@ from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluence
 from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.check_derivs import check_derivs
 
 from gncs_robust_mean import RobustMean
@@ -47,14 +47,14 @@ def main(testrun:bool, output_folder:str="../../Output"):
             print("Test number ", 1+test_idx)
             print("  Quadratic:")
 
-        if check_derivs(SupGaussNewton(NullParams(QuadraticInfluenceFunc()), RobustMean(), data, weight=weight), [x],
+        if check_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), RobustMean(), data, weight=weight), [x],
                         diff_threshold_AlB=1.e-5, print_diffs=print_diffs) is False:
             all_good = False
             break
 
             print("  Welsch:")
 
-        if check_derivs(SupGaussNewton(NullParams(WelschInfluenceFunc(sigma=sigma)), RobustMean(), data, weight=weight), [x],
+        if check_derivs(SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=sigma)), RobustMean(), data, weight=weight), [x],
                         diff_threshold_AlB=1.e-5, print_diffs=print_diffs) is False:
             all_good = False
             break
@@ -62,7 +62,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
         if not testrun:
             print("  PseudoHuber:")
 
-        if check_derivs(SupGaussNewton(NullParams(PseudoHuberInfluenceFunc(sigma=sigma)), RobustMean(), data, weight=weight), [x],
+        if check_derivs(SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma)), RobustMean(), data, weight=weight), [x],
                         diff_threshold_AlB=1.e-5, print_diffs=print_diffs) is False:
             all_good = False
             break
@@ -70,7 +70,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
         if not testrun:
             print("  GemanMcClure:")
 
-        if check_derivs(SupGaussNewton(NullParams(GemanMcClureInfluenceFunc(sigma=sigma)), RobustMean(), data, weight=weight), [x],
+        if check_derivs(SupGaussNewton(GNC_NullParams(GemanMcClureInfluenceFunc(sigma=sigma)), RobustMean(), data, weight=weight), [x],
                         diff_threshold_AlB=1.e-5, print_diffs=print_diffs) is False:
             all_good = False
             break
@@ -81,7 +81,8 @@ def main(testrun:bool, output_folder:str="../../Output"):
         p = 1.0
         rscale = 1.0/xgtrange
         epsilon = rscale*sigmaPop
-        if check_derivs(SupGaussNewton(NullParams(GNC_IRLSpInfluenceFunc(p=p, rscale=rscale, epsilon=epsilon)), RobustMean(), data, weight=weight), [x],
+        if check_derivs(SupGaussNewton(GNC_NullParams(GNC_IRLSpInfluenceFunc(p=p, rscale=rscale, epsilon=epsilon)),
+                                       RobustMean(), data, weight=weight), [x],
                         diff_threshold_AlB=1.e-3, print_diffs=print_diffs) is False:
             all_good = False
             break

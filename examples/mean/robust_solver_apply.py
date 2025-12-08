@@ -7,7 +7,7 @@ from robust_mean import M_estimator
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
@@ -80,13 +80,13 @@ def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction
         vmean += math.pow(mean[0]-mgt, 2.0)
 
         pseudoHuberSigma = sigmaPop/p
-        pseudoHuberIRLSInstance = IRLS(NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
+        pseudoHuberIRLSInstance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
                                        model_instance, data, weight=weight)
         if pseudoHuberIRLSInstance.run():
             mhuber = pseudoHuberIRLSInstance.final_model
 
         vhuber += math.pow(mhuber-mgt, 2.0)
-        pseudoHuberOptInstance = SupGaussNewton(NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
+        pseudoHuberOptInstance = SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
                                                 model_instance, data, weight=weight)
 
         #trim_size = N//10

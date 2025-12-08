@@ -252,7 +252,7 @@ whether the `run()` method succeeds or not.
 
 Here are the parameters that need to be passed to the `IRLS` class constructor. Optional parameters follow.
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
-   this can be a `NullParams` instance imported from `null_params.py.
+   this can be a `GNC_NullParams` instance imported from `gnc_null_params.py.
    Should have an internal influence_func_instance
    that specifies the IRLS influence function to be used. The influence_func_instance
    should provide the following method:
@@ -338,7 +338,7 @@ The parameters to the `SupGaussNewton` constructor are very similar to the `IRLS
 but there are some twists due to Sup-GN requiring differentiation of the model residual.
 Here are the parameters you need to pass to the `SupGaussNewton` class:
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
-    this can be a `NullParams` instance imported from `null_params.py.
+    this can be a `GNC_NullParams` instance imported from `gnc_null_params.py.
     Should have an internal `influence_func_instance`
     that specifies the IRLS influence function to be used. This `influence_func_instance`
     should provide these methods:
@@ -487,11 +487,11 @@ data = np.array([[0.0, 0.90], [0.1, 0.95], [0.2, 1.0], [0.3, 1.05], [0.4, 1.1]])
 Then the code to build and run IRLS could look like ths.
 ```
 from gnc_smoothie.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie.null_params import NullParams
+from gnc_smoothie.gnc_null_params import GNC_NullParams
 from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 
 sigma = 0.2
-param_instance = NullParams(WelschInfluenceFunc(sigma))
+param_instance = GNC_NullParams(WelschInfluenceFunc(sigma))
 model_instance = LineFit()
 optimiser_instance = SupGaussNewton(param_instance, model_instance, data)
 if optimiser_instance.run():
@@ -542,15 +542,15 @@ For example, to test the derivatives of the `LineFit` class above you could use 
 
 ```
 from gnc_smoothie.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie.null_params import NullParams
+from gnc_smoothie.gnc_null_params import GNC_NullParams
 from gnc_smoothie.quadratic_influence_func import QuadraticInfluenceFunc
 from gnc_smoothie.check_derivs import check_derivs
 
 data = [[2.0, -1.0]] # single data point
-derivs_good = check_derivs(SupGaussNewton(NullParams(QuadraticInfluenceFunc()), LineFit(), data), [1.0, 2.0], # model a,b
+derivs_good = check_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), LineFit(), data), [1.0, 2.0], # model a,b
                            diff_threshold_AlB=1.e-4)
 ```
-Note that we use the simplest parameter class `NullParams` and influence function class `QuadraticInfluenceFunc` to build
+Note that we use the simplest parameter class `GNC_NullParams` and influence function class `QuadraticInfluenceFunc` to build
 the `SupGaussNewton` instance, although the derivative testing will work for other classes.
 
 ### Welsch influence function `welsch_influence_func.py`
@@ -583,7 +583,7 @@ $$
 
 with a single parameter $ \sigma $. You can use this influence function if you know that your outliers
 are relatively small. The Pseudo-Huber objective function $ \rho(r) $ is convex, so you don't
-need to use a GNC schedule. Instead use it with `NullParams`. On the other hand, if the outliers are
+need to use a GNC schedule. Instead use it with `GNC_NullParams`. On the other hand, if the outliers are
 very bad then it will fail to converge to the correct solution.
 
 ### Geman-McClure influence function `geman_mcclure_influence_func.py`
@@ -618,10 +618,10 @@ is used in non-robust least squares. The main use of this class is to provide a 
 building an instance of `SupGaussNewton` for the purpose of checking derivative calculations in the model
 `residual_gradient()` method.
 
-### Null parameter class `null_params.py`
+### Null GNC parameter class `gnc_null_params.py`
 
 When you want to apply standard IRLS, or use Sup-GN optimisation without GNC, wrap your influence function
-in a `NullParams` instance. 
+in a `GNC_NullParams` instance. 
 
 ### Using a model reference `model_ref`
 

@@ -6,7 +6,7 @@ import os
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
@@ -118,14 +118,15 @@ def main(testrun:bool, output_folder:str="../../Output"):
             if not testrun:
                 print("mwelschopt-mgt=",mwelschopt-mgt)
 
-        pseudoHuberOptimiserInstance = IRLS(NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)), model_instance, data, weight=weight,
+        pseudoHuberOptimiserInstance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)), model_instance, data, weight=weight,
                                             max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
         if pseudoHuberOptimiserInstance.run():
             mhuber = pseudoHuberOptimiserInstance.final_model
             if not testrun:
                 print("mhuber-mgt=",mhuber-mgt)
 
-        pseudoHuberSupGNOptimiserInstance = SupGaussNewton(NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)), model_instance, data, weight=weight,
+        pseudoHuberSupGNOptimiserInstance = SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)),
+                                                           model_instance, data, weight=weight,
                                                            max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
     
         gncIrlsp_p = 0.0

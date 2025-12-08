@@ -7,7 +7,7 @@ from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
@@ -121,10 +121,10 @@ def main(testrun:bool, output_folder:str="../../Output"):
                 print("GNC Welsch Rdiff=",model_ref-R_gt)
                 print("GNC Welsch tdiff=",model[3:6]-t_gt)
 
-        optimiser_instance = IRLS(NullParams(PseudoHuberInfluenceFunc(noise_sigma/welsch_p)),
-                                 PointRegistration(), data, weight=weight,
-                                 max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
-                                 model_start=model_start, model_ref_start=model_ref_start, debug=True)
+        optimiser_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(noise_sigma/welsch_p)),
+                                  PointRegistration(), data, weight=weight,
+                                  max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
+                                  model_start=model_start, model_ref_start=model_ref_start, debug=True)
         if optimiser_instance.run():
             model = optimiser_instance.final_model
             model_ref = optimiser_instance.final_model_ref

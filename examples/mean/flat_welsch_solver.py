@@ -4,7 +4,7 @@ import os
 
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 
 from flat_welsch_mean import flat_welsch_mean
 from gncs_robust_mean import RobustMean
@@ -72,7 +72,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     mlist = np.linspace(xMin, xMax, num=300)
 
     # plot stuff
-    optimiser_instance = SupGaussNewton(NullParams(WelschInfluenceFunc(sigma=sigma)), RobustMean(), data, weight)
+    optimiser_instance = SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=sigma)), RobustMean(), data, weight)
 
     def objective_func(m):
         return optimiser_instance.objective_func([m])

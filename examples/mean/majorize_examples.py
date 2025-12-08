@@ -5,7 +5,7 @@ import os
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
 from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
@@ -75,15 +75,15 @@ def main(testrun:bool, output_folder:str="../../Output"):
                [1.0, 2.0], "GNC IRLSp1 influence function", output_folder, "gnc_irls_p1_majorizers", testrun)
 
     sigma = 1.0
-    param_instance = NullParams(WelschInfluenceFunc(sigma))
+    param_instance = GNC_NullParams(WelschInfluenceFunc(sigma))
     plotResult(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0]),
                [1.5, 2.0], "Welsch influence function", output_folder, "welsch_majorizers", testrun)
 
-    param_instance = NullParams(PseudoHuberInfluenceFunc(sigma))
+    param_instance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma))
     plotResult(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0]),
                [1.5, 2.0], "Pseudo-Huber influence function", output_folder, "pseudo_huber_majorizers", testrun)
     
-    param_instance = NullParams(GemanMcClureInfluenceFunc(sigma))
+    param_instance = GNC_NullParams(GemanMcClureInfluenceFunc(sigma))
     plotResult(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0]),
                [1.0, 2.0], "Geman-McClure influence function", output_folder, "geman_mcclure_majorizers", testrun)
 

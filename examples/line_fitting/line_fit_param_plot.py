@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
 from line_fit import LineFit
@@ -20,7 +20,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     alist = np.linspace(-5, 5, num=200)
     blist = np.linspace(-2.0, 2.0, num=200)
-    param_instance = NullParams(WelschInfluenceFunc(0.2)) # sigma
+    param_instance = GNC_NullParams(WelschInfluenceFunc(0.2)) # sigma
     optimiser_instance = SupGaussNewton(param_instance, LineFit(), data, weight=weight)
     rmfv = np.vectorize(lineFitFunc, excluded={"optimiser_instance"})
     plt.close("all")

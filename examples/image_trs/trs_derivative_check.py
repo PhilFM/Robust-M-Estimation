@@ -1,7 +1,7 @@
 import numpy as np
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
 from gnc_smoothie_philfm.check_derivs import check_derivs
 
@@ -24,7 +24,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
                           2.0*(np.random.rand()-0.5), # tx
                           2.0*(np.random.rand()-0.5)]) # ty
 
-        optimiser_instance = SupGaussNewton(NullParams(QuadraticInfluenceFunc()), TRS(), data, weight=weight)
+        optimiser_instance = SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), TRS(), data, weight=weight)
         if not check_derivs(optimiser_instance, model, diff_threshold_AlB=1.e-5): #, print_diffs=True, print_derivs=False):
             all_good = False
 

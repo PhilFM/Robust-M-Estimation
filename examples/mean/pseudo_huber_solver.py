@@ -4,7 +4,7 @@ import os
 
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
 
 from gncs_robust_mean import RobustMean
@@ -37,7 +37,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     model_instance = RobustMean()
     influence_func_instance = PseudoHuberInfluenceFunc(sigma=sigma)
-    param_instance = NullParams(influence_func_instance)
+    param_instance = GNC_NullParams(influence_func_instance)
     irls_instance = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=200, print_warnings=False)
     if irls_instance.run():
         m = irls_instance.final_model
@@ -55,7 +55,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
         scale = np.array([1.0, 1.0, 1.0, 1.0, 1.0, # good data
                           1.0, 1.0, 1.0, 1.0]) # bad data
 
-    irls_instance = IRLS(NullParams(influence_func_instance), model_instance, data, weight=weight, scale=scale)
+    irls_instance = IRLS(GNC_NullParams(influence_func_instance), model_instance, data, weight=weight, scale=scale)
     if irls_instance.run():
         mscale = irls_instance.final_model
         if not testrun:

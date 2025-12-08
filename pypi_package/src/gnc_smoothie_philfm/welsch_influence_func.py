@@ -5,7 +5,7 @@
 # simple Gaussian rho(r) = exp(-r^2/(2*sigma*sigma))
 # Wrap with the GNC_WelschParams class to use inside a GNC schedule, with the
 # sigma parameter controlled by GNC.
-# Can also be wrapped with NullParams and used with fixed sigma outside GNC.
+# Can also be wrapped with GNC_NullParams and used with fixed sigma outside GNC.
 import math
 
 

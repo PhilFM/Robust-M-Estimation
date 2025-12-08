@@ -7,7 +7,7 @@ from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
@@ -110,7 +110,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
                 print("GNC Welsch IRLS diffs=",diffs_welsch_irls)
                 print("GNC Welsch IRLS diff alpha=",diff_alpha_welsch_irls)
 
-        pseudoHuberParamInstance = NullParams(PseudoHuberInfluenceFunc(sigma=welsch_sigma))
+        pseudoHuberParamInstance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma=welsch_sigma))
         sup_gn_instance = SupGaussNewton(pseudoHuberParamInstance, model_instance, data, weight=weight,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,

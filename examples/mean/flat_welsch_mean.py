@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.null_params import NullParams
+from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
 
@@ -95,7 +95,7 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
     maxVal = 0.0
     maxX = 0.0
     sampleVal = []
-    param_instance = NullParams(WelschInfluenceFunc(sigma=sigma))
+    param_instance = GNC_NullParams(WelschInfluenceFunc(sigma=sigma))
     optimiser_instance = SupGaussNewton(param_instance, RobustMean(), data, weight=weight, scale=scale)
     for x in sampleX:
         v = optimiser_instance.objective_func([x])
