@@ -15,31 +15,31 @@ from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from gncs_robust_mean import RobustMean
 
-def plotDifferences(diffsWelschGN, diffAlphaWelschGN,
-                    diffsWelschIRLS, diffAlphaWelschIRLS,
-                    diffsHuberGN, diffAlphaHuberGN,
-                    diffsHuberIRLS, diffAlphaHuberIRLS,
-                    diffsGNCIRLSp0, diffAlphaGNCIRLSp0,
-                    diffsGNCIRLSp1, diffAlphaGNCIRLSp1,
+def plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
+                    diffs_welsch_irls, diff_alpha_welsch_irls,
+                    diffs_pseudo_huber_sup_gn, diff_alpha_pseudo_huber_sup_gn,
+                    diffs_pseudo_huber_irls, diff_alpha_pseudo_huber_irls,
+                    diffs_gnc_irls_p0, diff_alpha_gnc_irls_p0,
+                    diffs_gnc_irls_p1, diff_alpha_gnc_irls_p1,
                     output_folder:str, testrun:bool):
     if not testrun:
-        print("diffsWelschGN:",diffsWelschGN)
-        print("diffsWelschIRLS:",diffsWelschIRLS)
-        print("diffsHuberGN:",diffsHuberGN)
-        print("diffsHuberIRLS:",diffsHuberIRLS)
+        print("diffs_welsch_sup_gn:",diffs_welsch_sup_gn)
+        print("diffs_welsch_irls:",diffs_welsch_irls)
+        print("diffs_pseudo_huber_sup_gn:",diffs_pseudo_huber_sup_gn)
+        print("diffs_pseudo_huber_irls:",diffs_pseudo_huber_irls)
 
     plt.close("all")
     plt.figure(num=1, dpi=240)
     plt.clf()
     ax = plt.gca()
-    ax.set_xlim(0,int(max(len(diffsWelschGN),len(diffsWelschIRLS),len(diffsHuberGN),len(diffsHuberIRLS),len(diffsGNCIRLSp0),len(diffsGNCIRLSp1))))
+    ax.set_xlim(0,int(max(len(diffs_welsch_sup_gn),len(diffs_welsch_irls),len(diffs_pseudo_huber_sup_gn),len(diffs_pseudo_huber_irls),len(diffs_gnc_irls_p0),len(diffs_gnc_irls_p1))))
 
-    gncs_draw_curve(plt, diffsWelschGN,   ("SupGN", "Welsch",      "GNC_Welsch"))
-    gncs_draw_curve(plt, diffsHuberGN,    ("SupGN", "PseudoHuber", "Welsch"))
-    gncs_draw_curve(plt, diffsWelschIRLS, ("IRLS",  "Welsch",      "GNC_Welsch"))
-    gncs_draw_curve(plt, diffsHuberIRLS,  ("IRLS",  "PseudoHuber", "Welsch"))
-    gncs_draw_curve(plt, diffsGNCIRLSp1,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1"))
-    gncs_draw_curve(plt, diffsGNCIRLSp0,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0"))
+    gncs_draw_curve(plt, diffs_welsch_sup_gn,   ("SupGN", "Welsch",      "GNC_Welsch"))
+    gncs_draw_curve(plt, diffs_pseudo_huber_sup_gn,    ("SupGN", "PseudoHuber", "Welsch"))
+    gncs_draw_curve(plt, diffs_welsch_irls, ("IRLS",  "Welsch",      "GNC_Welsch"))
+    gncs_draw_curve(plt, diffs_pseudo_huber_irls,  ("IRLS",  "PseudoHuber", "Welsch"))
+    gncs_draw_curve(plt, diffs_gnc_irls_p1,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1"))
+    gncs_draw_curve(plt, diffs_gnc_irls_p0,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0"))
 
     ax.set_xlabel(r'Iteration count' )
     ax.set_ylabel(r'log(difference)')
@@ -88,13 +88,13 @@ def main(testrun:bool, output_folder:str="../../Output"):
         if sup_gn_instance.run():
             m = sup_gn_instance.final_model
             n_iterations = sup_gn_instance.debug_n_iterations
-            diffsWelschGN = sup_gn_instance.debug_diffs
-            diffAlphaWelschGN = sup_gn_instance.debug_diff_alpha
+            diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
+            diff_alpha_welsch_sup_gn = sup_gn_instance.debug_diff_alpha
             if not testrun:
                 print("GNC Welsch SUP-GN recovered m=",m,"n_iterations=",n_iterations)
                 print("GNC Welsch SUP-GN mdiff=",m-mgt)
-                print("GNC Welsch SUP-GN diffs=",diffsWelschGN)
-                print("GNC Welsch SUP-GN diff alpha=",diffAlphaWelschGN)
+                print("GNC Welsch SUP-GN diffs=",diffs_welsch_sup_gn)
+                print("GNC Welsch SUP-GN diff alpha=",diff_alpha_welsch_sup_gn)
 
         irls_instance = IRLS(welschParamInstance, model_instance, data, weight=weight,
                              max_niterations=max_niterations, diff_thres=diff_thres,
@@ -102,13 +102,13 @@ def main(testrun:bool, output_folder:str="../../Output"):
         if irls_instance.run():
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
-            diffsWelschIRLS = irls_instance.debug_diffs
-            diffAlphaWelschIRLS = irls_instance.debug_diff_alpha
+            diffs_welsch_irls = irls_instance.debug_diffs
+            diff_alpha_welsch_irls = irls_instance.debug_diff_alpha
             if not testrun:
                 print("GNC Welsch IRLS recovered m=",m,"n_iterations=",n_iterations)
                 print("GNC Welsch IRLS mdiff=",m-mgt)
-                print("GNC Welsch IRLS diffs=",diffsWelschIRLS)
-                print("GNC Welsch IRLS diff alpha=",diffAlphaWelschIRLS)
+                print("GNC Welsch IRLS diffs=",diffs_welsch_irls)
+                print("GNC Welsch IRLS diff alpha=",diff_alpha_welsch_irls)
 
         pseudoHuberParamInstance = NullParams(PseudoHuberInfluenceFunc(sigma=welsch_sigma))
         sup_gn_instance = SupGaussNewton(pseudoHuberParamInstance, model_instance, data, weight=weight,
@@ -118,13 +118,13 @@ def main(testrun:bool, output_folder:str="../../Output"):
         if sup_gn_instance.run():
             m = sup_gn_instance.final_model
             n_iterations = sup_gn_instance.debug_n_iterations
-            diffsHuberGN = sup_gn_instance.debug_diffs
-            diffAlphaHuberGN = sup_gn_instance.debug_diff_alpha
+            diffs_pseudo_huber_sup_gn = sup_gn_instance.debug_diffs
+            diff_alpha_pseudo_huber_sup_gn = sup_gn_instance.debug_diff_alpha
             if not testrun:
                 print("Pseudo-Huber G-N recovered m=",m,"n_iterations=",n_iterations)
                 print("Pseudo-Huber G-N mdiff=",m-mgt)
-                print("Pseudo-Huber G-N diffs=",diffsHuberGN)
-                print("Pseudo-Huber G-N diff alpha=",diffAlphaHuberGN)
+                print("Pseudo-Huber G-N diffs=",diffs_pseudo_huber_sup_gn)
+                print("Pseudo-Huber G-N diff alpha=",diff_alpha_pseudo_huber_sup_gn)
 
         irls_instance = IRLS(pseudoHuberParamInstance, model_instance, data, weight=weight,
                              max_niterations=max_niterations, diff_thres=diff_thres,
@@ -132,13 +132,13 @@ def main(testrun:bool, output_folder:str="../../Output"):
         if irls_instance.run():
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
-            diffsHuberIRLS = irls_instance.debug_diffs
-            diffAlphaHuberIRLS = irls_instance.debug_diff_alpha
+            diffs_pseudo_huber_irls = irls_instance.debug_diffs
+            diff_alpha_pseudo_huber_irls = irls_instance.debug_diff_alpha
             if not testrun:
                 print("Pseudo-Huber IRLS recovered m=",m,"n_iterations=",n_iterations)
                 print("Pseudo-Huber IRLS mdiff=",m-mgt)
-                print("Pseudo-Huber IRLS diffs=",diffsHuberIRLS)
-                print("Pseudo-Huber IRLS diff alpha=",diffAlphaHuberIRLS)
+                print("Pseudo-Huber IRLS diffs=",diffs_pseudo_huber_irls)
+                print("Pseudo-Huber IRLS diff alpha=",diff_alpha_pseudo_huber_irls)
 
         gncIrlsp_rscale = 1.0
         gncIrlsp_sigma_base = noise_sigma
@@ -153,13 +153,13 @@ def main(testrun:bool, output_folder:str="../../Output"):
         if irls_instance.run():
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
-            diffsGNCIRLSp0 = irls_instance.debug_diffs
-            diffAlphaGNCIRLSp0 = irls_instance.debug_diff_alpha
+            diffs_gnc_irls_p0 = irls_instance.debug_diffs
+            diff_alpha_gnc_irls_p0 = irls_instance.debug_diff_alpha
             if not testrun:
                 print("GNC IRLS-p0 recovered m=",m,"n_iterations=",n_iterations)
                 print("GNC IRLS-p0 mdiff=",m-mgt)
-                print("GNC IRLS-p0 diffs=",diffsGNCIRLSp0)
-                print("GNC IRLS-p0 diff alpha=",diffAlphaGNCIRLSp0)
+                print("GNC IRLS-p0 diffs=",diffs_gnc_irls_p0)
+                print("GNC IRLS-p0 diff alpha=",diff_alpha_gnc_irls_p0)
 
         gncIrlspParamInstance.influence_func_instance.p = 1.0
         irls_instance = IRLS(gncIrlspParamInstance, model_instance, data, weight=weight,
@@ -168,20 +168,20 @@ def main(testrun:bool, output_folder:str="../../Output"):
         if irls_instance.run():
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
-            diffsGNCIRLSp1 = irls_instance.debug_diffs
-            diffAlphaGNCIRLSp1 = irls_instance.debug_diff_alpha
+            diffs_gnc_irls_p1 = irls_instance.debug_diffs
+            diff_alpha_gnc_irls_p1 = irls_instance.debug_diff_alpha
             if not testrun:
                 print("GNC IRLS-p1 recovered m=",m,"n_iterations=",n_iterations)
                 print("GNC IRLS-p1 mdiff=",m-mgt)
-                print("GNC IRLS-p1 diffs=",diffsGNCIRLSp1)
-                print("GNC IRLS-p1 diff alpha=",diffAlphaGNCIRLSp1)
+                print("GNC IRLS-p1 diffs=",diffs_gnc_irls_p1)
+                print("GNC IRLS-p1 diff alpha=",diff_alpha_gnc_irls_p1)
 
-        plotDifferences(diffsWelschGN, diffAlphaWelschGN,
-                        diffsWelschIRLS, diffAlphaWelschIRLS,
-                        diffsHuberGN, diffAlphaHuberGN,
-                        diffsHuberIRLS, diffAlphaHuberIRLS,
-                        diffsGNCIRLSp0, diffAlphaGNCIRLSp0,
-                        diffsGNCIRLSp1, diffAlphaGNCIRLSp1,
+        plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
+                        diffs_welsch_irls, diff_alpha_welsch_irls,
+                        diffs_pseudo_huber_sup_gn, diff_alpha_pseudo_huber_sup_gn,
+                        diffs_pseudo_huber_irls, diff_alpha_pseudo_huber_irls,
+                        diffs_gnc_irls_p0, diff_alpha_gnc_irls_p0,
+                        diffs_gnc_irls_p1, diff_alpha_gnc_irls_p1,
                         output_folder, testrun)
 
     if testrun:

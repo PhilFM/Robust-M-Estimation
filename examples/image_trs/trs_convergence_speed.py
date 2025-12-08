@@ -10,19 +10,25 @@ from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from trs import TRS
 
-def plotDifferences(diffsWelschGN, diffsWelschIRLS, testrun:bool, output_folder:str):
+def plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
+                    diffs_welsch_irls, diff_alpha_welsch_irls,
+                    testrun:bool, output_folder:str):
     if not testrun:
-        print("diffsWelschGN:",diffsWelschGN)
-        print("diffsWelschIRLS:",diffsWelschIRLS)
+        print("diffs_welsch_sup_gn:",diffs_welsch_sup_gn)
+        print("diffs_welsch_irls:",diffs_welsch_irls)
 
     plt.close("all")
     plt.figure(num=1, dpi=240)
     plt.clf()
     ax = plt.gca()
-    ax.set_xlim(0,int(max(len(diffsWelschGN),len(diffsWelschIRLS))))
+    ax.set_xlim(0,int(max(len(diffs_welsch_sup_gn),len(diffs_welsch_irls))))
 
-    gncs_draw_curve(plt, diffsWelschGN,   ("SupGN", "Welsch", "GNC_Welsch"))
-    gncs_draw_curve(plt, diffsWelschIRLS, ("IRLS",  "Welsch", "GNC_Welsch"))
+    idx = np.argmax(diff_alpha_welsch_sup_gn)
+    gncs_draw_curve(plt, diffs_welsch_sup_gn[0:idx+1], ("SupGN", "Welsch", "GNC_Welsch"), lw=0.2, xvalues = np.arange(0,idx+1))
+    gncs_draw_curve(plt, diffs_welsch_sup_gn[idx:],    ("SupGN", "Welsch", "GNC_Welsch"), xvalues = np.arange(idx,len(diffs_welsch_sup_gn)))
+    idx = np.argmax(diff_alpha_welsch_irls)
+    gncs_draw_curve(plt, diffs_welsch_irls[0:idx+1], ("IRLS",  "Welsch", "GNC_Welsch"), lw=0.2, xvalues = np.arange(0,idx+1))
+    gncs_draw_curve(plt, diffs_welsch_irls[idx:],    ("IRLS",  "Welsch", "GNC_Welsch"), xvalues = np.arange(idx,len(diffs_welsch_irls)))
 
     ax.set_xlabel(r'Iteration count' )
     ax.set_ylabel(r'log(difference)')
@@ -76,15 +82,18 @@ def main(testrun:bool, output_folder:str="../../Output"):
                                          print_warnings=print_warnings, model_start=model_start, debug=True,
                                          lambda_start=1.0)
         if sup_gn_instance.run():
-            diffsWelschGN = sup_gn_instance.debug_diffs
+            diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
+            diff_alpha_welsch_sup_gn = np.array(sup_gn_instance.debug_diff_alpha)
 
         irls_instance = IRLS(param_instance, model_instance, data,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=print_warnings, model_start=model_start, debug=True)
         irls_instance.run() # this can fail but we don't care in this context
-        diffsWelschIRLS = irls_instance.debug_diffs
+        diffs_welsch_irls = irls_instance.debug_diffs
+        diff_alpha_welsch_irls = np.array(sup_gn_instance.debug_diff_alpha)
     
-        plotDifferences(diffsWelschGN, diffsWelschIRLS, testrun, output_folder)
+        plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
+                        diffs_welsch_irls, diff_alpha_welsch_irls, testrun, output_folder)
 
     if testrun:
         print("trs_convergence_speed OK")

@@ -85,7 +85,12 @@ model_values[key]["linestyle"] = (0, (4, 1))
 model_values[key]["lw"] = 1.0
 
 
-def gncs_draw_vline(plt, x: float, key, useLabel: bool = True, useLineStyle: bool = True):
+def gncs_draw_vline(plt,
+                    x: float,
+                    key,
+                    useLabel: bool = True,
+                    useLineStyle: bool = True,
+                    lw: float = None):
     values = model_values[key]
     if useLabel:
         if useLineStyle:
@@ -93,24 +98,28 @@ def gncs_draw_vline(plt, x: float, key, useLabel: bool = True, useLineStyle: boo
                 x=x,
                 color=values["colour"],
                 label=values["label"],
-                lw=values["lw"],
+                lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
             )  # , marker = 'o', markersize = 2.0)
         else:
             plt.axvline(
-                x=x, color=values["colour"], label=values["label"], lw=values["lw"]
+                x=x,
+                color=values["colour"],
+                label=values["label"],
+                lw=values["lw"] if lw is None else lw
             )  # , marker = 'o', markersize = 2.0)
     else:
         if useLineStyle:
             plt.axvline(
                 x=x,
                 color=values["colour"],
-                lw=values["lw"],
+                lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
             )  # , marker = 'o', markersize = 2.0)
         else:
             plt.axvline(
-                x=x, color=values["colour"], lw=values["lw"]
+                x=x, color=values["colour"],
+                lw=values["lw"] if lw is None else lw
             )  # , marker = 'o', markersize = 2.0)
 
 
@@ -122,6 +131,7 @@ def gncs_draw_curve(
     drawMarkers: bool = True,
     hlightXValue: float = None,
     ax=None,
+    lw: float = None,
 ):
     values = model_values[key]
     if xvalues is None:
@@ -131,7 +141,7 @@ def gncs_draw_curve(
                 vals,
                 color=values["colour"],
                 label=values["label"],
-                lw=values["lw"],
+                lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
                 marker="o",
                 markersize=2.0,
@@ -142,7 +152,7 @@ def gncs_draw_curve(
                 vals,
                 color=values["colour"],
                 label=values["label"],
-                lw=values["lw"],
+                lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
             )
     else:
@@ -152,7 +162,7 @@ def gncs_draw_curve(
                 vals,
                 color=values["colour"],
                 label=values["label"],
-                lw=values["lw"],
+                lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
                 marker="o",
                 markersize=2.0,
@@ -163,7 +173,7 @@ def gncs_draw_curve(
                 vals,
                 color=values["colour"],
                 label=values["label"],
-                lw=values["lw"],
+                lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
             )
 
