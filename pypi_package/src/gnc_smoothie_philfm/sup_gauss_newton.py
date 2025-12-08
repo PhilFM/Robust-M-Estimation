@@ -207,7 +207,6 @@ class SupGaussNewton(BaseIRLS):
                     all_good = True
                     break
 
-            print("Here 3")
             tot = self.objective_func(model, model_ref=model_ref)
             if self._print_warnings:
                 print(

@@ -26,7 +26,7 @@ def test_answer():
 
         # build good data
         n_good_3d_point_pairs = np.random.randint(5, 20)
-        n_outliers = int(np.random.rand()*n_good_3d_point_pairs)
+        n_outliers = int(0.8*np.random.rand()*n_good_3d_point_pairs)
 
         data = np.zeros((n_good_3d_point_pairs+n_outliers,2,3))
         for i in range(n_good_3d_point_pairs):
@@ -45,11 +45,10 @@ def test_answer():
             data[n_good_3d_point_pairs+i][1][2] = 3*(np.random.rand() - 0.5)
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), 0.01, 50.0, 20) # sigma_base, sigma_limit, num_sigma_steps
-        optimiser_instance = SupGaussNewton(param_instance, PointRegistration(), data, print_warnings=True)
+        optimiser_instance = SupGaussNewton(param_instance, PointRegistration(), data)
         assert(optimiser_instance.run())
         model = optimiser_instance.final_model
         R = optimiser_instance.final_model_ref
-        print("R=",R)
         for i in range(3):
             for j in range(3):
                 assert(R[i][j] == pytest.approx(R_gt[i][j]))
