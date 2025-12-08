@@ -39,7 +39,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     model_instance = RobustMean()
     param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit,
-                                      num_sigma_steps=num_sigma_steps, max_niterations=max_niterations)
+                                      num_sigma_steps=num_sigma_steps)
     irls_instance = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
     if irls_instance.run():
         m = irls_instance.final_model

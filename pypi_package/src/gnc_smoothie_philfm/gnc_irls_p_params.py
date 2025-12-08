@@ -16,28 +16,29 @@ class GNC_IRLSpParams:
         self.influence_func_instance.rscale = rscale
         self.__epsilon_base = epsilon_base
         self.__epsilon_limit = epsilon_base if epsilon_limit is None else epsilon_limit
-        self.__beta = 1.0 if beta is None else beta
+        self.__beta = 0.8 if beta is None else beta
+
+        # work out how many epsilon steps there are
+        self.reset(True)
+        self.__n_steps = 0
+        while self.influence_func_instance.epsilon > self.__epsilon_base:
+            self.increment()
+            self.__n_steps += 1
 
         # set parameters to final values
         self.reset(False)
 
-    def reset(self, init=True):
-        if init:
-            self.influence_func_instance.epsilon = self.__epsilon_limit
-        else:
-            self.influence_func_instance.epsilon = self.__epsilon_base
+    def reset(self, init=True) -> None:
+        self.influence_func_instance.epsilon = self.__epsilon_limit if init else self.__epsilon_base
+        self.__step = 0
 
-    def at_final_stage(self) -> bool:
-        return (
-            True if self.influence_func_instance.epsilon <= self.__epsilon_base else False
-        )
+    def n_steps(self) -> int:
+        return self.__n_steps
 
-    def update(self):
-        self.influence_func_instance.epsilon = max(
-            self.__epsilon_base,
-            self.__beta
-            * math.pow(
-                self.influence_func_instance.epsilon,
-                2.0 - self.influence_func_instance.p,
-            ),
-        )
+    def alpha(self) -> float:
+        return self.__step/self.__n_steps if self.influence_func_instance.epsilon > self.__epsilon_base else 1.0
+
+    def increment(self) -> None:
+        self.__step = min(1+self.__step, self.__n_steps)
+        self.influence_func_instance.epsilon = self.__epsilon_base if self.__step >= self.__n_steps else self.__beta*math.pow(self.influence_func_instance.epsilon, 2.0 - self.influence_func_instance.p)
+

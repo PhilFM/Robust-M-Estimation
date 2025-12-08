@@ -54,6 +54,11 @@ class BaseIRLS:
 
         self.numeric_derivs_model = numeric_derivs_model
         self.numeric_derivs_influence = numeric_derivs_influence
+
+        # GNC schedule for sigma
+        if self._param_instance.n_steps() > max_niterations:
+            raise ValueError("Too many GNC steps relative to # iterations")
+
         self._max_niterations = max_niterations
         self._diff_thres = diff_thres
         self._print_warnings = print_warnings

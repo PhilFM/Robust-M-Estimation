@@ -136,6 +136,7 @@ class SupGaussNewton(BaseIRLS):
 
         if self._debug:
             self.debug_diffs = []
+            self.debug_diff_alpha = []
             self.debug_model_list = []
             self.debug_model_list.append(
                 (
@@ -197,6 +198,7 @@ class SupGaussNewton(BaseIRLS):
                 model_max_diff = np.linalg.norm(at, ord=np.inf)
                 if self._debug is True and model_max_diff > 0.0:
                     self.debug_diffs.append(math.log10(model_max_diff))
+                    self.debug_diff_alpha.append(self._param_instance.alpha())
 
                 if model_max_diff < self._diff_thres:
                     if self._print_warnings:
@@ -205,6 +207,7 @@ class SupGaussNewton(BaseIRLS):
                     all_good = True
                     break
 
+            print("Here 3")
             tot = self.objective_func(model, model_ref=model_ref)
             if self._print_warnings:
                 print(
@@ -245,8 +248,8 @@ class SupGaussNewton(BaseIRLS):
                     print("Accept lambda_val=", lambda_val, "model=", model)
 
                 lambda_val = min(self.__lambda_scale * lambda_val, self.__lambda_max)
-                self._param_instance.update()
-                if self._param_instance.at_final_stage():
+                self._param_instance.increment()
+                if self._param_instance.alpha() == 1.0:
                     last_tot = tot
                 else:
                     last_tot = self.objective_func(model, model_ref=model_ref)

@@ -5,11 +5,14 @@ class NullParams:
     def __init__(self, influence_func_instance):
         self.influence_func_instance = influence_func_instance
 
-    def reset(self, init: bool = True):
+    def reset(self, init: bool = True) -> None:
         pass
 
-    def at_final_stage(self) -> bool:
-        return True
+    def n_steps(self) -> int:
+        return 0
 
-    def update(self):
+    def alpha(self) -> float:
+        return 1.0
+
+    def increment(self) -> None:
         pass

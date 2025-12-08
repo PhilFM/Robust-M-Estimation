@@ -81,6 +81,7 @@ class IRLS(BaseIRLS):
 
         if self._debug:
             self.debug_diffs = []
+            self.debug_diff_alpha = []
             self.debug_model_list = []
             self.debug_model_list.append(
                 (
@@ -100,7 +101,7 @@ class IRLS(BaseIRLS):
                     self._data, self._data_ids, weight, self._scale
                 )
 
-            if self._param_instance.at_final_stage():
+            if self._param_instance.alpha() == 1.0:
                 if self._diff_thres is not None:
                     model_max_diff = np.linalg.norm(model - model_old, ord=np.inf)
                     if self._print_warnings:
@@ -111,6 +112,7 @@ class IRLS(BaseIRLS):
                             print("Adding diff model_max_diff", model_max_diff)
 
                         self.debug_diffs.append(math.log10(model_max_diff))
+                        self.debug_diff_alpha.append(self._param_instance.alpha())
 
                     if model_max_diff < self._diff_thres:
                         if self._print_warnings:
@@ -129,7 +131,7 @@ class IRLS(BaseIRLS):
                     self._param_instance.influence_func_instance.summary(),
                 )
 
-            self._param_instance.update()
+            self._param_instance.increment()
             if self._debug:
                 self.debug_model_list.append(
                     (
@@ -140,8 +142,9 @@ class IRLS(BaseIRLS):
 
         self._param_instance.reset(
             False
-        )  # finish with parameters in correct final model
+        )
 
+        # finish with parameters in correct final model
         self.final_model = model
         self.final_model_ref = model_ref
 

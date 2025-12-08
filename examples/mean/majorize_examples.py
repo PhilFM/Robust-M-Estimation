@@ -75,7 +75,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
                [1.0, 2.0], "GNC IRLSp1 influence function", output_folder, "gnc_irls_p1_majorizers", testrun)
 
     sigma = 1.0
-    param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma)
+    param_instance = NullParams(WelschInfluenceFunc(sigma))
     plotResult(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0]),
                [1.5, 2.0], "Welsch influence function", output_folder, "welsch_majorizers", testrun)
 

@@ -7,4 +7,4 @@ Four models are implemented in this folder:
 - [image_trs](image_trs/README.md) Fitting 2D translation, rotation and scale to points on the XY plane.
 - [registration_3d](registration_3d/README.md) Calculate rotation and translation between two 3D point clouds.
 
-There is also a [test_all.py](test_all.py) program that runs all the example code and prints any errors.
+There is also a [run_all.py](run_all.py) program that runs all the example code and prints any errors.

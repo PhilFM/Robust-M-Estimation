@@ -1,9 +1,8 @@
 import sys
-sys.path.append("../pypi_package/src")
-
 import pytest
 import numpy as np
 
+sys.path.append("../pypi_package/src")
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc

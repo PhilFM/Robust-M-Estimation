@@ -34,7 +34,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     model_instance = RobustMean()
     influence_func_instance = GemanMcClureInfluenceFunc(sigma=sigma_base)
-    param_instance = GNC_WelschParams(influence_func_instance, sigma_base, sigma_limit, num_sigma_steps, max_niterations)
+    param_instance = GNC_WelschParams(influence_func_instance, sigma_base, sigma_limit, num_sigma_steps)
     irls_instance = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
     if irls_instance.run():
         m = irls_instance.final_model
