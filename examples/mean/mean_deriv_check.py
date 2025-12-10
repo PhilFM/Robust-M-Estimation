@@ -1,5 +1,9 @@
 import numpy as np
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
+
 from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
@@ -16,7 +20,7 @@ def objective_func(m, influence_func_instance):
 
 np.random.seed(0) # We want the numbers to be the same on each run
 
-def main(testrun:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../Output"):
     N = 10
     xgtrange = 10.0
     sigmaPop = 1.0
@@ -43,7 +47,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
         print_diffs = False
 
-        if not testrun:
+        if not test_run:
             print("Test number ", 1+test_idx)
             print("  Quadratic:")
 
@@ -59,7 +63,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
             all_good = False
             break
 
-        if not testrun:
+        if not test_run:
             print("  PseudoHuber:")
 
         if check_derivs(SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma)), RobustMean(), data, weight=weight), [x],
@@ -67,7 +71,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
             all_good = False
             break
 
-        if not testrun:
+        if not test_run:
             print("  GemanMcClure:")
 
         if check_derivs(SupGaussNewton(GNC_NullParams(GemanMcClureInfluenceFunc(sigma=sigma)), RobustMean(), data, weight=weight), [x],
@@ -75,7 +79,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
             all_good = False
             break
 
-        if not testrun:
+        if not test_run:
             print("  GNC IRLS-p:")
 
         p = 1.0
@@ -88,7 +92,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
             break
 
     if all_good:
-        if testrun:
+        if test_run:
             print("mean_deriv_check OK")
         else:
             print("ALL DERIVATIVES OK!!")
@@ -96,4 +100,4 @@ def main(testrun:bool, output_folder:str="../../Output"):
         print("Derivative failure")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(False) # test_run

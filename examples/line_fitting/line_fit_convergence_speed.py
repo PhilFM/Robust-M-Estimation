@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-from line_fit import LineFit
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
@@ -10,10 +12,12 @@ from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
+from line_fit import LineFit
+
 def plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                     diffs_welsch_irls, diff_alpha_welsch_irls,
-                    testrun:bool, output_folder:str):
-    if not testrun:
+                    test_run:bool, output_folder:str):
+    if not test_run:
         print("diffs_welsch_sup_gn:",diffs_welsch_sup_gn)
         print("diffs_welsch_irls:",diffs_welsch_irls)
 
@@ -35,13 +39,13 @@ def plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
 
     plt.legend()
     plt.savefig(os.path.join(output_folder, "line_fit_convergence_speed.png"), bbox_inches='tight')
-    if not testrun:
+    if not test_run:
         plt.show()
 
-def main(testrun:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
     for test_idx in range(0,10):
-        modelGT = [0.2, -2.0]
+        model_gt = [0.2, -2.0]
         N = 10
         data = np.zeros([10,2])
         noiseLevel = 0.4
@@ -49,12 +53,12 @@ def main(testrun:bool, output_folder:str="../../Output"):
         for i in range(N):
             x = 0.1*i
             if i < (1.0-outlier_fraction)*N:
-                data[i] = (x, modelGT[0]*x+modelGT[1] + noiseLevel*2.0*(np.random.rand()-0.5))
+                data[i] = (x, model_gt[0]*x+model_gt[1] + noiseLevel*2.0*(np.random.rand()-0.5))
             else:
                 # add outlier
                 data[i] = (x, 10.0*2.0*(np.random.rand()-0.5))
 
-        if not testrun:
+        if not test_run:
             print("data=",data)
 
         diff_thres = 1.e-13
@@ -66,7 +70,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
         model_start = [0.0,0.0]
         for i in range(2):
-            model_start[i] = modelGT[i] + 0.02
+            model_start[i] = model_gt[i] + 0.02
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
         sup_gn_instance = SupGaussNewton(param_instance, LineFit(), data,
@@ -84,10 +88,10 @@ def main(testrun:bool, output_folder:str="../../Output"):
             diff_alpha_welsch_irls = np.array(sup_gn_instance.debug_diff_alpha)
     
         plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
-                        diffs_welsch_irls, diff_alpha_welsch_irls, testrun, output_folder)
+                        diffs_welsch_irls, diff_alpha_welsch_irls, test_run, output_folder)
 
-    if testrun:
+    if test_run:
         print("line_fit_convergence_speed OK")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(False) # test_run

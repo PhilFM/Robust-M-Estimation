@@ -3,6 +3,10 @@ from scipy.spatial.transform import Rotation as Rot
 import matplotlib.pyplot as plt
 import os
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
+
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
@@ -15,17 +19,17 @@ from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from point_registration import PointRegistration
 
-def plotDifferences(diffsGNCWelsch, diffsPseudoHuber, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun:bool, output_folder:str):
+def plot_differences(diffs_gnc_welsch, diffs_pseudo_huber, diffs_gnc_irls_p0, diffs_gnc_irls_p1, test_run:bool, output_folder:str):
     plt.close("all")
     plt.figure(num=1, dpi=240)
     plt.clf()
     ax = plt.gca()
-    ax.set_xlim(0,max(len(diffsGNCWelsch),len(diffsPseudoHuber),len(diffsGNCIRLSp0),len(diffsGNCIRLSp1)))
+    ax.set_xlim(0,max(len(diffs_gnc_welsch),len(diffs_pseudo_huber),len(diffs_gnc_irls_p0),len(diffs_gnc_irls_p1)))
 
-    gncs_draw_curve(plt, diffsGNCWelsch,   ("SupGN", "Welsch",      "GNC_Welsch")     )
-    gncs_draw_curve(plt, diffsPseudoHuber, ("SupGN", "PseudoHuber", "Welsch")     )
-    gncs_draw_curve(plt, diffsGNCIRLSp0,   ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0"))
-    gncs_draw_curve(plt, diffsGNCIRLSp1,   ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1"))
+    gncs_draw_curve(plt, diffs_gnc_welsch,   ("SupGN", "Welsch",      "GNC_Welsch")     )
+    gncs_draw_curve(plt, diffs_pseudo_huber, ("SupGN", "PseudoHuber", "Welsch")     )
+    gncs_draw_curve(plt, diffs_gnc_irls_p0,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0"))
+    gncs_draw_curve(plt, diffs_gnc_irls_p1,  ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1"))
 
     ax.set_xlabel(r'Iteration count' )
     ax.set_ylabel(r'log(max(rotation/translation difference))')
@@ -36,15 +40,15 @@ def plotDifferences(diffsGNCWelsch, diffsPseudoHuber, diffsGNCIRLSp0, diffsGNCIR
 
     plt.legend()
     plt.savefig(os.path.join(output_folder, "registration-diffs.png"), bbox_inches='tight')
-    if not testrun:
+    if not test_run:
         plt.show()
     
-def main(testrun:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
     N = 1000
     outlierRatio = 0.0 #0.5
     noise_sigma = 0.5 # noise
-    translationBound    = 10.0
+    translation_bound    = 10.0
 
     for test_idx in range(0,1):
         t_gt = np.zeros(3)
@@ -52,10 +56,10 @@ def main(testrun:bool, output_folder:str="../../Output"):
         t_gt[1] = np.random.normal(0.0, 1.0)
         t_gt[2] = np.random.normal(0.0, 1.0)
         t_gt /= np.linalg.norm(t_gt)
-        t_gt = (translationBound) * np.random.rand() * t_gt
+        t_gt = (translation_bound) * np.random.rand() * t_gt
 
         R_gt = Rot.random().as_matrix()
-        if not testrun:
+        if not test_run:
             print("Ground truth R=",R_gt,"t=",t_gt)
 
         data = np.zeros((N,2,3))
@@ -81,7 +85,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
             raise ValueError("Point cloud registration requires minimum 3 inlier correspondences")
         else:
             if nrOutliers > 0:
-                if not testrun:
+                if not test_run:
                     print('point cloud registration: random generate',nrOutliers,'outliers')
 
                 for i in range(N-nrOutliers,N):
@@ -98,25 +102,25 @@ def main(testrun:bool, output_folder:str="../../Output"):
         welsch_p = 0.666667
 
         Rs = Rot.as_matrix(Rot.from_mrp([0.25*0.0001,0.25*0.0002,0.25*0.0003]))
-        if not testrun:
+        if not test_run:
             print("Rs=",Rs)
 
         model_start = np.zeros(6)
         model_start[3:6] = t_gt
         model_ref_start = R_gt #np.matmul(Rs,R_gt)
-        welschParamInstance = GNC_WelschParams(WelschInfluenceFunc(),
-                                               noise_sigma/welsch_p, noise_sigma/welsch_p, num_sigma_steps) # sigma_base, sigma_limit, numSigmaStep
-        optimiser_instance = SupGaussNewton(welschParamInstance, PointRegistration(), data, weight=weight,
-                                           max_niterations=max_niterations, residual_tolerance=residual_tolerance,
-                                           lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres, print_warnings=print_warnings,
-                                           model_start=model_start, model_ref_start=model_ref_start, debug=True)
+        welsch_param_instance = GNC_WelschParams(WelschInfluenceFunc(),
+                                                 noise_sigma/welsch_p, noise_sigma/welsch_p, num_sigma_steps) # sigma_base, sigma_limit, numSigmaStep
+        optimiser_instance = SupGaussNewton(welsch_param_instance, PointRegistration(), data, weight=weight,
+                                            max_niterations=max_niterations, residual_tolerance=residual_tolerance,
+                                            lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres, print_warnings=print_warnings,
+                                            model_start=model_start, model_ref_start=model_ref_start, debug=True)
         if optimiser_instance.run():
             model = optimiser_instance.final_model
             model_ref = optimiser_instance.final_model_ref
             n_iterations = optimiser_instance.debug_n_iterations
-            diffsGNCWelsch = optimiser_instance.debug_diffs
-            if not testrun:
-                #print("diffsGNCWelsch=",diffsGNCWelsch)
+            diffs_gnc_welsch = optimiser_instance.debug_diffs
+            if not test_run:
+                #print("diffs_gnc_welsch=",diffs_gnc_welsch)
                 print("GNC Welsch recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
                 print("GNC Welsch Rdiff=",model_ref-R_gt)
                 print("GNC Welsch tdiff=",model[3:6]-t_gt)
@@ -129,49 +133,49 @@ def main(testrun:bool, output_folder:str="../../Output"):
             model = optimiser_instance.final_model
             model_ref = optimiser_instance.final_model_ref
             n_iterations = optimiser_instance.debug_n_iterations
-            diffsPseudoHuber = optimiser_instance.debug_diffs
-            if not testrun:
+            diffs_pseudo_huber = optimiser_instance.debug_diffs
+            if not test_run:
                 print("Pseudo-Huber recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
                 print("Pseudo-Huber Rdiff=",model_ref-R_gt)
                 print("Pseudo-Huber tdiff=",model[3:6]-t_gt)
 
-        gncIrlsp_rscale = 1.0
-        gncIrlsp_sigma_base = noise_sigma
-        gncIrlsp_epsilon_base = gncIrlsp_rscale*gncIrlsp_sigma_base
-        gncIrlsp_beta = 0.8 #math.exp((math.log(gncIrlsp_sigma_base) - math.log(gncIrlsp_sigma_limit))/(num_sigma_steps - 1.0))
-        gncIrlspParamInstance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
-                                                0.0, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_base, gncIrlsp_beta)
-        optimiser_instance = IRLS(gncIrlspParamInstance, PointRegistration(), data, weight=weight,
+        gnc_irls_p_rscale = 1.0
+        gnc_irls_p_sigma_base = noise_sigma
+        gnc_irls_p_epsilon_base = gnc_irls_p_rscale*gnc_irls_p_sigma_base
+        gnc_irls_p_beta = 0.8 #math.exp((math.log(gnc_irls_p_sigma_base) - math.log(gnc_irls_p_sigma_limit))/(num_sigma_steps - 1.0))
+        gnc_irls_p_paramInstance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
+                                                   0.0, gnc_irls_p_rscale, gnc_irls_p_epsilon_base, gnc_irls_p_epsilon_base, gnc_irls_p_beta)
+        optimiser_instance = IRLS(gnc_irls_p_paramInstance, PointRegistration(), data, weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
                                   model_start=model_start, model_ref_start=model_ref_start, debug=True)
         if optimiser_instance.run():
             model = optimiser_instance.final_model
             model_ref = optimiser_instance.final_model_ref
             n_iterations = optimiser_instance.debug_n_iterations
-            diffsGNCIRLSp0 = optimiser_instance.debug_diffs
-            if not testrun:
+            diffs_gnc_irls_p0 = optimiser_instance.debug_diffs
+            if not test_run:
                 print("GNC IRLS-p0 recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
                 print("GNC IRLS-p0 Rdiff=",model_ref-R_gt)
                 print("GNC IRLS-p0 tdiff=",model[3:6]-t_gt)
 
-        gncIrlspParamInstance.influence_func_instance.p = 1.0
-        optimiser_instance = IRLS(gncIrlspParamInstance, PointRegistration(), data, weight=weight,
+        gnc_irls_p_paramInstance.influence_func_instance.p = 1.0
+        optimiser_instance = IRLS(gnc_irls_p_paramInstance, PointRegistration(), data, weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
                                   model_start=model_start, model_ref_start=model_ref_start, debug=True)
         if optimiser_instance.run():
             model = optimiser_instance.final_model
             model_ref = optimiser_instance.final_model_ref
             n_iterations = optimiser_instance.debug_n_iterations
-            diffsGNCIRLSp1 = optimiser_instance.debug_diffs
-            if not testrun:
+            diffs_gnc_irls_p1 = optimiser_instance.debug_diffs
+            if not test_run:
                 print("GNC IRLS-p1 recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
                 print("GNC IRLS-p1 Rdiff=",model_ref-R_gt)
                 print("GNC IRLS-p1 tdiff=",model[3:6]-t_gt)
 
-        plotDifferences(diffsGNCWelsch, diffsPseudoHuber, diffsGNCIRLSp0, diffsGNCIRLSp1, testrun, output_folder)
+        plot_differences(diffs_gnc_welsch, diffs_pseudo_huber, diffs_gnc_irls_p0, diffs_gnc_irls_p1, test_run, output_folder)
 
-    if testrun:
+    if test_run:
         print("registration_solver OK")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(False) # test_run

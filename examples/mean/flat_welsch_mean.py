@@ -13,7 +13,7 @@ from gncs_robust_mean import RobustMean
 def objective_func(m, optimiser_instance) -> float:
     return optimiser_instance.objective_func([m])
 
-def plotResult(optimiser_instance, data, weight, m, sigma, label, mgt, output_folder:str, testrun:bool) -> None:
+def plot_result(optimiser_instance, data, weight, m, sigma, label, m_gt, output_folder:str, test_run:bool) -> None:
     dmin = dmax = data[0]
     for d in data:
         dmin = min(dmin, d)
@@ -21,15 +21,15 @@ def plotResult(optimiser_instance, data, weight, m, sigma, label, mgt, output_fo
 
         # allow border
         drange = dmax-dmin
-        xMin = dmin - 0.05*drange
-        xMax = dmax + 0.05*drange
+        x_min = dmin - 0.05*drange
+        x_max = dmax + 0.05*drange
 
-    mlist = np.linspace(xMin, xMax, num=300)
+    mlist = np.linspace(x_min, x_max, num=300)
 
     plt.figure(num=1, dpi=240)
-    gncs_draw_data_points(plt, data, weight, xMin, xMax, len(data), scale=0.05)
-    if mgt is not None:
-        plt.axvline(x = mgt, color = 'gray', label = 'Ground truth', lw = 1.0, linestyle = 'solid')
+    gncs_draw_data_points(plt, data, weight, x_min, x_max, len(data), scale=0.05)
+    if m_gt is not None:
+        plt.axvline(x = m_gt, color = 'gray', label = 'Ground truth', lw = 1.0, linestyle = 'solid')
 
     rmfv = np.vectorize(objective_func, excluded="optimiser_instance")
     plt.plot(mlist, rmfv(mlist, optimiser_instance=optimiser_instance), color = 'green', lw = 1.0)
@@ -37,7 +37,7 @@ def plotResult(optimiser_instance, data, weight, m, sigma, label, mgt, output_fo
 
     plt.legend()
     plt.savefig(os.path.join(output_folder, "flat_welsch_mean.png"), bbox_inches='tight')
-    if not testrun:
+    if not test_run:
         plt.show()
 
 def merge(intervals) -> [[float,float]]:
@@ -52,30 +52,9 @@ def merge(intervals) -> [[float,float]]:
     
     return merged
 
-def mergeOverlap(arr) -> [[float,float]]:
-    
-    # Sort intervals based on start values
-    arr.sort()
-
-    res = []
-    res.append(arr[0])
-
-    for i in range(1, len(arr)):
-        last = res[-1]
-        curr = arr[i]
-
-        # If current interval overlaps with the last merged
-        # interval, merge them 
-        if curr[0] <= last[1]:
-            last[1] = max(last[1], curr[1])
-        else:
-            res.append(curr)
-
-    return res
-
 def flat_welsch_mean(data, sigma, weight=None, scale=None,
-                     max_niterations=100, residual_tolerance=1.e-8, diff_thres=1.e-12, print_warnings=False, mgt=None,
-                     output_folder:str="../../Output", testrun:bool=False) -> float:
+                     max_niterations=100, residual_tolerance=1.e-8, diff_thres=1.e-12, print_warnings=False, m_gt=None,
+                     output_folder:str="../../Output", test_run:bool=False) -> float:
     # build +/- sigma intervals around data points
     intervals = [] #np.zeros((0,2))
     for d in data:
@@ -83,49 +62,49 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
 
     # build samples separated by sigma covering merged intervals
     mergedIntervals = merge(intervals)
-    sampleX = None
+    sample_x = None
     for interval in mergedIntervals:
         harr = np.linspace(interval[0], interval[1], 1+int((interval[1]-interval[0])/sigma))
-        if sampleX is None:
-            sampleX = harr
+        if sample_x is None:
+            sample_x = harr
         else:
-            sampleX = np.concatenate((sampleX, harr))
+            sample_x = np.concatenate((sample_x, harr))
 
     # get maximum value over samples separated by sigma
-    maxVal = 0.0
-    maxX = 0.0
-    sampleVal = []
+    max_val = 0.0
+    max_x = 0.0
+    sample_val = []
     param_instance = GNC_NullParams(WelschInfluenceFunc(sigma=sigma))
     optimiser_instance = SupGaussNewton(param_instance, RobustMean(), data, weight=weight, scale=scale)
-    for x in sampleX:
+    for x in sample_x:
         v = optimiser_instance.objective_func([x])
-        sampleVal.append(v)
-        if v > maxVal:
-            maxVal = v
-            maxX = x
+        sample_val.append(v)
+        if v > max_val:
+            max_val = v
+            max_x = x
 
-    if maxVal <= 0.0:
+    if max_val <= 0.0:
         return 0.0
 
-    # find candidate maxima greater than maxVal*e^-1/2
-    thres = math.exp(-0.5)*maxVal
-    testValsX = [maxX]
-    for i,x in enumerate(sampleX):
-        if sampleVal[i] > thres and abs(x-maxX) >= sigma:
-            if i == 0 or i == len(sampleX)-1 or (sampleVal[i] > sampleVal[i-1] and sampleVal[i] > sampleVal[i+1]):
-                testValsX.append(x)
+    # find candidate maxima greater than max_val*e^-1/2
+    thres = math.exp(-0.5)*max_val
+    test_vals_x = [max_x]
+    for i,x in enumerate(sample_x):
+        if sample_val[i] > thres and abs(x-max_x) >= sigma:
+            if i == 0 or i == len(sample_x)-1 or (sample_val[i] > sample_val[i-1] and sample_val[i] > sample_val[i+1]):
+                test_vals_x.append(x)
 
     if print_warnings:
-        print("testValsX=",testValsX)
+        print("test_vals_x=",test_vals_x)
 
     # optimise each candidate
-    for x in testValsX:
+    for x in test_vals_x:
         if print_warnings:
             print("Init m=",x)
             print("data=",data)
             print("weight=",weight)
             print("scale=",scale)
-            plotResult(optimiser_instance, data, weight, x, sigma, "Init m", mgt, output_folder, testrun)
+            plot_result(optimiser_instance, data, weight, x, sigma, "Init m", m_gt, output_folder, test_run)
 
         sup_gn_instance = SupGaussNewton(param_instance, RobustMean(), data, weight=weight, scale=scale,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
@@ -134,16 +113,16 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
         if sup_gn_instance.run():
             m = sup_gn_instance.final_model
             testVal = optimiser_instance.objective_func([m])
-            if testVal > maxVal:
-                maxVal = testVal
-                maxX = m
+            if testVal > max_val:
+                max_val = testVal
+                max_x = m
 
             if print_warnings:
-                print("testVal=",testVal," maxVal=",maxVal," maxX=",maxX)
-                plotResult(optimiser_instance, data, weight, m, sigma, "New m", mgt, output_folder, testrun)
+                print("testVal=",testVal," max_val=",max_val," max_x=",max_x)
+                plot_result(optimiser_instance, data, weight, m, sigma, "New m", m_gt, output_folder, test_run)
 
     if print_warnings:
-        o_val = optimiser_instance.objective_func([maxX])
-        print("flat Welsch mean=",maxX,"objective_func=",o_val)
+        o_val = optimiser_instance.objective_func([max_x])
+        print("flat Welsch mean=",max_x,"objective_func=",o_val)
 
-    return maxX
+    return max_x

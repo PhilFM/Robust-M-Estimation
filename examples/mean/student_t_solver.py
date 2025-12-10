@@ -4,127 +4,131 @@ from matplotlib.ticker import MaxNLocator
 import json
 import os
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
+
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from robust_solver_apply import apply_to_data
 
-def main(testrun:bool, output_folder:str="../../Output"):
-    sigmaPop = 1.0
+def main(test_run:bool, output_folder:str="../../Output", quick_run:bool=False):
+    sigma_pop = 1.0
     p = 0.5 # 33333333
 
     # data range
     xgtrange = 50.0
 
     # number of samples used for statistics
-    nSamplesBase = 200 if testrun else 50000
-    minNSamples = 4 if testrun else 1000
+    n_samples_base = 200 if quick_run else 50000
+    min_n_samples = 4 if quick_run else 1000
 
     np.random.seed(0) # We want the numbers to be the same on each run
 
-    studentTDOFList = [1,2,3,4,5]
-    sampleSizeArray = [10,20] if testrun else [10,20,50,100]
-    for N in sampleSizeArray:
-        effgncwelschlist = []
-        effmeanlist = []
-        effhuberlist = []
-        efftrimmedlist = []
-        effmedianlist = []
-        effgncirlsplist = []
-        effrmelist = []
+    student_t_dof_list = [1,2,3,4,5]
+    sample_size_array = [10,20] if quick_run else [10,20,50,100]
+    for n in sample_size_array:
+        eff_gncwelsch_list = []
+        eff_mean_list = []
+        eff_huber_list = []
+        eff_trimmed_list = []
+        eff_median_list = []
+        eff_gncirlsp_list = []
+        eff_rme_list = []
         data_dict = {}
-        for studentTDOF in studentTDOFList:
-            outputFile = '' #'../../Output/test.png' if studentTDOF == 2 else ''
-            dataArray,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,nSamples = apply_to_data(sigmaPop, p, xgtrange, N, nSamplesBase, minNSamples, 0.0, studentTDOF=studentTDOF, outputFile=outputFile, testrun=testrun)
+        for student_t_dof in student_t_dof_list:
+            output_file = '' #'../../Output/test.png' if student_t_dof == 2 else ''
+            data_array,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,n_samples = apply_to_data(sigma_pop, p, xgtrange, n, n_samples_base, min_n_samples, 0.0, student_t_dof=student_t_dof, output_file=output_file, test_run=test_run)
 
-            outlierDict = {}
-            outlierDict['data'] = dataArray
-            outlierDict['popmean'] = mgt
-            efficiencyDict = {}
+            outlier_dict = {}
+            outlier_dict['data'] = data_array
+            outlier_dict['popmean'] = mgt
+            efficiency_dict = {}
 
-            eff = sigmaPop*sigmaPop/(N*sdgncwelsch*sdgncwelsch)
-            if not testrun:
+            eff = sigma_pop*sigma_pop/(n*sdgncwelsch*sdgncwelsch)
+            if not test_run:
                 print("SUP-GN GNC-Welsch estimator efficiency: ", eff)
 
-            effgncwelschlist.append(eff)
-            efficiencyDict['GNC Welsch'] = eff
+            eff_gncwelsch_list.append(eff)
+            efficiency_dict['GNC Welsch'] = eff
 
-            eff = sigmaPop*sigmaPop/(N*sdmean*sdmean)
-            if not testrun:
+            eff = sigma_pop*sigma_pop/(n*sdmean*sdmean)
+            if not test_run:
                 print("Mean efficiency: ", eff)
 
-            effmeanlist.append(eff)
-            efficiencyDict['mean'] = eff
+            eff_mean_list.append(eff)
+            efficiency_dict['mean'] = eff
 
-            eff = sigmaPop*sigmaPop/(N*sdhuber*sdhuber)
-            if not testrun:
+            eff = sigma_pop*sigma_pop/(n*sdhuber*sdhuber)
+            if not test_run:
                 print("Pseudo-Huber estimator efficiency: ", eff)
 
-            effhuberlist.append(eff)
-            efficiencyDict['Pseudo-Huber'] = eff
+            eff_huber_list.append(eff)
+            efficiency_dict['Pseudo-Huber'] = eff
 
-            eff = sigmaPop*sigmaPop/(N*sdtrimmed*sdtrimmed)
-            if not testrun:
+            eff = sigma_pop*sigma_pop/(n*sdtrimmed*sdtrimmed)
+            if not test_run:
                 print("Trimmed mean 50% efficiency: ", eff)
 
-            efftrimmedlist.append(eff)
-            efficiencyDict['trimmed mean 50%'] = eff
+            eff_trimmed_list.append(eff)
+            efficiency_dict['trimmed mean 50%'] = eff
 
-            eff = sigmaPop*sigmaPop/(N*sdmedian*sdmedian)
-            if not testrun:
+            eff = sigma_pop*sigma_pop/(n*sdmedian*sdmedian)
+            if not test_run:
                 print("Median efficiency: ", eff)
 
-            effmedianlist.append(eff)
-            efficiencyDict['median'] = eff
+            eff_median_list.append(eff)
+            efficiency_dict['median'] = eff
 
-            eff = sigmaPop*sigmaPop/(N*sdgncirlsp*sdgncirlsp)
-            if not testrun:
+            eff = sigma_pop*sigma_pop/(n*sdgncirlsp*sdgncirlsp)
+            if not test_run:
                 print("GNC IRLS-p estimator efficiency: ", eff)
 
-            effgncirlsplist.append(eff)
-            efficiencyDict['GNC IRLS-p'] = eff
+            eff_gncirlsp_list.append(eff)
+            efficiency_dict['GNC IRLS-p'] = eff
 
-            eff = sigmaPop*sigmaPop/(N*sdrme*sdrme)
-            if not testrun:
+            eff = sigma_pop*sigma_pop/(n*sdrme*sdrme)
+            if not test_run:
                 print("Robust Mean Estimator efficiency: ", eff)
 
-            effrmelist.append(eff)
-            efficiencyDict['RME'] = eff
+            eff_rme_list.append(eff)
+            efficiency_dict['RME'] = eff
 
-            outlierDict['efficiency'] = efficiencyDict
-            data_dict['DOF-'+str(studentTDOF)] = outlierDict
+            outlier_dict['efficiency'] = efficiency_dict
+            data_dict['DOF-'+str(student_t_dof)] = outlier_dict
 
-        data_dict['nSamples'] = nSamples
+        data_dict['n_samples'] = n_samples
         jstr = json.dumps(data_dict)
         js = json.loads(jstr)
-        with open(os.path.join(output_folder, "compareStudentTN" + str(N) + ".json"), 'w', encoding='utf-8') as f:
+        with open(os.path.join(output_folder, "compare_student_t_n" + str(n) + ".json"), 'w', encoding='utf-8') as f:
             json.dump(js, f, ensure_ascii=False, indent=4)
 
         plt.close("all")
         plt.figure(num=1, dpi=240)
         plt.clf()
         ax = plt.gca()
-        gncs_draw_curve(plt, effgncwelschlist,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=studentTDOFList)
-        gncs_draw_curve(plt, effmeanlist,         ("Mean",   "Basic",       ""          ), xvalues=studentTDOFList)
-        gncs_draw_curve(plt, effhuberlist,        ("IRLS",   "PseudoHuber", "Welsch"    ), xvalues=studentTDOFList)
-        gncs_draw_curve(plt, efftrimmedlist,      ("Mean",   "Trimmed",     ""          ), xvalues=studentTDOFList)
-        gncs_draw_curve(plt, effmedianlist,       ("Median", "Basic",       ""          ), xvalues=studentTDOFList)
-        gncs_draw_curve(plt, effgncirlsplist,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), xvalues=studentTDOFList)
-        gncs_draw_curve(plt, effrmelist,          ("RME",    "",            ""          ), xvalues=studentTDOFList)
+        gncs_draw_curve(plt, eff_gncwelsch_list,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_mean_list,         ("Mean",   "Basic",       ""          ), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_huber_list,        ("IRLS",   "PseudoHuber", "Welsch"    ), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_trimmed_list,      ("Mean",   "Trimmed",     ""          ), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_median_list,       ("Median", "Basic",       ""          ), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_gncirlsp_list,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_rme_list,          ("RME",    "",            ""          ), xvalues=student_t_dof_list)
 
         ax.set_xlabel(r'Degrees of freedom' )
         ax.set_ylabel('Relative efficiency')
         #plt.box(False)
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax.set_xlim(studentTDOFList[0],studentTDOFList[len(studentTDOFList)-1])
+        ax.set_xlim(student_t_dof_list[0],student_t_dof_list[len(student_t_dof_list)-1])
         ax.set_ylim(0.0,1.1)
 
         plt.legend()
-        plt.savefig(os.path.join(output_folder, "compareStudentTN" + str(N) + ".png"), bbox_inches='tight')
-        if not testrun:
+        plt.savefig(os.path.join(output_folder, "compare_student_t_n" + str(n) + ".png"), bbox_inches='tight')
+        if not test_run:
             plt.show()
 
-    if testrun:
+    if test_run:
         print("student_t_solver OK")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(False) # test_run

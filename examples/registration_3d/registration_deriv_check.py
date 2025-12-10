@@ -1,6 +1,10 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
+
 from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
@@ -8,10 +12,10 @@ from gnc_smoothie_philfm.check_derivs import check_derivs
 
 from point_registration import PointRegistration
 
-def main(testrun:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
-    N = 10
+    n = 10
     noise_sigma = 0.5
 
     for test_idx in range(0,1):
@@ -21,12 +25,12 @@ def main(testrun:bool, output_folder:str="../../Output"):
         t[2] = np.random.normal(0.0, 1.0)
 
         R = Rot.random().as_matrix()
-        if not testrun:
+        if not test_run:
             print("R=",R,"t=",t)
 
-        data = np.zeros((N,2,3))
-        weight = np.zeros(N)
-        for i in range(0,N):
+        data = np.zeros((n,2,3))
+        weight = np.zeros(n)
+        for i in range(0,n):
             data[i][0][0] = np.random.normal(0.0, 1.0)
             data[i][0][1] = np.random.normal(0.0, 1.0)
             data[i][0][2] = np.random.normal(0.0, 1.0)
@@ -44,7 +48,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
             all_good = False
 
     if all_good:
-        if testrun:
+        if test_run:
             print("registration_deriv_check OK")
         else:
             print("ALL DERIVATIVES OK!!")
@@ -52,4 +56,4 @@ def main(testrun:bool, output_folder:str="../../Output"):
         print("Derivative failure")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(False) # test_run

@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import time
 
 from robust_mean import M_estimator
 
@@ -19,115 +20,116 @@ from trimmed_mean import trimmed_mean
 from gncs_robust_mean import RobustMean
 from weighted_mean import weighted_mean
 
-showOthers = True
+show_others = True
 
 def objective_func(m, optimiser_instance):
     return optimiser_instance.objective_func([m])
 
-def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction, studentTDOF = 0, outputFile = '', testrun:bool=False):
-    vgncwelsch = vmean = vhuber = vtrimmed = vmedian = vgncirlsp = vrme = 0.0
+def apply_to_data(sigma_pop,p,xgtrange,n,n_samples_base,min_n_samples,outlier_fraction, student_t_dof = 0, output_file = '', test_run:bool=False):
+    vec_gnc_welsch = vec_mean = vec_pseudo_huber = vec_trimmed = vec_median = vec_gnc_irls_p = vec_rme = 0.0
 
-    N0 = int((1.0-outlierFraction)*N+0.5)
-    nSamples = max(nSamplesBase//N, minNSamples)
-    if not testrun:
-        print("outlierFraction=",outlierFraction," N=",N," N0=",N0," nSamples=",nSamples," studentTDOF=",studentTDOF)
+    n0 = int((1.0-outlier_fraction)*n+0.5)
+    n_samples = max(n_samples_base//n, min_n_samples)
+    if not test_run:
+        print("outlier_fraction=",outlier_fraction," n=",n," n0=",n0," n_samples=",n_samples," student_t_dof=",student_t_dof)
 
-    xgtborder = 3.0*sigmaPop
-    dataArray = []
-    for i in range(nSamples):
-        mgt = np.random.rand()*xgtrange + xgtborder
-        data = np.zeros((N,1))
-        weight = np.zeros(N)
-        goodData = []
-        for j in range(N0):
-            if studentTDOF > 1:
-                d = mgt + np.random.standard_t(studentTDOF)
+    x_gt_border = 3.0*sigma_pop
+    data_array = []
+    for i in range(n_samples):
+        m_gt = np.random.rand()*xgtrange + x_gt_border
+        data = np.zeros((n,1))
+        weight = np.zeros(n)
+        good_data = []
+        for j in range(n0):
+            if student_t_dof > 1:
+                d = m_gt + np.random.standard_t(student_t_dof)
             else:
-                d = np.random.normal(loc=mgt, scale=sigmaPop)
+                d = np.random.normal(loc=m_gt, scale=sigma_pop)
 
             weight[j] = 1.0
             data[j] = [d]
-            goodData.append([weight[j], [d]])
+            good_data.append([weight[j], [d]])
 
         outlierData = []
-        for j in range(N-N0):
-            d = np.random.rand()*(xgtrange + 2.0*xgtborder)
-            weight[N0+j] = 1.0
-            data[N0+j] = [d]
-            outlierData.append([weight[N0+j], [d]])
+        for j in range(n-n0):
+            d = np.random.rand()*(xgtrange + 2.0*x_gt_border)
+            weight[n0+j] = 1.0
+            data[n0+j] = [d]
+            outlierData.append([weight[n0+j], [d]])
 
         datap = {}
-        datap["good"] = goodData
+        datap["good"] = good_data
         datap["outlier"] = outlierData
 
-        dataArray.append(datap)
+        data_array.append(datap)
 
         model_instance = RobustMean()
 
-        gncwelschSigma = sigmaPop/p
-        welschIRLSInstance = IRLS(GNC_WelschParams(WelschInfluenceFunc(), gncwelschSigma, max(xgtrange,10.0*sigmaPop), 100),
-                                  model_instance, data, weight=weight, max_niterations=200)
+        gnc_welsch_sigma = sigma_pop/p
+        welsch_irls_instance = IRLS(GNC_WelschParams(WelschInfluenceFunc(), gnc_welsch_sigma, max(xgtrange,10.0*sigma_pop), 100),
+                                    model_instance, data, weight=weight, max_niterations=200)
 
         # for the paper let's use IRLS
-        if welschIRLSInstance.run():
-            mgncwelsch = welschIRLSInstance.final_model
+        if welsch_irls_instance.run():
+            m_gncwelsch = welsch_irls_instance.final_model
 
-        vgncwelsch += math.pow(mgncwelsch-mgt, 2.0)
-        welschOptInstance = SupGaussNewton(GNC_WelschParams(WelschInfluenceFunc(), gncwelschSigma, max(xgtrange,10.0*sigmaPop), 100),
-                                           model_instance, data, weight=weight, max_niterations=200)
+        vec_gnc_welsch += math.pow(m_gncwelsch-m_gt, 2.0)
+        welsch_supgn_instance = SupGaussNewton(GNC_WelschParams(WelschInfluenceFunc(), gnc_welsch_sigma, max(xgtrange,10.0*sigma_pop), 100),
+                                               model_instance, data, weight=weight, max_niterations=200)
 
         mean = weighted_mean(data, weight)
-        vmean += math.pow(mean[0]-mgt, 2.0)
+        vec_mean += math.pow(mean[0]-m_gt, 2.0)
 
-        pseudoHuberSigma = sigmaPop/p
-        pseudoHuberIRLSInstance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
-                                       model_instance, data, weight=weight)
-        if pseudoHuberIRLSInstance.run():
-            mhuber = pseudoHuberIRLSInstance.final_model
+        pseudo_huber_sigma = sigma_pop/p
+        pseudo_huber_irls_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudo_huber_sigma)),
+                                          model_instance, data, weight=weight)
+        if pseudo_huber_irls_instance.run():
+            m_pseudo_huber = pseudo_huber_irls_instance.final_model
 
-        vhuber += math.pow(mhuber-mgt, 2.0)
-        pseudoHuberOptInstance = SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudoHuberSigma)),
-                                                model_instance, data, weight=weight)
+        vec_pseudo_huber += math.pow(m_pseudo_huber-m_gt, 2.0)
+        pseudo_huber_supgn_instance = SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudo_huber_sigma)),
+                                                     model_instance, data, weight=weight)
 
-        #trim_size = N//10
-        #mtrimmed = trimmed_mean(data, trim_size=trim_size)
-        #vtrimmed1 += math.pow(mtrimmed-mgt, 2.0)
+        #trim_size = n//10
+        #m_trimmed = trimmed_mean(data, trim_size=trim_size)
+        #vec_trimmed1 += math.pow(m_trimmed-m_gt, 2.0)
 
-        trim_size = N//4
-        mtrimmed = trimmed_mean(data, weight, trim_size=trim_size)
-        vtrimmed += math.pow(mtrimmed-mgt, 2.0)
+        trim_size = n//4
+        m_trimmed = trimmed_mean(data, weight, trim_size=trim_size)
+        vec_trimmed += math.pow(m_trimmed-m_gt, 2.0)
 
         median = np.median(data)
-        vmedian += math.pow(median-mgt, 2.0)
+        vec_median += math.pow(median-m_gt, 2.0)
 
-        gncIrlsp_rscale = 1.0/xgtrange
-        gncIrlsp_epsilon_base = gncIrlsp_rscale*sigmaPop
-        gncIrlsp_epsilon_limit = 1.0
-        gncIrlsp_p = 0.0
-        gncIrlsp_beta = 0.8
-        gncIrlspIRLSInstance = IRLS(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
-                                                    gncIrlsp_p, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta),
-                                    model_instance, data, weight=weight)
-        gncIrlspIRLSInstance.run() # this can fail but let's use the result anyway
-        mgncirlsp = gncIrlspIRLSInstance.final_model
+        gnc_irls_p_rscale = 1.0/xgtrange
+        gnc_irls_p_epsilon_base = gnc_irls_p_rscale*sigma_pop
+        gnc_irls_p_epsilon_limit = 1.0
+        gnc_irls_p_p = 0.0
+        gnc_irls_p_beta = 0.8
+        gnc_irls_p_instance = IRLS(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
+                                                   gnc_irls_p_p, gnc_irls_p_rscale, gnc_irls_p_epsilon_base, gnc_irls_p_epsilon_limit, gnc_irls_p_beta),
+                                   model_instance, data, weight=weight)
+        gnc_irls_p_instance.run() # this can fail but let's use the result anyway
+        m_gnc_irls_p = gnc_irls_p_instance.final_model
 
-        vgncirlsp += math.pow(mgncirlsp-mgt, 2.0)
-        gncIrlspOptInstance = SupGaussNewton(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
-                                                             gncIrlsp_p, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta),
-                                             model_instance, data, weight=weight)
+        vec_gnc_irls_p += math.pow(m_gnc_irls_p-m_gt, 2.0)
+        gnc_irlsp_supgn_instance = SupGaussNewton(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
+                                                                  gnc_irls_p_p, gnc_irls_p_rscale, gnc_irls_p_epsilon_base,
+                                                                  gnc_irls_p_epsilon_limit, gnc_irls_p_beta),
+                                                  model_instance, data, weight=weight)
 
-        mrme = M_estimator(data, beta=1)
-        vrme += math.pow(mrme-mgt, 2.0)
+        m_rme = M_estimator(data, beta=1)
+        vec_rme += math.pow(m_rme-m_gt, 2.0)
 
-        if len(outputFile) > 0:
+        if len(output_file) > 0:
             # get min and max of data
-            yMin = yMax = 0.0
-            xMin = xMax = None
+            y_min = y_max = 0.0
+            x_min = x_max = None
             # override x limit 
-            #xMin = 0.7
-            #xMax = 1.3
+            #x_min = 0.7
+            #x_max = 1.3
 
-            if xMin is None:
+            if x_min is None:
                 dmin = dmax = data[0]
                 for d in data:
                     dmin = min(dmin, d)
@@ -135,51 +137,51 @@ def apply_to_data(sigmaPop,p,xgtrange,N,nSamplesBase,minNSamples,outlierFraction
 
                 # allow border
                 drange = dmax-dmin
-                xMin = dmin - 0.05*drange
-                xMax = dmax + 0.05*drange
+                x_min = dmin - 0.05*drange
+                x_max = dmax + 0.05*drange
 
-            mlist = np.linspace(xMin, xMax, num=300)
+            mlist = np.linspace(x_min, x_max, num=300)
 
             for mx in mlist:
-                yMax = max(yMax, objective_func(mx, welschOptInstance))
+                y_max = max(y_max, objective_func(mx, welsch_supgn_instance))
 
-            yMin *= 1.1 # allow for a small border
-            yMax *= 1.1 # allow for a small border            
+            y_min *= 1.1 # allow for a small border
+            y_max *= 1.1 # allow for a small border            
 
             plt.figure(num=1, dpi=240)
             ax = plt.gca()
             #plt.box(False)
-            ax.set_ylim((yMin, yMax))
+            ax.set_ylim((y_min, y_max))
 
             rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
-            gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=welschOptInstance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, drawMarkers=False, hlightXValue=mgncwelsch, ax=ax)
+            gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=welsch_supgn_instance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, draw_markers=False, hlight_x_value=m_gncwelsch, ax=ax)
 
             hmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
-            hmfvScaled = hmfv(mlist, optimiser_instance=pseudoHuberOptInstance)
-            hmfvScaled *= 0.5
-            gncs_draw_curve(plt, hmfvScaled, ("IRLS", "PseudoHuber", "Welsch"), xvalues=mlist, drawMarkers=False, hlightXValue=mhuber, ax=ax)
+            hmfv_scaled = hmfv(mlist, optimiser_instance=pseudo_huber_supgn_instance)
+            hmfv_scaled *= 0.5
+            gncs_draw_curve(plt, hmfv_scaled, ("IRLS", "PseudoHuber", "Welsch"), xvalues=mlist, draw_markers=False, hlight_x_value=m_pseudo_huber, ax=ax)
 
             gmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
-            gmfvScaled = gmfv(mlist, optimiser_instance=gncIrlspOptInstance)
-            gmfvScaled *= 0.1
-            gncs_draw_curve(plt, gmfvScaled, ("IRLS", "GNC_IRLSp", "GNC_IRLSp0"), xvalues=mlist, drawMarkers=False, hlightXValue=mgncirlsp, ax=ax)
+            gmfv_scaled = gmfv(mlist, optimiser_instance=gnc_irlsp_supgn_instance)
+            gmfv_scaled *= 0.1
+            gncs_draw_curve(plt, gmfv_scaled, ("IRLS", "GNC_IRLSp", "GNC_IRLSp0"), xvalues=mlist, draw_markers=False, hlight_x_value=m_gnc_irls_p, ax=ax)
 
-            gncs_draw_vline(plt, mgt, ("GroundTruth", "", ""))
-            gncs_draw_vline(plt, mgncwelsch, ("IRLS", "Welsch", "GNC_Welsch"), useLabel=False)
+            gncs_draw_vline(plt, m_gt, ("GroundTruth", "", ""))
+            gncs_draw_vline(plt, m_gncwelsch, ("IRLS", "Welsch", "GNC_Welsch"), use_label=False)
 
-            if showOthers:
-                gncs_draw_vline(plt, mean,      ("Mean",   "Basic",       ""          ))
-                gncs_draw_vline(plt, mhuber,    ("IRLS",   "PseudoHuber", "Welsch"    ), useLabel=False)
-                gncs_draw_vline(plt, mtrimmed,  ("Mean",   "Trimmed",     ""          ))
-                gncs_draw_vline(plt, median,    ("Median", "Basic",       ""          ))
-                gncs_draw_vline(plt, mgncirlsp, ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), useLabel=False)
-                gncs_draw_vline(plt, mrme,      ("RME",    "",            ""          ))
+            if show_others:
+                gncs_draw_vline(plt, mean,           ("Mean",   "Basic",       ""          ))
+                gncs_draw_vline(plt, m_pseudo_huber, ("IRLS",   "PseudoHuber", "Welsch"    ), use_label=False)
+                gncs_draw_vline(plt, m_trimmed,      ("Mean",   "Trimmed",     ""          ))
+                gncs_draw_vline(plt, median,         ("Median", "Basic",       ""          ))
+                gncs_draw_vline(plt, m_gnc_irls_p,   ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), use_label=False)
+                gncs_draw_vline(plt, m_rme,          ("RME",    "",            ""          ))
 
-            gncs_draw_data_points(plt, data, weight, xMin, xMax, N0)
+            gncs_draw_data_points(plt, data, weight, x_min, x_max, n0)
 
             plt.legend()
-            plt.savefig(outputFile, bbox_inches='tight')
+            plt.savefig(output_file, bbox_inches='tight')
             plt.show()            
 
-    return dataArray,mgt,math.sqrt(vgncwelsch/nSamples),math.sqrt(vmean/nSamples),math.sqrt(vhuber/nSamples),math.sqrt(vtrimmed/nSamples),math.sqrt(vmedian/nSamples),math.sqrt(vgncirlsp/nSamples),math.sqrt(vrme/nSamples),nSamples
+    return data_array,m_gt,math.sqrt(vec_gnc_welsch/n_samples),math.sqrt(vec_mean/n_samples),math.sqrt(vec_pseudo_huber/n_samples),math.sqrt(vec_trimmed/n_samples),math.sqrt(vec_median/n_samples),math.sqrt(vec_gnc_irls_p/n_samples),math.sqrt(vec_rme/n_samples),n_samples
 

@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
+
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
@@ -9,7 +13,7 @@ from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
 from gncs_robust_mean import RobustMean
 
-def main(testrun:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../Output"):
     # configuration
     showSolution = True
     showGradient = False
@@ -23,7 +27,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     num_sigma_steps = 100
     max_niterations = 200
 
-    xMin = xMax = None
+    x_min = x_max = None
 
     # data is a list of [weight, value] pairs
     if showGradient:
@@ -43,13 +47,13 @@ def main(testrun:bool, output_folder:str="../../Output"):
     irls_instance = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
     if irls_instance.run():
         m = irls_instance.final_model
-        if not testrun:
+        if not test_run:
             print("IRLS result: m=", m)
 
     optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
     if optimiser_instance.run():
         m = optimiser_instance.final_model
-        if not testrun:
+        if not test_run:
             print("Supervised Gauss-Newton optimisation result: m=", m)
 
     # check result when scale is included
@@ -63,33 +67,33 @@ def main(testrun:bool, output_folder:str="../../Output"):
     optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight, scale=scale, max_niterations=max_niterations)
     if optimiser_instance.run():
         mscale = optimiser_instance.final_model
-        if not testrun:
+        if not test_run:
             print("Scale result difference=", mscale-m)
 
     # get min and max of data
-    yMin = yMax = 0.0
+    y_min = y_max = 0.0
 
-    if xMin is None:
+    if x_min is None:
         if showGradient:
-            xMin = -2.0*sigma_base
-            xMax =  2.0*sigma_base
+            x_min = -2.0*sigma_base
+            x_max =  2.0*sigma_base
         else:
             dmin = dmax = data[0]
             for d in data:
                 dmin = min(dmin, d)
                 dmax = max(dmax, d)
-                if not testrun:
+                if not test_run:
                     print("d=", d, " min/max=", dmin, dmax)
 
             # allow border
             drange = dmax-dmin
-            xMin = dmin - 0.05*drange
-            xMax = dmax + 0.05*drange
+            x_min = dmin - 0.05*drange
+            x_max = dmax + 0.05*drange
 
-    if not testrun:
-        print("xMin=", xMin, " xMax=", xMax)
+    if not test_run:
+        print("x_min=", x_min, " x_max=", x_max)
 
-    mlist = np.linspace(xMin, xMax, num=300)
+    mlist = np.linspace(x_min, x_max, num=300)
 
     def objective_func(m):
         return optimiser_instance.objective_func([m])
@@ -100,29 +104,29 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     if showGradient:
         for mx in mlist:
-            yMin = min(yMin, gradient_func(mx))
-            yMax = max(yMax, gradient_func(mx))
+            y_min = min(y_min, gradient_func(mx))
+            y_max = max(y_max, gradient_func(mx))
     else:
         for mx in mlist:
-            yMax = max(yMax, objective_func(mx))
+            y_max = max(y_max, objective_func(mx))
 
-    if not testrun:
-        print("yMin=", yMin, " yMax=", yMax)
+    if not test_run:
+        print("y_min=", y_min, " y_max=", y_max)
 
-    yMin *= 1.01 # allow for a small border
-    yMax *= 1.01 # allow for a small border
+    y_min *= 1.01 # allow for a small border
+    y_max *= 1.01 # allow for a small border
 
     plt.close("all")
     plt.figure(num=1, dpi=240)
     ax = plt.gca()
     #plt.box(False)
-    ax.set_ylim((yMin, yMax))
+    ax.set_ylim((y_min, y_max))
 
     if showGradient:
         rmgv = np.vectorize(gradient_func)
         plt.plot(mlist, rmgv(mlist), lw = 1.0)
         for d,w in zip(data,weight, strict=True):
-            if d >= xMin and d <= xMax:
+            if d >= x_min and d <= x_max:
                 plt.axvline(x = d, color = 'b', ymax = 0.05*w, lw = 1.0)
 
         #fig.gca().set_ylabel(r'$\lambda$')
@@ -135,7 +139,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
         hmfv = np.vectorize(objective_func)
         plt.plot(mlist, hmfv(mlist), lw = 1.0)
         for d,w in zip(data,weight, strict=True):
-            if d >= xMin and d <= xMax:
+            if d >= x_min and d <= x_max:
                 plt.axvline(x = d, color = 'b', ymax = 0.1*w, lw = 1.0)
 
         if showSolution:
@@ -143,11 +147,11 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     plt.legend()
     plt.savefig(os.path.join(output_folder, "welsch_mean.png"), bbox_inches='tight')
-    if not testrun:
+    if not test_run:
         plt.show()
 
-    if testrun:
+    if test_run:
         print("welsch_solver OK")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(False) # test_run

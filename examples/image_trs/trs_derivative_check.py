@@ -1,5 +1,9 @@
 import numpy as np
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
+
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
@@ -7,7 +11,7 @@ from gnc_smoothie_philfm.check_derivs import check_derivs
 
 from trs import TRS
 
-def main(testrun:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     all_good = True
@@ -29,7 +33,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
             all_good = False
 
     if all_good:
-        if testrun:
+        if test_run:
             print("trs_derivative_check OK")
         else:
             print("ALL DERIVATIVES OK!!")
@@ -37,4 +41,4 @@ def main(testrun:bool, output_folder:str="../../Output"):
         print("Derivative failure")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(False) # test_run

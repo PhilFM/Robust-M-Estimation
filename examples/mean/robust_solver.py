@@ -3,124 +3,128 @@ import matplotlib.pyplot as plt
 import json
 import os
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
+
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from robust_solver_apply import apply_to_data
 
-def main(testrun:bool, output_folder:str="../../Output"):
-    sigmaPop = 1.0
+def main(test_run:bool, output_folder:str="../../Output", quick_run:bool=False):
+    sigma_pop = 1.0
     p = 0.66666667
 
     # number of samples used for statistics
-    nSamplesBase = 100 if testrun else 50000
-    minNSamples = 4 if testrun else 1000
+    n_samples_base = 100 if quick_run else 50000
+    min_n_samples = 4 if quick_run else 1000
 
     np.random.seed(0) # We want the numbers to be the same on each run
 
-    outlierFractionList = [0.0,0.2,0.5] if testrun else [0.0,0.1,0.2,0.3,0.4,0.5]
+    outlier_fraction_list = [0.0,0.2,0.5] if quick_run else [0.0,0.1,0.2,0.3,0.4,0.5]
     for xgtrange in [3.0,5.0,10.0,30.0,100.0]:
-        sampleSizeArray = [10] if testrun else [10,30,100,1000]
-        for N in sampleSizeArray:
-            effgncwelschlist = []
-            effmeanlist = []
-            effhuberlist = []
-            efftrimmedlist = []
-            effmedianlist = []
-            effgncirlsplist = []
-            effrmelist = []
+        sample_size_array = [10] if quick_run else [10,30,100,1000]
+        for n in sample_size_array:
+            eff_gncwelsch_list = []
+            eff_mean_list = []
+            eff_huber_list = []
+            eff_trimmed_list = []
+            eff_median_list = []
+            eff_gncirlsp_list = []
+            eff_rme_list = []
             data_dict = {}
-            for outlierFraction in outlierFractionList:
-                outputFile = '' # '../../Output/solver-' + str(int(xgtrange)) + "-" + str(N) + "-" + str(int(100.0*outlierFraction)) + ".png"
-                dataArray,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,nSamples = apply_to_data(sigmaPop, p, xgtrange, N, nSamplesBase, minNSamples, outlierFraction, outputFile=outputFile, testrun=testrun)
+            for outlierFraction in outlier_fraction_list:
+                output_file = '' # '../../Output/solver-' + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlierFraction)) + ".png"
+                data_array,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,n_samples = apply_to_data(sigma_pop, p, xgtrange, n, n_samples_base, min_n_samples, outlierFraction, output_file=output_file, test_run=test_run)
 
-                outlierDict = {}
-                outlierDict['data'] = dataArray
-                outlierDict['popmean'] = mgt
-                efficiencyDict = {}
+                outlier_dict = {}
+                outlier_dict['data'] = data_array
+                outlier_dict['popmean'] = mgt
+                efficiency_dict = {}
 
-                eff = sigmaPop*sigmaPop/(N*sdgncwelsch*sdgncwelsch)
-                if not testrun:
+                eff = sigma_pop*sigma_pop/(n*sdgncwelsch*sdgncwelsch)
+                if not test_run:
                     print("GNC Welsch estimator efficiency: ", eff)
 
-                effgncwelschlist.append(eff)
-                efficiencyDict['GNC Welsch'] = eff
+                eff_gncwelsch_list.append(eff)
+                efficiency_dict['GNC Welsch'] = eff
 
-                eff = sigmaPop*sigmaPop/(N*sdmean*sdmean)
-                if not testrun:
+                eff = sigma_pop*sigma_pop/(n*sdmean*sdmean)
+                if not test_run:
                     print("Mean efficiency: ", eff)
 
-                effmeanlist.append(eff)
-                efficiencyDict['mean'] = eff
+                eff_mean_list.append(eff)
+                efficiency_dict['mean'] = eff
 
-                eff = sigmaPop*sigmaPop/(N*sdhuber*sdhuber)
-                if not testrun:
+                eff = sigma_pop*sigma_pop/(n*sdhuber*sdhuber)
+                if not test_run:
                     print("Pseudo-Huber estimator efficiency: ", eff)
 
-                effhuberlist.append(eff)
-                efficiencyDict['Pseudo-Huber'] = eff
+                eff_huber_list.append(eff)
+                efficiency_dict['Pseudo-Huber'] = eff
 
-                eff = sigmaPop*sigmaPop/(N*sdtrimmed*sdtrimmed)
-                if not testrun:
+                eff = sigma_pop*sigma_pop/(n*sdtrimmed*sdtrimmed)
+                if not test_run:
                     print("Trimmed mean 50% efficiency: ", eff)
 
-                efftrimmedlist.append(eff)
-                efficiencyDict['trimmed mean 50%'] = eff
+                eff_trimmed_list.append(eff)
+                efficiency_dict['trimmed mean 50%'] = eff
 
-                eff = sigmaPop*sigmaPop/(N*sdmedian*sdmedian)
-                if not testrun:
+                eff = sigma_pop*sigma_pop/(n*sdmedian*sdmedian)
+                if not test_run:
                     print("Median efficiency: ", eff)
 
-                effmedianlist.append(eff)
-                efficiencyDict['median'] = eff
+                eff_median_list.append(eff)
+                efficiency_dict['median'] = eff
 
-                eff = sigmaPop*sigmaPop/(N*sdgncirlsp*sdgncirlsp)
-                if not testrun:
+                eff = sigma_pop*sigma_pop/(n*sdgncirlsp*sdgncirlsp)
+                if not test_run:
                     print("GNC IRLS-p=0 estimator efficiency: ", eff)
 
-                effgncirlsplist.append(eff)
-                efficiencyDict['GNC IRLS-p'] = eff
+                eff_gncirlsp_list.append(eff)
+                efficiency_dict['GNC IRLS-p'] = eff
 
-                eff = sigmaPop*sigmaPop/(N*sdrme*sdrme)
-                if not testrun:
+                eff = sigma_pop*sigma_pop/(n*sdrme*sdrme)
+                if not test_run:
                     print("Robust Mean Estimator efficiency: ", eff)
 
-                effrmelist.append(eff)
-                efficiencyDict['RME'] = eff
+                eff_rme_list.append(eff)
+                efficiency_dict['RME'] = eff
 
-                outlierDict['efficiency'] = efficiencyDict
-                data_dict['outlierFraction-'+str(outlierFraction)] = outlierDict
+                outlier_dict['efficiency'] = efficiency_dict
+                data_dict['outlierFraction-'+str(outlierFraction)] = outlier_dict
 
-            data_dict['nSamples'] = nSamples
+            data_dict['n_samples'] = n_samples
             jstr = json.dumps(data_dict)
             js = json.loads(jstr)
-            with open(os.path.join(output_folder, "compareN" + str(N) + "-range" + str(int(xgtrange)) + ".json"), 'w', encoding='utf-8') as f:
+            with open(os.path.join(output_folder, "compare_n" + str(n) + "_range" + str(int(xgtrange)) + ".json"), 'w', encoding='utf-8') as f:
                 json.dump(js, f, ensure_ascii=False, indent=4)
 
             plt.close("all")
             plt.figure(num=1, dpi=240)
             plt.clf()
             ax = plt.gca()
-            gncs_draw_curve(plt, effgncwelschlist,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=outlierFractionList)
-            gncs_draw_curve(plt, effmeanlist,         ("Mean",   "Basic",       ""          ), xvalues=outlierFractionList)
-            gncs_draw_curve(plt, effhuberlist,        ("IRLS",   "PseudoHuber", "Welsch"    ), xvalues=outlierFractionList)
-            gncs_draw_curve(plt, efftrimmedlist,      ("Mean",   "Trimmed",     ""          ), xvalues=outlierFractionList)
-            gncs_draw_curve(plt, effmedianlist,       ("Median", "Basic",       ""          ), xvalues=outlierFractionList)
-            gncs_draw_curve(plt, effgncirlsplist,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), xvalues=outlierFractionList)
-            gncs_draw_curve(plt, effrmelist,          ("RME",    "",            ""          ), xvalues=outlierFractionList)
+            gncs_draw_curve(plt, eff_gncwelsch_list,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_mean_list,         ("Mean",   "Basic",       ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_huber_list,        ("IRLS",   "PseudoHuber", "Welsch"    ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_trimmed_list,      ("Mean",   "Trimmed",     ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_median_list,       ("Median", "Basic",       ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_gncirlsp_list,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_rme_list,          ("RME",    "",            ""          ), xvalues=outlier_fraction_list)
 
             ax.set_xlabel(r'Outlier fraction' )
             ax.set_ylabel('Relative efficiency')
             #plt.box(False)
-            ax.set_xlim(0.0,outlierFractionList[len(outlierFractionList)-1])
+            ax.set_xlim(0.0,outlier_fraction_list[len(outlier_fraction_list)-1])
             ax.set_ylim(0.0,1.1)
 
             plt.legend()
-            plt.savefig(os.path.join(output_folder, "compareN" + str(N) + "-range" + str(int(xgtrange)) + ".png"), bbox_inches='tight')
-            if not testrun:
+            plt.savefig(os.path.join(output_folder, "compare_n" + str(n) + "_range" + str(int(xgtrange)) + ".png"), bbox_inches='tight')
+            if not test_run:
                 plt.show()
 
-    if testrun:
+    if test_run:
         print("robust_solver OK")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(True) # test_run

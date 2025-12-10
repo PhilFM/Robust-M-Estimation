@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
+
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
@@ -27,12 +31,12 @@ diff_thres = 1.0e-15
 def objective_func(m, optimiser_instance):
     return optimiser_instance.objective_func([m])
 
-def plotResult(data, weight,
-               gncWelschOptimiserInstance, mgncw, msupgnw, mflat,
-               pseudoHuberOptimiserInstance, mhuber, mirlshuber,
-               gncIrlspOptimiserInstance, mgncirlsp,
+def plot_result(data, weight,
+               gnc_welsch_optimiser_instance, m_gnc_welsch_irls, m_gnc_welsch_supgn, m_flat,
+               pseudo_huber_optimiser_instance, m_pseudo_huber_supgn, m_pseudo_huber_irls,
+               gnc_irls_p_optimiser_instance, m_gncirlsp,
                output_folder:str,
-               testrun:bool):
+               test_run:bool):
     dmin = dmax = data[0][0]
     for d in data:
         dmin = min(dmin, d[0])
@@ -41,37 +45,37 @@ def plotResult(data, weight,
 
     # allow border
     drange = dmax-dmin
-    xMin = dmin - 0.05*drange
-    xMax = dmax + 0.05*drange
+    x_min = dmin - 0.05*drange
+    x_max = dmax + 0.05*drange
 
-    mlist = np.linspace(xMin, xMax, num=300)
+    mlist = np.linspace(x_min, x_max, num=300)
 
     plt.close("all")
     plt.figure(num=1, dpi=240)
     ax = plt.gca()
     rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
     key = ("Flat", "Welsch", "GNC_Welsch")
-    gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=gncWelschOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mflat, ax=ax)
-    gncs_draw_vline(plt, mflat,       key, useLabel=False)
+    gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=gnc_welsch_optimiser_instance), key, xvalues=mlist, draw_markers=False, hlight_x_value=m_flat, ax=ax)
+    gncs_draw_vline(plt, m_flat,       key, use_label=False)
     key = ("SupGN", "Welsch", "GNC_Welsch")
-    gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=gncWelschOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=msupgnw, ax=ax)
-    gncs_draw_vline(plt, msupgnw,     key, useLabel=False)
-    gncs_draw_vline(plt, mgncw, ("IRLS", "Welsch",      "GNC_Welsch"))
+    gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=gnc_welsch_optimiser_instance), key, xvalues=mlist, draw_markers=False, hlight_x_value=m_gnc_welsch_supgn, ax=ax)
+    gncs_draw_vline(plt, m_gnc_welsch_supgn,     key, use_label=False)
+    gncs_draw_vline(plt, m_gnc_welsch_irls, ("IRLS", "Welsch",      "GNC_Welsch"))
     key = ("SupGN", "PseudoHuber", "Welsch")
-    gncs_draw_curve(plt, 0.03*rmfv(mlist, optimiser_instance=pseudoHuberOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mhuber, ax=ax)
-    gncs_draw_vline(plt, mhuber,      key, useLabel=False)
-    #gncs_draw_vline(plt, mirlshuber, ("IRLS", "PseudoHuber", "Welsch"))
+    gncs_draw_curve(plt, 0.03*rmfv(mlist, optimiser_instance=pseudo_huber_optimiser_instance), key, xvalues=mlist, draw_markers=False, hlight_x_value=m_pseudo_huber_supgn, ax=ax)
+    gncs_draw_vline(plt, m_pseudo_huber_supgn,      key, use_label=False)
+    #gncs_draw_vline(plt, m_pseudo_huber_irls, ("IRLS", "PseudoHuber", "Welsch"))
     key = ("IRLS", "GNC_IRLSp", "GNC_IRLSp0")
-    gncs_draw_curve(plt, 0.02*rmfv(mlist, optimiser_instance=gncIrlspOptimiserInstance), key, xvalues=mlist, drawMarkers=False, hlightXValue=mgncirlsp, ax=ax)
-    gncs_draw_vline(plt, mgncirlsp,   key, useLabel=False)
+    gncs_draw_curve(plt, 0.02*rmfv(mlist, optimiser_instance=gnc_irls_p_optimiser_instance), key, xvalues=mlist, draw_markers=False, hlight_x_value=m_gncirlsp, ax=ax)
+    gncs_draw_vline(plt, m_gncirlsp,   key, use_label=False)
 
-    gncs_draw_data_points(plt, data, weight, xMin, xMax, N)
+    gncs_draw_data_points(plt, data, weight, x_min, x_max, N)
     plt.legend()
     plt.savefig(os.path.join(output_folder, "mean_check.png"), bbox_inches='tight')
-    if not testrun:
+    if not test_run:
         plt.show()
     
-def main(testrun:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     for test_idx in range(0,10):
@@ -101,45 +105,45 @@ def main(testrun:bool, output_folder:str="../../Output"):
         irls_instance = IRLS(param_instance, model_instance, data, weight=weight,
                              max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
         irls_instance.run() # this can fail but let's use the result anyway
-        mgncw = irls_instance.final_model
+        m_gnc_welsch_irls = irls_instance.final_model
 
-        gncWelschOptimiserInstance = SupGaussNewton(param_instance, model_instance, data, weight=weight,
-                                                    max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
-        if gncWelschOptimiserInstance.run():
-            msupgnw = gncWelschOptimiserInstance.final_model
+        gnc_welsch_optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight,
+                                                       max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+        if gnc_welsch_optimiser_instance.run():
+            m_gnc_welsch_supgn = gnc_welsch_optimiser_instance.final_model
 
-        mflat = flat_welsch_mean(data, sigma_base, weight,
-                                 max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+        m_flat = flat_welsch_mean(data, sigma_base, weight,
+                                  max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
 
         param_instance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma_base))
-        pseudoHuberOptimiserInstance = SupGaussNewton(param_instance, model_instance, data, weight=weight,
-                                                      max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
-        if pseudoHuberOptimiserInstance.run():
-            mhuber = pseudoHuberOptimiserInstance.final_model
+        pseudo_huber_optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight,
+                                                         max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+        if pseudo_huber_optimiser_instance.run():
+            m_pseudo_huber_supgn = pseudo_huber_optimiser_instance.final_model
 
         irls_instance = IRLS(param_instance, model_instance, data, weight=weight,
                              max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
         if irls_instance.run():
-            mirlshuber = irls_instance.final_model
+            m_pseudo_huber_irls = irls_instance.final_model
 
         # GNC IRLS-p params [p,epsilon_base,epsilon_limit,rscale,beta]
         param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), 0.0, 0.01, 1.0, 1.0/xrange, 0.8)
         irls_instance = IRLS(param_instance, model_instance, data, weight=weight,
                              max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
         if irls_instance.run():
-            mgncirlsp = irls_instance.final_model
+            m_gncirlsp = irls_instance.final_model
 
-        gncIrlspOptimiserInstance = SupGaussNewton(param_instance, model_instance, data, weight=weight,
-                                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+        gnc_irls_p_optimiser_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight,
+                                                       max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
 
-        plotResult(data, weight,
-                   gncWelschOptimiserInstance, mgncw, msupgnw, mflat,
-                   pseudoHuberOptimiserInstance, mhuber, mirlshuber,
-                   gncIrlspOptimiserInstance, mgncirlsp,
-                   output_folder, testrun)
+        plot_result(data, weight,
+                    gnc_welsch_optimiser_instance,   m_gnc_welsch_irls,    m_gnc_welsch_supgn, m_flat,
+                    pseudo_huber_optimiser_instance, m_pseudo_huber_supgn, m_pseudo_huber_irls,
+                    gnc_irls_p_optimiser_instance,   m_gncirlsp,
+                    output_folder, test_run)
 
-    if testrun:
+    if test_run:
         print("mean_check OK")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(False) # test_run

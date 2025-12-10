@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+if __name__ == "__main__":
+    import sys
+    sys.path.append("../../pypi_package/src")
+
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
@@ -9,7 +13,7 @@ from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluen
 
 from gncs_robust_mean import RobustMean
 
-def main(testrun:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../Output"):
     # configuration
     showSolution = True
 
@@ -23,9 +27,9 @@ def main(testrun:bool, output_folder:str="../../Output"):
     max_niterations = 200
 
     # override x limit 
-    #xMin = 0.7
-    #xMax = 1.3
-    xMin = xMax = None
+    #x_min = 0.7
+    #x_max = 1.3
+    x_min = x_max = None
 
     data = np.array([[0.0], # good data
                      [0.4]]) # bad data
@@ -38,13 +42,13 @@ def main(testrun:bool, output_folder:str="../../Output"):
     irls_instance = IRLS(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
     if irls_instance.run():
         m = irls_instance.final_model
-        if not testrun:
+        if not test_run:
             print("IRLS result: m=", m)
 
     sup_gn_instance = SupGaussNewton(param_instance, model_instance, data, weight=weight, max_niterations=max_niterations, print_warnings=False)
     if sup_gn_instance.run():
         m = sup_gn_instance.final_model
-        if not testrun:
+        if not test_run:
             print("Supervised Gauss-Newton result: m=", m)
 
     # check derivatives
@@ -52,7 +56,7 @@ def main(testrun:bool, output_folder:str="../../Output"):
     #rhop, Bterm = sup_gn_instance.calc_influence_func_derivatives(residual, 1.0) # scale
     #sup_gn_instance.numeric_derivs_model = True
     #rhopn, Btermn = sup_gn_instance.calc_influence_func_derivatives(residual, 1.0) # scale
-    #if not testrun:
+    #if not test_run:
     #    print("rhop=",rhop, rhopn, "Bterm=",Bterm,Btermn)
 
     # check result when scale is included
@@ -62,29 +66,29 @@ def main(testrun:bool, output_folder:str="../../Output"):
     irls_instance = IRLS(param_instance, model_instance, data, weight=weight, scale=scale, max_niterations=max_niterations)
     if irls_instance.run():
         mscale = irls_instance.final_model
-        if not testrun:
+        if not test_run:
             print("Scale result difference=", mscale-m)
 
     # get min and max of data
-    yMin = yMax = 0.0
+    y_min = y_max = 0.0
 
-    if xMin is None:
+    if x_min is None:
         dmin = dmax = data[0]
         for d in data:
             dmin = min(dmin, d)
             dmax = max(dmax, d)
-            if not testrun:
+            if not test_run:
                 print("d=", d, " min/max=", dmin, dmax)
 
         # allow border
         drange = dmax-dmin
-        xMin = dmin - 0.05*drange
-        xMax = dmax + 0.05*drange
+        x_min = dmin - 0.05*drange
+        x_max = dmax + 0.05*drange
 
-    if not testrun:
-        print("xMin=", xMin, " xMax=", xMax)
+    if not test_run:
+        print("x_min=", x_min, " x_max=", x_max)
 
-    mlist = np.linspace(xMin, xMax, num=300)
+    mlist = np.linspace(x_min, x_max, num=300)
 
     def objective_func(m):
         return sup_gn_instance.objective_func([m])
@@ -94,24 +98,24 @@ def main(testrun:bool, output_folder:str="../../Output"):
         return a[0]
 
     for mx in mlist:
-        yMax = max(yMax, objective_func(mx))
+        y_max = max(y_max, objective_func(mx))
 
-    if not testrun:
-        print("yMin=", yMin, " yMax=", yMax)
+    if not test_run:
+        print("y_min=", y_min, " y_max=", y_max)
 
-    yMin *= 1.01 # allow for a small border
-    yMax *= 1.01 # allow for a small border
+    y_min *= 1.01 # allow for a small border
+    y_max *= 1.01 # allow for a small border
 
     plt.close("all")
     plt.figure(num=1, dpi=240)
     ax = plt.gca()
     #plt.box(False)
-    ax.set_ylim((yMin, yMax))
+    ax.set_ylim((y_min, y_max))
 
     hmfv = np.vectorize(objective_func)
     plt.plot(mlist, hmfv(mlist), lw = 1.0)
     for d,w in zip(data,weight, strict=True):
-        if d >= xMin and d <= xMax:
+        if d >= x_min and d <= x_max:
             plt.axvline(x = d, color = 'b', ymax = 0.1*w, lw = 1.0)
 
     if showSolution:
@@ -119,11 +123,11 @@ def main(testrun:bool, output_folder:str="../../Output"):
 
     plt.legend()
     plt.savefig(os.path.join(output_folder, "geman_mcclure_mean.png"), bbox_inches='tight')
-    if not testrun:
+    if not test_run:
         plt.show()
 
-    if testrun:
+    if test_run:
         print("geman_mcclure_solver OK")
 
 if __name__ == "__main__":
-    main(False) # testrun
+    main(False) # test_run
