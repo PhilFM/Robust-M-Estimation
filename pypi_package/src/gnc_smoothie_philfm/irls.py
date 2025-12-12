@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import time
 
 from .base_irls import BaseIRLS
 
@@ -26,7 +27,7 @@ class IRLS(BaseIRLS):
             param_instance,
             model_instance,
             data,
-            data_ids,
+            data_ids=data_ids,
             weight=weight,
             scale=scale,
             numeric_derivs_influence=numeric_derivs_influence,
@@ -90,9 +91,21 @@ class IRLS(BaseIRLS):
                 )
             )
 
+            self.debug_update_weights_time = 0.0
+            self.debug_weighted_fit_time = 0.0
+            self.debug_total_time = 0.0
+            start_time_total = time.time()
+
         all_good = False
         for itn in range(self._max_niterations):
+            if self._debug:
+                start_time = time.time()
+
             self.__update_weights(model, weight, model_ref=model_ref)
+            if self._debug:
+                self.debug_update_weights_time += time.time()-start_time
+                start_time = time.time()
+
             model_old = model
             if callable(self._linear_model_size):
                 model = self.weighted_fit(weight)
@@ -100,6 +113,9 @@ class IRLS(BaseIRLS):
                 model, model_ref = self._model_instance.weighted_fit(
                     self._data, self._data_ids, weight, self._scale
                 )
+
+            if self._debug:
+                self.debug_weighted_fit_time += time.time()-start_time
 
             if self._param_instance.alpha() == 1.0:
                 if self._diff_thres is not None:
@@ -150,5 +166,6 @@ class IRLS(BaseIRLS):
 
         if self._debug:
             self.debug_n_iterations = itn + 1
+            self.debug_total_time = time.time()-start_time_total
 
         return all_good

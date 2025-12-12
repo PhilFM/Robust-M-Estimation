@@ -83,8 +83,8 @@ def apply_to_data(sigma_pop,p,xgtrange,n,n_samples_base,min_n_samples,outlier_fr
         pseudo_huber_sigma = sigma_pop/p
         pseudo_huber_irls_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudo_huber_sigma)),
                                           model_instance, data, weight=weight)
-        if pseudo_huber_irls_instance.run():
-            m_pseudo_huber = pseudo_huber_irls_instance.final_model
+        pseudo_huber_irls_instance.run()  # this can fail but let's use the result anyway
+        m_pseudo_huber = pseudo_huber_irls_instance.final_model
 
         vec_pseudo_huber += math.pow(m_pseudo_huber-m_gt, 2.0)
         pseudo_huber_supgn_instance = SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudo_huber_sigma)),

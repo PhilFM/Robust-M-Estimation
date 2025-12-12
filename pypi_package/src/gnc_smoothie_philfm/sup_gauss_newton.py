@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import time
 
 from .base_irls import BaseIRLS
 
@@ -31,7 +32,7 @@ class SupGaussNewton(BaseIRLS):
             param_instance,
             model_instance,
             data,
-            data_ids,
+            data_ids=data_ids,
             weight=weight,
             scale=scale,
             numeric_derivs_model=numeric_derivs_model,
@@ -145,11 +146,22 @@ class SupGaussNewton(BaseIRLS):
                 )
             )
 
+            self.debug_weighted_derivs_time = 0.0
+            self.debug_solve_time = 0.0
+            start_time_total = time.time()
+
         all_good = False
         for itn in range(self._max_niterations):
+            if self._debug:
+                start_time = time.time()
+
             model_old = model.copy()
             model_refOld = model_ref
             a, AlB = self.weighted_derivs(model_old, lambda_val, model_ref=model_ref)
+            if self._debug:
+                self.debug_weighted_derivs_time += time.time()-start_time
+                start_time = time.time()
+
             try:
                 at = np.linalg.solve(AlB, a)
             except np.linalg.LinAlgError:
@@ -161,6 +173,9 @@ class SupGaussNewton(BaseIRLS):
                     )
 
                 continue
+
+            if self._debug:
+                self.debug_solve_time += time.time()-start_time
 
             model -= at
             if callable(update_model_ref):
@@ -265,10 +280,11 @@ class SupGaussNewton(BaseIRLS):
             False
         )  # finish with parameters in correct final model
 
-        if self._debug:
-            self.debug_n_iterations = itn + 1
-
         self.final_model = model
         self.final_model_ref = model_ref
+
+        if self._debug:
+            self.debug_n_iterations = itn + 1
+            self.debug_total_time = time.time()-start_time_total
 
         return all_good

@@ -23,12 +23,13 @@ class BaseIRLS:
         self._param_instance = param_instance
         self._model_instance = model_instance
         self._data = data
-        self._data_ids = data_ids
         if data_ids is None:
             self._data_ids = np.zeros(len(data), dtype=int)
         else:
             if len(data_ids) != len(data):
                 raise ValueError("Inconsistent data ID array")
+
+            self._data_ids = data_ids
 
         if weight is None:
             self._weight = np.zeros(len(data))

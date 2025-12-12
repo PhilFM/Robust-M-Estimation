@@ -88,12 +88,12 @@ model_values[key]["lw"] = 1.0
 def gncs_draw_vline(plt,
                     x: float,
                     key,
-                    useLabel: bool = True,
-                    useLineStyle: bool = True,
+                    use_label: bool = True,
+                    use_line_style: bool = True,
                     lw: float = None):
     values = model_values[key]
-    if useLabel:
-        if useLineStyle:
+    if use_label:
+        if use_line_style:
             plt.axvline(
                 x=x,
                 color=values["colour"],
@@ -109,7 +109,7 @@ def gncs_draw_vline(plt,
                 lw=values["lw"] if lw is None else lw
             )  # , marker = 'o', markersize = 2.0)
     else:
-        if useLineStyle:
+        if use_line_style:
             plt.axvline(
                 x=x,
                 color=values["colour"],
@@ -128,14 +128,14 @@ def gncs_draw_curve(
     vals,
     key,
     xvalues=None,
-    drawMarkers: bool = True,
-    hlightXValue: float = None,
+    draw_markers: bool = True,
+    hlight_x_value: float = None,
     ax=None,
     lw: float = None,
 ):
     values = model_values[key]
     if xvalues is None:
-        if drawMarkers:
+        if draw_markers:
             plt.plot(
                 list(range(len(vals))),
                 vals,
@@ -156,7 +156,7 @@ def gncs_draw_curve(
                 linestyle=values["linestyle"],
             )
     else:
-        if drawMarkers:
+        if draw_markers:
             plt.plot(
                 xvalues,
                 vals,
@@ -177,17 +177,17 @@ def gncs_draw_curve(
                 linestyle=values["linestyle"],
             )
 
-        if hlightXValue is not None:
+        if hlight_x_value is not None:
             xprev = xvalues[0]
             yprev = vals[0]
             for x, y in zip(xvalues, vals, strict=True):
-                if xprev < hlightXValue and x >= hlightXValue:
+                if xprev < hlight_x_value and x >= hlight_x_value:
                     # interpolate y
-                    alpha = (hlightXValue - xprev) / (x - xprev)
+                    alpha = (hlight_x_value - xprev) / (x - xprev)
                     yint = yprev + alpha * (y - yprev)
                     # circle = plt.Circle((x,y), 1, color = values["colour"])
                     # add_patch(circle)
-                    ax.scatter([hlightXValue], [yint], s=[10], color=values["colour"])
+                    ax.scatter([hlight_x_value], [yint], s=[10], color=values["colour"])
 
                 xprev = x
                 yprev = y

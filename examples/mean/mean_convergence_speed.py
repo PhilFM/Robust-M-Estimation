@@ -19,13 +19,13 @@ from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from gncs_robust_mean import RobustMean
 
-def plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
-                    diffs_welsch_irls, diff_alpha_welsch_irls,
-                    diffs_pseudo_huber_sup_gn, diff_alpha_pseudo_huber_sup_gn,
-                    diffs_pseudo_huber_irls, diff_alpha_pseudo_huber_irls,
-                    diffs_gnc_irls_p0, diff_alpha_gnc_irls_p0,
-                    diffs_gnc_irls_p1, diff_alpha_gnc_irls_p1,
-                    output_folder:str, test_run:bool):
+def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
+                     diffs_welsch_irls, diff_alpha_welsch_irls,
+                     diffs_pseudo_huber_sup_gn, diff_alpha_pseudo_huber_sup_gn,
+                     diffs_pseudo_huber_irls, diff_alpha_pseudo_huber_irls,
+                     diffs_gnc_irls_p0, diff_alpha_gnc_irls_p0,
+                     diffs_gnc_irls_p1, diff_alpha_gnc_irls_p1,
+                     output_folder:str, test_run:bool):
     if not test_run:
         print("diffs_welsch_sup_gn:",diffs_welsch_sup_gn)
         print("diffs_welsch_irls:",diffs_welsch_irls)
@@ -186,13 +186,13 @@ def main(test_run:bool, output_folder:str="../../Output"):
                 print("GNC IRLS-p1 diff alpha=",diff_alpha_gnc_irls_p1)
                 print("GNC IRLS-p1 times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"total",irls_instance.debug_total_time)
 
-        plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
-                        diffs_welsch_irls, diff_alpha_welsch_irls,
-                        diffs_pseudo_huber_sup_gn, diff_alpha_pseudo_huber_sup_gn,
-                        diffs_pseudo_huber_irls, diff_alpha_pseudo_huber_irls,
-                        diffs_gnc_irls_p0, diff_alpha_gnc_irls_p0,
-                        diffs_gnc_irls_p1, diff_alpha_gnc_irls_p1,
-                        output_folder, test_run)
+        plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
+                         diffs_welsch_irls, diff_alpha_welsch_irls,
+                         diffs_pseudo_huber_sup_gn, diff_alpha_pseudo_huber_sup_gn,
+                         diffs_pseudo_huber_irls, diff_alpha_pseudo_huber_irls,
+                         diffs_gnc_irls_p0, diff_alpha_gnc_irls_p0,
+                         diffs_gnc_irls_p1, diff_alpha_gnc_irls_p1,
+                         output_folder, test_run)
 
     if test_run:
         print("convergence_speed OK")

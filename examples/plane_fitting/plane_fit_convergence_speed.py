@@ -12,7 +12,7 @@ from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
-from line_fit import LineFit
+from plane_fit import PlaneFit
 
 def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                      diffs_welsch_irls, diff_alpha_welsch_irls,
@@ -38,25 +38,29 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
     ax.set_ylabel(r'log(difference)')
 
     plt.legend()
-    plt.savefig(os.path.join(output_folder, "line_fit_convergence_speed.png"), bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "plane_fit_convergence_speed.png"), bbox_inches='tight')
     if not test_run:
         plt.show()
 
 def main(test_run:bool, output_folder:str="../../Output"):
     np.random.seed(0) # We want the numbers to be the same on each run
     for test_idx in range(0,10):
-        model_gt = [0.2, -2.0]
-        n = 10
-        data = np.zeros([n,2])
+        model_gt = [0.2, 0.3, -2.0]
+        n = 4
+        n_data_points = n*n
+        data = np.zeros([n_data_points,3])
         noiseLevel = 0.4
         outlier_fraction = 0.0
         for i in range(n):
-            x = 0.1*i
-            if i < (1.0-outlier_fraction)*n:
-                data[i] = (x, model_gt[0]*x+model_gt[1] + noiseLevel*2.0*(np.random.rand()-0.5))
-            else:
-                # add outlier
-                data[i] = (x, 10.0*2.0*(np.random.rand()-0.5))
+            y = 0.1*i
+            for j in range(n):
+                x = 0.1*j
+                didx = i*n+j
+                if didx < (1.0-outlier_fraction)*n_data_points:
+                    data[didx] = (x, y, model_gt[0]*x+model_gt[1]*y+model_gt[2]+noiseLevel*2.0*(np.random.rand()-0.5))
+                else:
+                    # add outlier
+                    data[i] = (x, y, 10.0*2.0*(np.random.rand()-0.5))
 
         if not test_run:
             print("data=",data)
@@ -65,22 +69,22 @@ def main(test_run:bool, output_folder:str="../../Output"):
         sigma_base = 0.2
         sigma_limit = 10.0
         num_sigma_steps = 10
-        max_niterations = 100
+        max_niterations = 500
         print_warnings = False
 
-        model_start = [0.0,0.0]
-        for i in range(2):
+        model_start = [0.0,0.0,0.0]
+        for i in range(3):
             model_start[i] = model_gt[i] + 0.02
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
-        sup_gn_instance = SupGaussNewton(param_instance, LineFit(), data,
+        sup_gn_instance = SupGaussNewton(param_instance, PlaneFit(), data,
                                          max_niterations=max_niterations, diff_thres=diff_thres,
                                          print_warnings=print_warnings, model_start=model_start, debug=True)
         if sup_gn_instance.run():
             diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(sup_gn_instance.debug_diff_alpha)
 
-        irls_instance = IRLS(param_instance, LineFit(), data,
+        irls_instance = IRLS(param_instance, PlaneFit(), data,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=print_warnings, model_start=model_start, debug=True)
         if irls_instance.run():
@@ -91,7 +95,7 @@ def main(test_run:bool, output_folder:str="../../Output"):
                          diffs_welsch_irls, diff_alpha_welsch_irls, test_run, output_folder)
 
     if test_run:
-        print("line_fit_convergence_speed OK")
+        print("plane_fit_convergence_speed OK")
 
 if __name__ == "__main__":
     main(False) # test_run

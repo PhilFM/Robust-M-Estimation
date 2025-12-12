@@ -14,9 +14,9 @@ from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from trs import TRS
 
-def plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
-                    diffs_welsch_irls, diff_alpha_welsch_irls,
-                    test_run:bool, output_folder:str):
+def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
+                     diffs_welsch_irls, diff_alpha_welsch_irls,
+                     test_run:bool, output_folder:str):
     if not test_run:
         print("diffs_welsch_sup_gn:",diffs_welsch_sup_gn)
         print("diffs_welsch_irls:",diffs_welsch_irls)
@@ -96,8 +96,8 @@ def main(test_run:bool, output_folder:str="../../Output"):
         diffs_welsch_irls = irls_instance.debug_diffs
         diff_alpha_welsch_irls = np.array(sup_gn_instance.debug_diff_alpha)
     
-        plotDifferences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
-                        diffs_welsch_irls, diff_alpha_welsch_irls, test_run, output_folder)
+        plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
+                         diffs_welsch_irls, diff_alpha_welsch_irls, test_run, output_folder)
 
     if test_run:
         print("trs_convergence_speed OK")
