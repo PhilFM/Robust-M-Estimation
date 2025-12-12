@@ -15,7 +15,7 @@ def main(test_run:bool, output_folder:str="../../Output"):
 
     for test_idx in range(0,1):
         model_gt = [2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5)]
-        n = 100
+        n = 10
         data = np.zeros((n*n,4))
         outlier_fraction = 0.5
         for i in range(n):

@@ -11,13 +11,13 @@ class LineFit:
         self.__b = model[1]
 
     # r = a*xi + b - yi
-    def residual(self, data_item, data_id:int=None) -> np.array:
+    def residual(self, data_item) -> np.array:
         x = data_item[0]
         y = data_item[1]
         return np.array([self.__a*x + self.__b - y])
 
     # dr/d(a b) = (x 1)
-    def residual_gradient(self, data_item, data_id:int=None) -> np.array:
+    def residual_gradient(self, data_item) -> np.array:
         x = data_item[0]
         return np.array([[x, 1.0]])
 

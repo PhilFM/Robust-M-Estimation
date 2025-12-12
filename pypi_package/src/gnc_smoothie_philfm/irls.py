@@ -11,9 +11,14 @@ class IRLS(BaseIRLS):
         param_instance,
         model_instance,
         data,
-        data_ids=None,
         weight=None,
         scale=None,
+        data2=None,
+        weight2=None,
+        scale2=None,
+        data3=None,
+        weight3=None,
+        scale3=None,
         numeric_derivs_influence: bool = False,
         max_niterations: int = 50,
         diff_thres:float = 1.0e-12,
@@ -27,9 +32,14 @@ class IRLS(BaseIRLS):
             param_instance,
             model_instance,
             data,
-            data_ids=data_ids,
             weight=weight,
             scale=scale,
+            data2=data2,
+            weight2=weight2,
+            scale2=scale2,
+            data3=data3,
+            weight3=weight3,
+            scale3=scale3,
             numeric_derivs_influence=numeric_derivs_influence,
             max_niterations=max_niterations,
             diff_thres=diff_thres,
@@ -39,7 +49,7 @@ class IRLS(BaseIRLS):
             debug=debug,
         )
 
-    def __updated_weight(
+    def __residual_inflence(
         self, residual: np.array, scale, small_diff: float = None
     ) -> float:
         rsqr = residual @ residual
@@ -59,16 +69,23 @@ class IRLS(BaseIRLS):
     def __update_weights(self, model, weight, model_ref=None) -> None:
         small_diff = 1.0e-5  # in case numerical differentiation is specified
         self._model_instance.cache_model(model, model_ref=model_ref)
-        for i, (d, di, s) in enumerate(
-                zip(self._data, self._data_ids, self._scale, strict=True)
-            ):
-                weight[i] = self._weight[i] * self.__updated_weight(
-                    self._model_instance.residual(d, di), s
-                )
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                model_residual_func = self._get_model_residual_func(didx)
+                for i, (d, s) in enumerate(
+                        zip(self._data[didx], self._scale[didx], strict=True)
+                ):
+                    weight[didx][i] = self._weight[didx][i] * self.__residual_inflence(
+                        model_residual_func(d), s
+                    )
 
     def run(self) -> bool:
         self._param_instance.reset()
-        weight = np.copy(self._weight)
+        weight = [None] * self._dsize
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                weight[didx] = np.copy(self._weight[didx])
+
         model, model_ref = self._init_model()
         if self._print_warnings:
             print(
@@ -111,7 +128,7 @@ class IRLS(BaseIRLS):
                 model = self.weighted_fit(weight)
             else:
                 model, model_ref = self._model_instance.weighted_fit(
-                    self._data, self._data_ids, weight, self._scale
+                    self._data, weight, self._scale
                 )
 
             if self._debug:

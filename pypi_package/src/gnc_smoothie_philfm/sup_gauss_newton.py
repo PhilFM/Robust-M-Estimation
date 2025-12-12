@@ -11,9 +11,14 @@ class SupGaussNewton(BaseIRLS):
         param_instance,
         model_instance,
         data,
-        data_ids=None,
         weight=None,
         scale=None,
+        data2=None,
+        weight2=None,
+        scale2=None,
+        data3=None,
+        weight3=None,
+        scale3=None,
         numeric_derivs_model: bool = False,
         numeric_derivs_influence: bool =False,
         max_niterations: int = 50,
@@ -32,9 +37,14 @@ class SupGaussNewton(BaseIRLS):
             param_instance,
             model_instance,
             data,
-            data_ids=data_ids,
             weight=weight,
             scale=scale,
+            data2=data2,
+            weight2=weight2,
+            scale2=scale2,
+            data3=data3,
+            weight3=weight3,
+            scale3=scale3,
             numeric_derivs_model=numeric_derivs_model,
             numeric_derivs_influence=numeric_derivs_influence,
             max_niterations=max_niterations,
@@ -79,33 +89,34 @@ class SupGaussNewton(BaseIRLS):
 
         return rhop, Bterm
 
-    # weighted_derivs is public to allow derivatives 
+    # weighted_derivs is public to allow derivatives to be checked
     def weighted_derivs(
-        self, model, lambda_val: float, weight=None, model_ref=None
+        self, model, lambda_val: float, model_ref=None
     ) -> (np.array, np.array):
-        if weight is None:
-            weight = self._weight
-
         # initialize residual_size
         self._model_instance.cache_model(model, model_ref = model_ref)
-        residual = self._model_instance.residual(self._data[0], self._data_ids[0])
-        self._residual_size = len(residual)
+        self._initialize_residual_size_if_necessary()
 
         small_diff = 1.0e-5
         residual_arr, residual_gradient_arr = self._calc_residual_derivatives(model, model_ref = model_ref, small_diff = small_diff)
 
         atot = np.zeros(len(model))
         AlBtot = np.zeros((len(model), len(model)))
-        for i,(w,s) in enumerate(zip(weight, self._scale, strict=True)):
-            grad = np.matmul(np.transpose(residual_gradient_arr[i]), residual_arr[i])
-            rhop, Bterm = self.__calc_influence_func_derivatives(
-                residual_arr[i], s, small_diff=small_diff
-            )
-            atot += w * rhop * grad
-            AlBtot += w * (
-                rhop * np.matmul(np.transpose(residual_gradient_arr[i]), residual_gradient_arr[i])
-                + lambda_val * Bterm * np.outer(grad, grad)
-            )
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                residual = residual_arr[didx]
+                residual_gradient = residual_gradient_arr[didx]
+                for i,(w,s) in enumerate(zip(self._weight[didx], self._scale[didx], strict=True)):
+                    grad = np.matmul(np.transpose(residual_gradient[i]), residual[i])
+                    rhop, Bterm = self.__calc_influence_func_derivatives(
+                        residual[i], s, small_diff=small_diff
+                    )
+
+                    atot += w * rhop * grad
+                    AlBtot += w * (
+                        rhop * np.matmul(np.transpose(residual_gradient[i]), residual_gradient[i])
+                        + lambda_val * Bterm * np.outer(grad, grad)
+                    )
 
         return atot, AlBtot
 

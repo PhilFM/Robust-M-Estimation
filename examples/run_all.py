@@ -4,7 +4,7 @@ sys.path.append("../pypi_package/src")
 # robust mean estimation tests
 sys.path.append("mean")
 import mean.mean_deriv_check
-import mean.convergence_speed
+import mean.mean_convergence_speed
 import mean.majorize_examples
 import mean.compare_influence
 import mean.mean_check
@@ -20,7 +20,7 @@ import mean.trimmed_mean_efficiency
 import mean.winsorised_mean_efficiency
 
 mean.mean_deriv_check.main(test_run=True, output_folder="../Output")
-mean.convergence_speed.main(test_run=True, output_folder="../Output")
+mean.mean_convergence_speed.main(test_run=True, output_folder="../Output")
 mean.majorize_examples.main(test_run=True, output_folder="../Output")
 mean.compare_influence.main(test_run=True, output_folder="../Output")
 mean.mean_check.main(test_run=True, output_folder="../Output")

@@ -9,7 +9,7 @@ Top-level example code:
 Other runnable example code samples:
 - [mean_deriv_check.py](mean_deriv_check.py) Run this to check that the derivative formula implemented in the mean estimation
   algorithm class `RobustMean` in `gncs_robust_mean.py` is correct. This is done by comparing with numerically calculated derivatives.
-- [convergence_speed.py](convergence_speed.py) Measures the convergence speed of various implementations of IRLS and Sup-GN.
+- [mean_convergence_speed.py](mean_convergence_speed.py) Measures the convergence speed of various implementations of IRLS and Sup-GN.
 - [majorize_examples.py](majorize_examples.py) Examples showing the technique of quadratic majorization for influence functions implemented in this package.
 - [compare_influence.py](compare_influence.py) Compare results with a variety of influence functions.
 - [welsch_efficiency.py](welsch_efficiency.py) Code measuring the efficiency of the GNC Welsch (GNC-W) estimator for different sample sizes,

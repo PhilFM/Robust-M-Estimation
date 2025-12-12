@@ -3,55 +3,68 @@ import numpy as np
 
 
 class BaseIRLS:
+    # number of types of data supported
+    _dsize = 3
+
+    def __assign_data(self, didx, data, weight, scale):
+        if didx >= self._dsize:
+            raise ValueError("Inconsistent data array index", didx)
+
+        if data is not None:
+            self._data[didx] = data
+            if weight is None:
+                self._weight[didx] = np.zeros(len(data))
+                self._weight[didx][:] = 1.0
+            else:
+                if len(weight) != len(data):
+                    raise ValueError("Inconsistent weight array", didx)
+
+                self._weight[didx] = weight
+
+            if scale is None:
+                self._scale[didx] = np.zeros(len(data))
+                self._scale[didx][:] = 1.0
+            else:
+                if len(scale) != len(data):
+                    raise ValueError("Inconsistent scale array", didx)
+
+                for s in scale:
+                    if s < 1.0:
+                        raise ValueError("Scale value less than one", didx)
+
+                self._scale[didx] = scale
+        
     def __init__(
         self,
         param_instance,
         model_instance,
-        data,
-        data_ids=None,
-        weight=None,
-        scale=None,
+        data: list,
+        weight: list[float]=None,
+        scale: list[float]=None,
+        data2=None,
+        weight2: list[float]=None,
+        scale2: list[float]=None,
+        data3=None,
+        weight3: list[float]=None,
+        scale3: list[float]=None,
         numeric_derivs_model: bool = False,
         numeric_derivs_influence: bool = False,
         max_niterations: int = 50,
         diff_thres: float = 1.0e-12,
         print_warnings: bool = False,
-        model_start=None,
+        model_start: list[float]=None,
         model_ref_start=None,
         debug: bool = False,
     ):
         self._param_instance = param_instance
         self._model_instance = model_instance
-        self._data = data
-        if data_ids is None:
-            self._data_ids = np.zeros(len(data), dtype=int)
-        else:
-            if len(data_ids) != len(data):
-                raise ValueError("Inconsistent data ID array")
 
-            self._data_ids = data_ids
-
-        if weight is None:
-            self._weight = np.zeros(len(data))
-            self._weight[:] = 1.0
-        else:
-            if len(weight) != len(data):
-                raise ValueError("Inconsistent weight array")
-
-            self._weight = weight
-
-        if scale is None:
-            self._scale = np.zeros(len(data))
-            self._scale[:] = 1.0
-        else:
-            if len(scale) != len(data):
-                raise ValueError("Inconsistent scale array")
-
-            for s in scale:
-                if s < 1.0:
-                    raise ValueError("Scale value less than one")
-
-            self._scale = scale
+        self._data   = [None] * self._dsize
+        self._weight = [None] * self._dsize
+        self._scale  = [None] * self._dsize
+        self.__assign_data(0, data, weight, scale)
+        self.__assign_data(1, data2, weight2, scale2)
+        self.__assign_data(2, data3, weight3, scale3)
 
         self.numeric_derivs_model = numeric_derivs_model
         self.numeric_derivs_influence = numeric_derivs_influence
@@ -67,24 +80,55 @@ class BaseIRLS:
         self._model_ref_start = model_ref_start
         self._debug = debug
         self._linear_model_size = getattr(model_instance, "linear_model_size", None)
+
+        self._residual_size = None
         
     def objective_func_sign(self) -> float:
         return self._param_instance.influence_func_instance.objective_func_sign()
 
-    # objective_func() is public to allow external checking of progress
-    def objective_func(self, model, weight=None, model_ref=None) -> float:
-        if weight is None:
-            weight = self._weight
+    def _get_model_residual_func(self, didx: int):
+        if didx >= self._dsize:
+            raise ValueError("Inconsistent data array index", didx)
 
+        if self._data[didx] is not None:
+            if didx == 0:
+                return self._model_instance.residual
+            elif didx == 1:
+                return self._model_instance.residual2
+            elif didx == 2:
+                return self._model_instance.residual3
+            else:
+                raise ValueError("Inconsistent data array index", didx)
+
+    def _get_model_residual_gradient_func(self, didx: int):
+        if didx >= self._dsize:
+            raise ValueError("Inconsistent data array index", didx)
+
+        if self._data[didx] is not None:
+            if didx == 0:
+                return self._model_instance.residual_gradient
+            elif didx == 1:
+                return self._model_instance.residual_gradient2
+            elif didx == 2:
+                return self._model_instance.residual_gradient3
+            else:
+                raise ValueError("Inconsistent data array index", didx)
+
+    # objective_func() is public to allow external checking of progress
+    def objective_func(self, model: list[float], model_ref=None) -> float:
         tot = 0.0
         self._model_instance.cache_model(model, model_ref=model_ref)
-        for d, di, w, s in zip(self._data, self._data_ids, weight, self._scale, strict=True):
-            residual = self._model_instance.residual(d, di)
-            tot += w * self._param_instance.influence_func_instance.rho(
-                residual @ residual, s
-            )  # scale
+        self._residual_size = [None] * self._dsize
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                model_residual_func = self._get_model_residual_func(didx)
+                rho = self._param_instance.influence_func_instance.rho
+                for d, w, s in zip(self._data[didx], self._weight[didx], self._scale[didx], strict=True):
+                    residual = model_residual_func(d)
+                    tot += w * rho(residual @ residual, s)  # scale
 
-        self._residual_size = len(residual)
+                self._residual_size[didx] = len(residual)
+
         return tot
 
     def _init_model(self) -> None:
@@ -93,68 +137,85 @@ class BaseIRLS:
                 return self.weighted_fit(), None
             else:
                 return self._model_instance.weighted_fit(
-                    self._data, self._data_ids, self._weight, self._scale
+                    self._data, self._weight, self._scale
                 )
         else:
             return self._model_start, self._model_ref_start
 
     def _calc_residual_derivatives(self, model, model_ref = None, small_diff = 1.0e-5) -> (np.array, np.array):
         # build arrays of residuals and gradients per data item
-        residual_arr = np.zeros((len(self._data), self._residual_size))
-        residual_gradient_arr = np.zeros((len(self._data), self._residual_size, len(model)))
-
-        # first the residuals
         self._model_instance.cache_model(model, model_ref=model_ref)
-        for i,(d,di) in enumerate(zip(self._data, self._data_ids, strict=True)):
-            residual = self._model_instance.residual(d, di)
-            residual_arr[i] = residual
+        residual_arr          = [None] * self._dsize
+        residual_gradient_arr = [None] * self._dsize
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                model_residual_func = self._get_model_residual_func(didx)
 
-        # now the gradients
-        if self.numeric_derivs_model:
-            model_copy = np.copy(model)
-            for i in range(len(model)):
-                model_copy[i] -= small_diff
-                self._model_instance.cache_model(model_copy, model_ref=model_ref)
-                residual_n_arr = np.zeros((len(self._data), self._residual_size))
-                for j,(d,di) in enumerate(zip(self._data, self._data_ids, strict=True)):
-                    residual = self._model_instance.residual(d, di)
-                    residual_n_arr[j] = residual
+                residual_arr[didx] = np.zeros((len(self._data[didx]), self._residual_size[didx]))
+                residual_gradient_arr[didx] = np.zeros((len(self._data[didx]), self._residual_size[didx], len(model)))
 
-                model_copy[i] += 2.0 * small_diff
-                self._model_instance.cache_model(model_copy, model_ref=model_ref)
-                for j,(d,di) in enumerate(zip(self._data, self._data_ids, strict=True)):
-                    residual = self._model_instance.residual(d, di)
-                    for k in range(self._residual_size):
-                        residual_gradient_arr[(j,k,i)] = 0.5*(residual[k] - residual_n_arr[j][k]) / small_diff
+                # first the residuals
+                for i,d in enumerate(self._data[didx]):
+                    residual_arr[didx][i] = model_residual_func(d)
+
+                # now the gradients
+                if self.numeric_derivs_model:
+                    model_copy = np.copy(model)
+                    for i in range(len(model)):
+                        model_copy[i] -= small_diff
+                        self._model_instance.cache_model(model_copy, model_ref=model_ref)
+                        residual_n_arr = np.zeros((len(self._data[didx]), self._residual_size[didx]))
+                        for j,d in enumerate(self._data[didx]):
+                            residual_n_arr[j] = model_residual_func(d)
+
+                        model_copy[i] += 2.0 * small_diff
+                        self._model_instance.cache_model(model_copy, model_ref=model_ref)
+                        for j,d in enumerate(self._data[didx]):
+                            residual = model_residual_func(d)
+                            for k in range(self._residual_size[didx]):
+                                residual_gradient_arr[didx][(j,k,i)] = 0.5*(residual[k] - residual_n_arr[j][k]) / small_diff
                     
-                model_copy[i] = model[i]
-        else:
-            for j,(d,di) in enumerate(zip(self._data, self._data_ids, strict=True)):
-                residual_gradient_arr[j] = self._model_instance.residual_gradient(d, di)
+                        model_copy[i] = model[i]
+                else:
+                    model_residual_gradient_func = self._get_model_residual_gradient_func(didx)
+                    for j,d in enumerate(self._data[didx]):
+                        residual_gradient_arr[didx][j] = model_residual_gradient_func(d)
 
         return residual_arr, residual_gradient_arr
 
-    def weighted_fit(self, weight=None) -> np.array:
-        if weight is None:
-            weight = self._weight
+    def _initialize_residual_size_if_necessary(self):
+        if self._residual_size is None:
+            self._residual_size = [None] * self._dsize
+            for didx in range(self._dsize):
+                if self._data[didx] is not None:
+                    model_residual_func = self._get_model_residual_func(didx)
+                    residual = self._model_instance.residual(self._data[didx][0])
+                    self._residual_size[didx] = len(residual)
 
+    def weighted_fit(self, weight_arr: list[list[float]]=None) -> np.array:
         model = np.zeros(self._linear_model_size())
-
-        # initialize residual_size
         self._model_instance.cache_model(model)
-        residual = self._model_instance.residual(self._data[0], self._data_ids[0])
-        self._residual_size = len(residual)
+        self._initialize_residual_size_if_necessary()
 
         atot = np.zeros(len(model))
         Atot = np.zeros((len(model), len(model)))
         small_diff = 1.0e-5  # in case numerical differentiation is specified
         residual_arr, residual_gradient_arr = self._calc_residual_derivatives(model, small_diff)
-        for i,(w,s) in enumerate(zip(weight, self._scale, strict=True)):
-            grad = np.matmul(np.transpose(residual_gradient_arr[i]), residual_arr[i])
-            w /= s * s
-            atot += w * grad
-            Atot += w * np.matmul(
-                np.transpose(residual_gradient_arr[i]), residual_gradient_arr[i]
-            )
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                if weight_arr is None or weight_arr[didx] is None:
+                    weight = self._weight[didx]
+                else:
+                    weight = weight_arr[didx]
+
+                residual = residual_arr[didx]
+                residual_gradient = residual_gradient_arr[didx]
+                for i,(w,s) in enumerate(zip(weight, self._scale[didx], strict=True)):
+                    grad = np.matmul(np.transpose(residual_gradient[i]), residual[i])
+                    w /= s * s
+                    atot += w * grad
+                    Atot += w * np.matmul(
+                        np.transpose(residual_gradient[i]), residual_gradient[i]
+                    )
 
         return -np.linalg.solve(Atot, atot)

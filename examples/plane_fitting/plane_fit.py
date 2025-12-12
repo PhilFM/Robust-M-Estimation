@@ -12,14 +12,14 @@ class PlaneFit:
         self.__c = model[2]
 
     # r = a*xi + b - yi
-    def residual(self, data_item, data_id:int=None) -> np.array:
+    def residual(self, data_item) -> np.array:
         x = data_item[0]
         y = data_item[1]
         z = data_item[2]
         return np.array([self.__a*x + self.__b*y + self.__c - z])
 
     # dr/d(a b c) = (x y 1)
-    def residual_gradient(self, data_item, data_id:int=None) -> np.array:
+    def residual_gradient(self, data_item) -> np.array:
         x = data_item[0]
         y = data_item[1]
         return np.array([[x, y, 1.0]])

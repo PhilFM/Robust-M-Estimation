@@ -9,11 +9,11 @@ class RobustMean:
         self.__m = model[0]
 
     # r = m - d
-    def residual(self, data_item, data_id=0) -> np.array:
+    def residual(self, data_item) -> np.array:
         return np.array([self.__m-data_item[0]]).reshape(1)
 
     # dr/dm = 1
-    def residual_gradient(self, data_item, data_id=0) -> np.array:
+    def residual_gradient(self, data_item) -> np.array:
         return np.array([[1.0]])
 
     # return size of model if the model is linear, otherwise return 0

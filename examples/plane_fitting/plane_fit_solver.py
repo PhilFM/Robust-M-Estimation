@@ -46,19 +46,8 @@ def main(test_run:bool, output_folder:str="../../Output"):
     if not test_run:
         print("Result: a,b,c=", model)
 
-    # get min and max of data
-    x_min = x_max = data[0][0]
-    for d in data:
-        x_min = min(x_min, d[0])
-        x_max = max(x_max, d[0])
-
-    # allow border
-    xrange = x_max-x_min
-    x_min -= 0.05*xrange
-    x_max += 0.05*xrange
-
     # change to True if you want to see the progress of the algorithm
-    if True:
+    if False:
         for plane in debug_planes:
             if not test_run:
                 print(plane)

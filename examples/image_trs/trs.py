@@ -13,7 +13,7 @@ class TRS:
 
     # r = (xdiff) = (x2 - c*x1 + s*y1 - tx)
     #     (ydiff)   (y2 - s*x1 - c*y1 - ty)
-    def residual(self, data_item, data_id:int=None) -> np.array:
+    def residual(self, data_item) -> np.array:
         x1 = data_item[0]
         y1 = data_item[1]
         return np.array([data_item[2] - self.__c*x1 + self.__s*y1 - self.__tx,  # xdiff
@@ -22,7 +22,7 @@ class TRS:
 
     # d(xdiffi)/d(s c tx ty) = ( yi -xi -1  0)
     #  (ydiffi)                (-xi -yi  0 -1)
-    def residual_gradient(self, data_item, data_id:int=None) -> np.array:
+    def residual_gradient(self, data_item) -> np.array:
         x1 = data_item[0]
         y1 = data_item[1]
         return np.array([[ y1, -x1, -1.0,  0.0],
