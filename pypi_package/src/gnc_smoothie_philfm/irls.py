@@ -127,9 +127,7 @@ class IRLS(BaseIRLS):
             if callable(self._linear_model_size):
                 model = self.weighted_fit(weight)
             else:
-                model, model_ref = self._model_instance.weighted_fit(
-                    self._data, weight, self._scale
-                )
+                model, model_ref = self._model_weighted_fit(weight)
 
             if self._debug:
                 self.debug_weighted_fit_time += time.time()-start_time

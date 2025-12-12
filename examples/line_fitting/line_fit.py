@@ -21,6 +21,7 @@ class LineFit:
         x = data_item[0]
         return np.array([[x, 1.0]])
 
-    # return size of model if the model is linear, otherwise return 0
+    # return number of parameters in model if the model is linear,
+    # otherwise omit this method
     def linear_model_size(self) -> int:
         return 2 # a,b

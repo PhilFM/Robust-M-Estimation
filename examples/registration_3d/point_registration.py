@@ -49,7 +49,7 @@ class PointRegistration:
 
     # fits the model to the data
     def weighted_fit(self, data, weight, scale) -> (np.array, np.array):
-        R,t = LS_PointCloudRegistration(data[0], weight[0])
+        R,t = LS_PointCloudRegistration(data, weight)
         model = np.zeros(6)
         model[3:6] = t
         return model,R

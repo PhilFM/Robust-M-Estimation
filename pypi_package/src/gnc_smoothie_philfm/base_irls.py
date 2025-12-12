@@ -131,14 +131,30 @@ class BaseIRLS:
 
         return tot
 
+    def _model_weighted_fit(self, weight = None):
+        if weight is None:
+            weight = self._weight
+
+        if self._data[1] is None:
+            return self._model_instance.weighted_fit(self._data[0], weight[0], self._scale[0])
+        elif self._data[2] is None:
+            return self._model_instance.weighted_fit(
+                self._data[0], weight[0], self._scale[0],
+                data2 = self._data[1], weight2 = weight[1], scale2 = self._scale[1]
+            )
+        else:
+            return self._model_instance.weighted_fit(
+                self._data[0], weight[0], self._scale[0],
+                data2 = self._data[1], weight2 = weight[1], scale2 = self._scale[1],
+                data3 = self._data[2], weight3 = weight[2], scale3 = self._scale[2]
+            )
+
     def _init_model(self) -> None:
         if self._model_start is None and self._model_ref_start is None:
             if callable(self._linear_model_size):
                 return self.weighted_fit(), None
             else:
-                return self._model_instance.weighted_fit(
-                    self._data, self._weight, self._scale
-                )
+                return self._model_weighted_fit()
         else:
             return self._model_start, self._model_ref_start
 

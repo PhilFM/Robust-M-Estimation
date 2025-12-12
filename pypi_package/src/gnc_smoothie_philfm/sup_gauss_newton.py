@@ -30,7 +30,6 @@ class SupGaussNewton(BaseIRLS):
         print_warnings: bool = False,
         model_start = None,
         model_ref_start = None,
-        model_range = None,
         debug: bool = False,
     ):
         BaseIRLS.__init__(self,
@@ -58,7 +57,6 @@ class SupGaussNewton(BaseIRLS):
         self.__lambda_start = lambda_start
         self.__lambda_max = lambda_max
         self.__lambda_scale = lambda_scale
-        self.__model_range = model_range
 
     def __calc_influence_func_derivatives(
         self, residual: np.array, s: float, small_diff: float = 1.0e-5
@@ -125,6 +123,7 @@ class SupGaussNewton(BaseIRLS):
         lambda_val = self.__lambda_start
         model, model_ref = self._init_model()
         last_tot = self.objective_func(model, model_ref=model_ref)
+        model_is_valid = getattr(self._model_instance, "model_is_valid", None)
         update_model_ref = getattr(self._model_instance, "update_model_ref", None)
 
         if self._print_warnings:
@@ -192,32 +191,13 @@ class SupGaussNewton(BaseIRLS):
             if callable(update_model_ref):
                 model_ref = update_model_ref(model, model_ref)
 
-            # compare against any provided range
-            if self.__model_range is not None:
-                all_good_range = True
-                for i in range(len(model)):
-                    this_range = self.__model_range[i]
-                    if this_range is not None:
-                        if model[i] < this_range[0] or model[i] > this_range[1]:
-                            # outside range - revert
-                            if self._print_warnings:
-                                print(
-                                    "Reject lambda_val=",
-                                    lambda_val,
-                                    "outside range ",
-                                    model[i],
-                                    " at model parameter ",
-                                    i,
-                                    ": reverting to model",
-                                    model_old
-                                )
-
-                            model = model_old
-                            model_ref = model_refOld
-                            lambda_val /= self.__lambda_scale
-                            all_good_range = False
-
-                if not all_good_range:
+            # check whether the model is valid, abort this iteration if it isn't
+            if callable(model_is_valid):
+                if not model_is_valid(model, model_ref):
+                    model = model_old
+                    model_ref = model_refOld
+                    lambda_val /= self.__lambda_scale
+                    print("Aborting here new lambda=",lambda_val)
                     continue
 
             if self._diff_thres is not None:
