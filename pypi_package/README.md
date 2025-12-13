@@ -153,7 +153,7 @@ minimal in the objective function.
 
 ## Supervised Gauss-Newton algorithm (Sup-GN)
 
-Beginning with the objective function $F({\bf x})$, let us assume that we have an existing estimate $\widehat{\bf x}^{*}$
+Beginning with the objective function $F({\bf x})$, let us assume that we have an existing estimate $\widehat{\bf x}^{\*}$
 of ${\bf x}$. We can then try to improve this estimate by solving
 
 $$\frac{dF({\bf x})}{d{\bf x}} = {\bf 0}
@@ -161,15 +161,15 @@ $$
 
 We then build the first-order approximation to the weighting function $\psi(r)$ that solves for an improved $\widehat{\bf x}$:
 
-$$\frac{dF({\bf x})}{d{\bf x}} + \frac{d^2 F}{d{\bf x}^2} (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
+$$\frac{dF({\bf x})}{d{\bf x}} + \frac{d^2 F}{d{\bf x}^2} (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
 $$
 
-where the derivatives are evaluated at ${\bf x}=\widehat{\bf x}^{*}$, or
+where the derivatives are evaluated at ${\bf x}=\widehat{\bf x}^{\*}$, or
 
-$$\sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + \sum_{i=1}^n \left( \frac{d^2\rho(r_i)}{dr_i^2} \frac{d r_i}{d{\bf x}}^\intercal \frac{d r_i}{d{\bf x}} + \psi(r_i) \frac{d^2 r_i}{d{\bf x}^2} \right) (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
+$$\sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + \sum_{i=1}^n \left( \frac{d^2\rho(r_i)}{dr_i^2} \frac{d r_i}{d{\bf x}}^\intercal \frac{d r_i}{d{\bf x}} + \psi(r_i) \frac{d^2 r_i}{d{\bf x}^2} \right) (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
 $$
 
-where $r_i$ and the derivatives are again evaluated at ${\bf x}=\widehat{\bf x}^{*}$.
+where $r_i$ and the derivatives are again evaluated at ${\bf x}=\widehat{\bf x}^{\*}$.
 Noting the equation for $r_i$ in the section above, we can write
 
 
@@ -183,10 +183,10 @@ $$
 
 We assume that the data error ${\bf r}_{i}$ is a smooth function of ${\bf x}$ and so ignore the second
 derivative term involving $d^2{\bf r}_i/d{\bf x}^2$.
-Substituting the above (without the second term) into the equation for $\widehat{\bf x} - \widehat{\bf x}^{*}$ above
+Substituting the above (without the second term) into the equation for $\widehat{\bf x} - \widehat{\bf x}^{\*}$ above
 and combining with the equation for $\frac{dr_i}{d{\bf x}}$ provides the result
 
-$$\sum_{i=1}^n {\bf a} + (A + B) (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
+$$\sum_{i=1}^n {\bf a} + (A + B) (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
 $$
 
 where
@@ -210,11 +210,11 @@ $$
 
 We can solve the Gauss-Newton update equations to provide
 updated parameters $\widehat{\bf x}$ given residuals, derivatives and
-hence matrices $A$, $B$ evaluated at the previous parameters $\widehat{\bf x}^{*}$.
+hence matrices $A$, $B$ evaluated at the previous parameters $\widehat{\bf x}^{\*}$.
 However a direct Gauss-Newton iteration gives no guarantee of
 convergence. We propose the following "damped" Gauss-Newton updates, in the manner of Levenberg-Marquardt [5] damping:
 
-$$\sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + (A + \lambda B) (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
+$$\sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + (A + \lambda B) (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
 $$
 
 where $\lambda$ in the range $[0,1]$ is a damping factor. When $\lambda=1$ (no damping)
@@ -224,13 +224,13 @@ As a result we can treat the extreme value $\lambda=0$ as a "safe" iteration
 that will guarantee, at least for linear models, a convergent update.
 The Sup-GN algorithm then proceeeds as follows:
 
-First initialize $\widehat{\bf x}^{*}$ in the same way as IRLS (least-squares solution with weights $w_i$ set to one), and
+First initialize $\widehat{\bf x}^{\*}$ in the same way as IRLS (least-squares solution with weights $w_i$ set to one), and
 set $\lambda=1$. Then given a damping adjustment factor $k<1$:
 1. Solve the damped Gauss-Newton update equation above to produce an updated estimate $\widehat{\bf x}$.
-1. Check the objective function $F()$ evaluated at $\widehat{\bf x}^{*}$ and $\widehat{\bf x}$.
+1. Check the objective function $F()$ evaluated at $\widehat{\bf x}^{\*}$ and $\widehat{\bf x}$.
 If we managed to improve the objective function, we can reduce the damping, otherwise we need to reject the new
 estimate and increase the damping:
-   - If $F(\widehat{\bf x})<F({\widehat{\bf x}}^{\*})$, set $\lambda\leftarrow k\lambda$ and $\widehat{\bf x}^{*} \leftarrow \widehat{\bf x}$.
+   - If $F(\widehat{\bf x})<F(\widehat{\bf x}^{\*})$, set $\lambda\leftarrow k\lambda$ and $\widehat{\bf x}^{\*} \leftarrow \widehat{\bf x}$.
    - Else set $\lambda \leftarrow \min(1,\frac{\lambda}{k})$.
 1. Iterate to convergence.
 
@@ -393,7 +393,7 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
         If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
         are calculated numerically from `rho()` and `rhop()` should be omitted.
    - `Bterm(self, rsqr: float, s: float) -> float`
-        Implements $(r*\rho''(r) - \rho'(r))/(r^3)$ where ' indicates derivative.
+        Implements $(r\*\rho''(r) - \rho'(r))/(r^3)$ where ' indicates derivative.
         If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
         are calculated numerically from `rho()` and `Bterm()` should be omitted.
    - `summary(self) -> str`
