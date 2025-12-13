@@ -230,7 +230,7 @@ set $\lambda=1$. Then given a damping adjustment factor $k<1$:
 1. Check the objective function $F()$ evaluated at $\widehat{\bf x}^{*}$ and $\widehat{\bf x}$.
 If we managed to improve the objective function, we can reduce the damping, otherwise we need to reject the new
 estimate and increase the damping:
-   - If $F(\widehat{\bf x})<F(\widehat{\bf x})$, set $\lambda\leftarrow k\lambda$ and $\widehat{\bf x}^{*} \leftarrow \widehat{\bf x}$.
+   - If $F(\widehat{\bf x})<F({\widehat{\bf x}}^{*})$, set $\lambda\leftarrow k\lambda$ and $\widehat{\bf x}^{*} \leftarrow \widehat{\bf x}$.
    - Else set $\lambda \leftarrow \min(1,\frac{\lambda}{k})$.
 1. Iterate to convergence.
 
