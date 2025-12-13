@@ -11,5 +11,5 @@ We assume a known population probability density function (PDF) $f(.)$, parametr
 and a set of independent and identically distributed data ${\bf z}_i$, $i=1,...,n$ sampled from the population.
 The general model for the observations is
 $$
-  {\bf z}_i = {\bf h}_i({\bf x}) + \text{noise}
+{\bf z}_i = {\bf h}_i({\bf x}) + \text{noise}
 $$
