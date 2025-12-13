@@ -45,6 +45,7 @@ M-estimation generalises this method by substituting a different function into t
 
 $$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( \sum_{i=1}^n \rho(|| {\bf r}_i({\bf x}) ||) \right)
 $$
+
 for some function $\rho(r_i)$ where
 
 $$r_i = || {\bf r}_i({\bf x}) ||
@@ -90,6 +91,7 @@ $$
 
 $$\psi(r) = \frac{d\rho(r)}{dr} = \frac{r}{2} \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
 $$
+
 where the width $\sigma$ of the Gaussian is known as the "wavelength" of the Welsch influence function.
 Using a Gaussian influence function, whose gradient tends to zero for large errors, ensures robustness to large errors,
 because their influence on the solution will be very small.
@@ -176,7 +178,6 @@ $$
 
 and from this derive
 
-
 $$\frac{d^2 r_i}{d{\bf x}^2} = \frac{1}{r_i^3} \left( \frac{d{\bf r}_i}{d{\bf x}} \right)^{\intercal} \left( r_i^2 I - {\bf r}_i {\bf r}_i^\intercal \right) \frac{d{\bf r}_i}{d{\bf x}} + \frac{1}{r_i} {\bf r}_i^{\intercal} \frac{d^2{\bf r}_i}{d{\bf x}^2}
 $$
 
@@ -185,30 +186,24 @@ derivative term involving $d^2{\bf r}_i/d{\bf x}^2$.
 Substituting the above (without the second term) into the equation for $\widehat{\bf x} - \widehat{\bf x}^{*}$ above
 and combining with the equation for $\frac{dr_i}{d{\bf x}}$ provides the result
 
-
 $$\sum_{i=1}^n {\bf a} + (A + B) (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
 $$
 
 where
 
-
 $${\bf a} = \sum_{i=1}^n \frac{1}{r_i} \psi(r_i) {\bf r}_i^\intercal \frac{d{\bf r}_i}{d{\bf x}}
 $$
 
-
 $$A = \sum_{i=1}^n \frac{1}{r_i} \psi(r_i) \left(\frac{d{\bf r}_i}{d{\bf x}}\right)^\intercal \frac{d{\bf r}_i}{d{\bf x}}
 $$
-
 
 $$B = \sum_{i=1}^n \frac{1}{r_i^3} \left(r_i\frac{d^2\rho}{dr_i^2} - \psi(r_i) \right) \left(\frac{d{\bf r}_i}{d{\bf x}}\right)^\intercal {\bf r}_i {\bf r}_i^\intercal \frac{d{\bf r}_i}{d{\bf x}}
 $$
 
 For the Welsch influence function we obtain
 
-
 $$\frac{1}{r_i} \psi(r_i) = \frac{1}{2} \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
 $$
-
 
 $$\frac{1}{r_i^3} \left(r_i\frac{d^2\rho}{dr_i^2} - \psi(r_i) \right) = -\frac{1}{2\sigma^2} \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
 $$
