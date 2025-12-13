@@ -1,6 +1,8 @@
 *~
-Output/*.png
-Output/*.json
+output/*.png
+output/*.json
+test_output/*.png
+test_output/*.json
 __pycache__
 */__pycache__
 */*/__pycache__
