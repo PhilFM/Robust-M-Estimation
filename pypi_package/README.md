@@ -27,23 +27,23 @@ $$
 
 For instance for Normal distributed observation errors with standard deviation $\sigma$ we would have
 
-$$f({\bf r}_i) = \\,\mathrm{e}^{-\frac{\lVert{\bf r}_i\rVert_2^2}{2\sigma^2}}
+$$f({\bf r}_i) = \,\mathrm{e}^{-\frac{\lVert{\bf r}_i\rVert_2^2}{2\sigma^2}}
 $$
 
 where $\lVert . \rVert$ indicates the vector 2-norm $\lVert . \rVert_2$. The maximum likelihood estimator of ${\bf x}$ can be computed as 
 
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{max}} \left( \prod_{i=1}^n f({\bf r}_i({\bf x})) \right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{max}} \left( \prod_{i=1}^n f({\bf r}_i({\bf x})) \right)
 $$
 
 or equivalently,
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n - \log f({\bf r}_i({\bf x})) \right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( \sum_{i=1}^n - \log f({\bf r}_i({\bf x})) \right)
 $$
 
 M-estimation generalises this method by substituting a different function into the above sum, so we instead compute
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n \rho(\lVert{\bf r}_i({\bf x})\rVert) \right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( \sum_{i=1}^n \rho(\lVert{\bf r}_i({\bf x})\rVert) \right)
 $$
 
 for some function $\rho(r_i)$ where
@@ -86,10 +86,10 @@ used for the iteration.
     
 We start with the Welsch influence function [2]. This uses a negative Gaussian:
 
-$$\rho(r) = \frac{\sigma^2}{2} \left( 1 - \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
+$$\rho(r) = \frac{\sigma^2}{2} \left( 1 - \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
 $$
 
-$$\psi(r) = \frac{d\rho(r)}{dr} = \frac{r}{2} \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
+$$\psi(r) = \frac{d\rho(r)}{dr} = \frac{r}{2} \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
 $$
 
 where the width $\sigma$ of the Gaussian is known as the "wavelength" of the Welsch influence function.
@@ -108,12 +108,12 @@ for ${\bf x}$ is soluble in closed form, given some "weights" assigned
 to the data points. In other words there is a (simple) algorithm that can be used to solve the optimisation problem
 
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n w_i \lVert{\bf z}_i - {\bf h}_i({\bf x})\rVert^2)\right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( \sum_{i=1}^n w_i \lVert{\bf z}_i - {\bf h}_i({\bf x})\rVert^2)\right)
 $$
 
 or
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( F_{\text{LS}}({\bf x}) \right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( F_{\text{LS}}({\bf x}) \right)
 $$
 
 where
@@ -143,6 +143,7 @@ $$
 This choice will ensure that solving for $\frac{dF_{\text{LS}}}{d{\bf x}}$ will also solve for $\frac{dF}{d{\bf x}}$
 to first order, and hopefully improve the solution.
 IRLS repeats the following two steps to convergence, given an initial state estimate $\widehat{\bf x}$:
+
 1. Estimate weights using the above equation for $w_i$ for each data item, to be used when calculating the next value
    for $\widehat{\bf x}$.
    $r_i$ and its derivative are evaluated at the current solution $\widehat{\bf x}$.
@@ -153,7 +154,7 @@ minimal in the objective function.
 
 ## Supervised Gauss-Newton algorithm (Sup-GN)
 
-Beginning with the objective function $F({\bf x})$, let us assume that we have an existing estimate $\widehat{\bf x}^{\*}$
+Beginning with the objective function $F({\bf x})$, let us assume that we have an existing estimate $\widehat{\bf x}^{*}$
 of ${\bf x}$. We can then try to improve this estimate by solving
 
 $$\frac{dF({\bf x})}{d{\bf x}} = {\bf 0}
@@ -161,15 +162,15 @@ $$
 
 We then build the first-order approximation to the weighting function $\psi(r)$ that solves for an improved $\widehat{\bf x}$:
 
-$$\frac{dF({\bf x})}{d{\bf x}} + \frac{d^2 F}{d{\bf x}^2} (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
+$$\frac{dF({\bf x})}{d{\bf x}} + \frac{d^2 F}{d{\bf x}^2} (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
 $$
 
-where the derivatives are evaluated at ${\bf x}=\widehat{\bf x}^{\*}$, or
+where the derivatives are evaluated at ${\bf x}=\widehat{\bf x}^{*}$, or
 
-$$\sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + \sum_{i=1}^n \left( \frac{d^2\rho(r_i)}{dr_i^2} \frac{d r_i}{d{\bf x}}^\intercal \frac{d r_i}{d{\bf x}} + \psi(r_i) \frac{d^2 r_i}{d{\bf x}^2} \right) (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
+$$\sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + \sum_{i=1}^n \left( \frac{d^2\rho(r_i)}{dr_i^2} \frac{d r_i}{d{\bf x}}^\intercal \frac{d r_i}{d{\bf x}} + \psi(r_i) \frac{d^2 r_i}{d{\bf x}^2} \right) (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
 $$
 
-where $r_i$ and the derivatives are again evaluated at ${\bf x}=\widehat{\bf x}^{\*}$.
+where $r_i$ and the derivatives are again evaluated at ${\bf x}=\widehat{\bf x}^{*}$.
 Noting the equation for $r_i$ in the section above, we can write
 
 
@@ -183,10 +184,10 @@ $$
 
 We assume that the data error ${\bf r}_{i}$ is a smooth function of ${\bf x}$ and so ignore the second
 derivative term involving $d^2{\bf r}_i/d{\bf x}^2$.
-Substituting the above (without the second term) into the equation for $\widehat{\bf x} - \widehat{\bf x}^{\*}$ above
+Substituting the above (without the second term) into the equation for $\widehat{\bf x} - \widehat{\bf x}^{*}$ above
 and combining with the equation for $\frac{dr_i}{d{\bf x}}$ provides the result
 
-$$\sum_{i=1}^n {\bf a} + (A + B) (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
+$$\sum_{i=1}^n {\bf a} + (A + B) (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
 $$
 
 where
@@ -202,19 +203,19 @@ $$
 
 For the Welsch influence function we obtain
 
-$$\frac{1}{r_i} \psi(r_i) = \frac{1}{2} \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
+$$\frac{1}{r_i} \psi(r_i) = \frac{1}{2} \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
 $$
 
-$$\frac{1}{r_i^3} \left(r_i\frac{d^2\rho}{dr_i^2} - \psi(r_i) \right) = -\frac{1}{2\sigma^2} \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
+$$\frac{1}{r_i^3} \left(r_i\frac{d^2\rho}{dr_i^2} - \psi(r_i) \right) = -\frac{1}{2\sigma^2} \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
 $$
 
 We can solve the Gauss-Newton update equations to provide
 updated parameters $\widehat{\bf x}$ given residuals, derivatives and
-hence matrices $A$, $B$ evaluated at the previous parameters $\widehat{\bf x}^{\*}$.
+hence matrices $A$, $B$ evaluated at the previous parameters $\widehat{\bf x}^{*}$.
 However a direct Gauss-Newton iteration gives no guarantee of
 convergence. We propose the following "damped" Gauss-Newton updates, in the manner of Levenberg-Marquardt [5] damping:
 
-$$\sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + (A + \lambda B) (\widehat{\bf x} - \widehat{\bf x}^{\*}) = {\bf 0}
+$$\sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + (A + \lambda B) (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
 $$
 
 where $\lambda$ in the range $[0,1]$ is a damping factor. When $\lambda=1$ (no damping)
@@ -224,13 +225,13 @@ As a result we can treat the extreme value $\lambda=0$ as a "safe" iteration
 that will guarantee, at least for linear models, a convergent update.
 The Sup-GN algorithm then proceeeds as follows:
 
-First initialize $\widehat{\bf x}^{\*}$ in the same way as IRLS (least-squares solution with weights $w_i$ set to one), and
+First initialize $\widehat{\bf x}^{*}$ in the same way as IRLS (least-squares solution with weights $w_i$ set to one), and
 set $\lambda=1$. Then given a damping adjustment factor $k<1$:
 1. Solve the damped Gauss-Newton update equation above to produce an updated estimate $\widehat{\bf x}$.
-1. Check the objective function $F()$ evaluated at $\widehat{\bf x}^{\*}$ and $\widehat{\bf x}$.
+1. Check the objective function $F()$ evaluated at $\widehat{\bf x}^{*}$ and $\widehat{\bf x}$.
 If we managed to improve the objective function, we can reduce the damping, otherwise we need to reject the new
 estimate and increase the damping:
-   - If $F(\widehat{\bf x})<F(\widehat{\bf x}^{\*})$, set $\lambda\leftarrow k\lambda$ and $\widehat{\bf x}^{\*} \leftarrow \widehat{\bf x}$.
+   - If $F(\widehat{\bf x})<F(\widehat{\bf x}^{*})$, set $\lambda\leftarrow k\lambda$ and $\widehat{\bf x}^{*} \leftarrow \widehat{\bf x}$.
    - Else set $\lambda \leftarrow \min(1,\frac{\lambda}{k})$.
 1. Iterate to convergence.
 
@@ -250,6 +251,7 @@ The final model and model reference (see below) are stored in `final_model` and 
 whether the `run()` method succeeds or not.
 
 Here are the parameters that need to be passed to the `IRLS` class constructor. Optional parameters follow.
+
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
    this can be a `GNC_NullParams` instance imported from `gnc_null_params.py`.
    Should have an internal `influence_func_instance`
@@ -306,6 +308,7 @@ Here are the parameters that need to be passed to the `IRLS` class constructor. 
 - `data` An array of data items. Each data item should itself be an array.
 
 Now the optional parameters for the `IRLS` class constructor:
+
 - `weight` An array of float weight values for each data item.
      If not provided, weights are initialised to one.
 - `scale` An array of scale values, indicating that one or more data items are known to
@@ -349,6 +352,7 @@ Now the optional parameters for the `IRLS` class constructor:
 
 Top-level `SupGaussNewton` class, an implementation of Supervised Gauss-Newton (Sup-GN).
 Sup-GN is an alternative to IRLS most suitable for the two cases:
+
 - Linear model where the data relates to the model via a linear function.
 - Non-linear model where there is no closed-form solution to calculating the
       model parameters from the weighted data.
@@ -369,6 +373,7 @@ whether the `run()` method succeeds or not.
 The parameters to the `SupGaussNewton` constructor are very similar to the `IRLS` class,
 but there are some twists due to Sup-GN requiring differentiation of the model residual.
 Here are the parameters you need to pass to the `SupGaussNewton` class:
+
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
     this can be a `GNC_NullParams` instance imported from `gnc_null_params.py`.
     Should have an internal `influence_func_instance`
@@ -393,7 +398,7 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
         If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
         are calculated numerically from `rho()` and `rhop()` should be omitted.
    - `Bterm(self, rsqr: float, s: float) -> float`
-        Implements $(r\*\rho''(r) - \rho'(r))/(r^3)$ where ' indicates derivative.
+        Implements $(r*\rho''(r) - \rho'(r))/(r^3)$ where ' indicates derivative.
         If `numeric_derivs_influence` is set to `True` (see below) then the derivatives
         are calculated numerically from `rho()` and `Bterm()` should be omitted.
    - `summary(self) -> str`
@@ -465,6 +470,7 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
 - `data` An array of data items. Each data item should itself be an array.
 
 Now the optional parameters for the `SupGaussNewton` class constructor:
+
 - `weight` An array of float weight values for each data item.
      If not provided, weights are initialised to one
 - `scale` An array of scale values, indicating that one or more data items are known to
@@ -629,7 +635,7 @@ the `SupGaussNewton` instance, although the derivative testing will work for oth
 
 This provides the class `WelschInfluenceFunc`, that implements the Welsch influence function, defined as
 
-$$\rho(r) = \frac{\sigma^2}{2} \left( 1 - \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
+$$\rho(r) = \frac{\sigma^2}{2} \left( 1 - \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
 $$
 
 with a single parameter $\sigma$. This is the simplest robust influence function.
