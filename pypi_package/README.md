@@ -27,7 +27,7 @@ $$
 
 For instance for Normal distributed observation errors with standard deviation $\sigma$ we would have
 
-$$f({\bf r}_i) = \\,\mathrm{e}^{-\frac{|| {\bf r}_i ||^2}{2\sigma^2}}
+$$f({\bf r}_i) = \\,\mathrm{e}^{-\frac{||{\bf r}_i||^2}{2\sigma^2}}
 $$
 
 The maximum likelihood estimator of ${\bf x}$ can be computed as 
@@ -43,18 +43,18 @@ $$
 
 M-estimation generalises this method by substituting a different function into the above sum, so we instead compute
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n \rho(|| {\bf r}_i({\bf x}) ||) \right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n \rho(||{\bf r}_i({\bf x})||) \right)
 $$
 
 for some function $\rho(r_i)$ where
 
-$$r_i = \|\| {\bf r}_i({\bf x}) \|\|
+$$r_i = ||{\bf r}_i({\bf x})||
 $$
 
 We write the objective function above as
 
 
-$$F({\bf x}) = \sum_{i=1}^n \rho(|| {\bf r}_i({\bf x}) ||)
+$$F({\bf x}) = \sum_{i=1}^n \rho(||{\bf r}_i({\bf x})||)
 $$
 
 or
@@ -108,7 +108,7 @@ for ${\bf x}$ is soluble in closed form, given some "weights" assigned
 to the data points. In other words there is a (simple) algorithm that can be used to solve the optimisation problem
 
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n w_i || {\bf z}_i - {\bf h}_i({\bf x}) ||^2)\right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n w_i ||{\bf z}_i - {\bf h}_i({\bf x})||^2)\right)
 $$
 
 or
