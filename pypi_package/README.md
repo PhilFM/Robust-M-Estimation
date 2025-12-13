@@ -13,11 +13,13 @@ The general model for the observations is
 
 $${\bf z}_i = {\bf h}_i({\bf x}) + \text{noise}
 $$
+
 for some observation model function ${\bf h}_i({\bf x})$.
 The distribution of the noise determined by the population PDF, which is defined as some function
 
 $$f({\bf z}_i - {\bf h}_i({\bf x})) = f({\bf r}_i)
 $$
+
 defining the $i$'th data error or "residual" vector ${\bf r}_i$ as
 
 $${\bf r}_i({\bf x}) = {\bf z}_i - {\bf h}_i({\bf x})
@@ -154,6 +156,7 @@ of ${\bf x}$. We can then try to improve this estimate by solving
 
 $$\frac{dF({\bf x})}{d{\bf x}} = {\bf 0}
 $$
+
 We then build the first-order approximation to the weighting function $\psi(r)$ that solves for an improved $\widehat{\bf x}$:
 
 $$\frac{dF({\bf x})}{d{\bf x}} + \frac{d^2 F}{d{\bf x}^2} (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
@@ -163,6 +166,7 @@ where the derivatives are evaluated at ${\bf x}=\widehat{\bf x}^{*}$, or
 
 $$\sum_{i=1}^n \psi(r_i) \frac{dr_i}{d{\bf x}} + \sum_{i=1}^n \left( \frac{d^2\rho(r_i)}{dr_i^2} \frac{d r_i}{d{\bf x}}^\intercal \frac{d r_i}{d{\bf x}} + \psi(r_i) \frac{d^2 r_i}{d{\bf x}^2} \right) (\widehat{\bf x} - \widehat{\bf x}^{*}) = {\bf 0}
 $$
+
 where $r_i$ and the derivatives are again evaluated at ${\bf x}=\widehat{\bf x}^{*}$.
 Noting the equation for $r_i$ in the section above, we can write
 
