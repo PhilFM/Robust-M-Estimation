@@ -48,7 +48,7 @@ $$
 
 for some function $\rho(r_i)$ where
 
-$$r_i = || {\bf r}_i({\bf x}) ||
+$$r_i = \|\| {\bf r}_i({\bf x}) \|\|
 $$
 
 We write the objective function above as
