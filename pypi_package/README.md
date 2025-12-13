@@ -27,7 +27,7 @@ $$
 
 For instance for Normal distributed observation errors with standard deviation $\sigma$ we would have
 
-$$f({\bf r}_i) = \,\mathrm{e}^{-\frac{|| {\bf r}_i ||^2}{2\sigma^2}}
+$$f({\bf r}_i) = \\,\mathrm{e}^{-\frac{|| {\bf r}_i ||^2}{2\sigma^2}}
 $$
 
 The maximum likelihood estimator of ${\bf x}$ can be computed as 
