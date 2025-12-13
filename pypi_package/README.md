@@ -33,17 +33,17 @@ $$
 The maximum likelihood estimator of ${\bf x}$ can be computed as 
 
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{max}} \left( \prod_{i=1}^n f({\bf r}_i({\bf x})) \right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{max}} \left( \prod_{i=1}^n f({\bf r}_i({\bf x})) \right)
 $$
 
 or equivalently,
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( \sum_{i=1}^n - \log f({\bf r}_i({\bf x})) \right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n - \log f({\bf r}_i({\bf x})) \right)
 $$
 
 M-estimation generalises this method by substituting a different function into the above sum, so we instead compute
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( \sum_{i=1}^n \rho(|| {\bf r}_i({\bf x}) ||) \right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n \rho(|| {\bf r}_i({\bf x}) ||) \right)
 $$
 
 for some function $\rho(r_i)$ where
@@ -86,10 +86,10 @@ used for the iteration.
     
 We start with the Welsch influence function [2]. This uses a negative Gaussian:
 
-$$\rho(r) = \frac{\sigma^2}{2} \left( 1 - \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
+$$\rho(r) = \frac{\sigma^2}{2} \left( 1 - \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
 $$
 
-$$\psi(r) = \frac{d\rho(r)}{dr} = \frac{r}{2} \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
+$$\psi(r) = \frac{d\rho(r)}{dr} = \frac{r}{2} \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
 $$
 
 where the width $\sigma$ of the Gaussian is known as the "wavelength" of the Welsch influence function.
@@ -108,12 +108,12 @@ for ${\bf x}$ is soluble in closed form, given some "weights" assigned
 to the data points. In other words there is a (simple) algorithm that can be used to solve the optimisation problem
 
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( \sum_{i=1}^n w_i || {\bf z}_i - {\bf h}_i({\bf x}) ||^2)\right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( \sum_{i=1}^n w_i || {\bf z}_i - {\bf h}_i({\bf x}) ||^2)\right)
 $$
 
 or
 
-$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( F_{\text{LS}}({\bf x}) \right)
+$$\widehat{\bf x} = \underset{{\bf x}}{\text{arg}\\,\text{min}} \left( F_{\text{LS}}({\bf x}) \right)
 $$
 
 where
@@ -202,10 +202,10 @@ $$
 
 For the Welsch influence function we obtain
 
-$$\frac{1}{r_i} \psi(r_i) = \frac{1}{2} \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
+$$\frac{1}{r_i} \psi(r_i) = \frac{1}{2} \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
 $$
 
-$$\frac{1}{r_i^3} \left(r_i\frac{d^2\rho}{dr_i^2} - \psi(r_i) \right) = -\frac{1}{2\sigma^2} \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
+$$\frac{1}{r_i^3} \left(r_i\frac{d^2\rho}{dr_i^2} - \psi(r_i) \right) = -\frac{1}{2\sigma^2} \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}}
 $$
 
 We can solve the Gauss-Newton update equations to provide
@@ -629,7 +629,7 @@ the `SupGaussNewton` instance, although the derivative testing will work for oth
 
 This provides the class `WelschInfluenceFunc`, that implements the Welsch influence function, defined as
 
-$$\rho(r) = \frac{\sigma^2}{2} \left( 1 - \,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
+$$\rho(r) = \frac{\sigma^2}{2} \left( 1 - \\,\mathrm{e}^{-\frac{r^2}{2\sigma^2}} \right)
 $$
 
 with a single parameter $\sigma$. This is the simplest robust influence function.
