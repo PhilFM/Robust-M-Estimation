@@ -19,7 +19,7 @@ def gradient_func(a:float, b:float, optimiser_instance):
     a,AlB = optimiser_instance.weighted_derivs([a,b])
     return a
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     # data is a list of [x,y,z] triplets

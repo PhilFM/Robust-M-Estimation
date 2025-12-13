@@ -11,7 +11,7 @@ from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from robust_solver_apply import apply_to_data
 
-def main(test_run:bool, output_folder:str="../../Output", quick_run:bool=False):
+def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
     sigma_pop = 1.0
     p = 0.66666667
 
@@ -34,7 +34,7 @@ def main(test_run:bool, output_folder:str="../../Output", quick_run:bool=False):
             eff_rme_list = []
             data_dict = {}
             for outlierFraction in outlier_fraction_list:
-                output_file = '' # '../../Output/solver-' + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlierFraction)) + ".png"
+                output_file = '' # '../../output/solver-' + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlierFraction)) + ".png"
                 data_array,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,n_samples = apply_to_data(sigma_pop, p, xgtrange, n, n_samples_base, min_n_samples, outlierFraction, output_file=output_file, test_run=test_run)
 
                 outlier_dict = {}

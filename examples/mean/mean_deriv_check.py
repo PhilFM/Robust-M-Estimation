@@ -20,7 +20,7 @@ def objective_func(m, influence_func_instance):
 
 np.random.seed(0) # We want the numbers to be the same on each run
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     N = 10
     xgtrange = 10.0
     sigmaPop = 1.0

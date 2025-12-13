@@ -15,7 +15,7 @@ from line_fit import LineFit
 def lineFitFunc(a, b, optimiser_instance):
     return optimiser_instance.objective_func([a,b])
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     # data is a list of [weight, value] pairs
     data = np.array([[-1.0, 0.0], [-0.5, 0.0], [0.0, 0.0], [0.5, 0.0], [1.0, 0.0], # good data
                      [-1.0, 0.5]]) # bad data

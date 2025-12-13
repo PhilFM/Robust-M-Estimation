@@ -10,7 +10,7 @@ from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
 from trs import TRS
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     for test_idx in range(0,1):

@@ -63,7 +63,7 @@ def test_with_sigma(sigma: float, output_folder: str, test_run: bool):
     if not test_run:
         plt.show()
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     # with small error estimate we will fit to the good data only
     test_with_sigma(0.2, output_folder, test_run)
 

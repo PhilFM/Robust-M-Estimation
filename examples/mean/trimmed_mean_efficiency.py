@@ -9,7 +9,7 @@ if __name__ == "__main__":
 from trimmed_mean import trimmed_mean
 from weighted_mean import weighted_mean
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     sigma = 1.0
     nSamples = 3000
     smallVal = 1.e-10

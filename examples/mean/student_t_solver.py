@@ -12,7 +12,7 @@ from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from robust_solver_apply import apply_to_data
 
-def main(test_run:bool, output_folder:str="../../Output", quick_run:bool=False):
+def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
     sigma_pop = 1.0
     p = 0.5 # 33333333
 
@@ -37,7 +37,7 @@ def main(test_run:bool, output_folder:str="../../Output", quick_run:bool=False):
         eff_rme_list = []
         data_dict = {}
         for student_t_dof in student_t_dof_list:
-            output_file = '' #'../../Output/test.png' if student_t_dof == 2 else ''
+            output_file = '' #'../../output/test.png' if student_t_dof == 2 else ''
             data_array,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,n_samples = apply_to_data(sigma_pop, p, xgtrange, n, n_samples_base, min_n_samples, 0.0, student_t_dof=student_t_dof, output_file=output_file, test_run=test_run)
 
             outlier_dict = {}

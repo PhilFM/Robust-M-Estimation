@@ -16,7 +16,7 @@ from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
 from gncs_robust_mean import RobustMean
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     sigma_base = 1.0
     sigma_limit = 500.0
     num_sigma_steps = 100

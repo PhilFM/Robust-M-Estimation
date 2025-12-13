@@ -9,7 +9,7 @@ if __name__ == "__main__":
 from winsorised_mean import winsorised_mean
 from weighted_mean import weighted_mean
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     sigma = 1.0
     n_samples = 3000
     small_val = 1.e-10

@@ -57,7 +57,7 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
     if not test_run:
         plt.show()
     
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     random.seed(0) # We want the numbers to be the same on each run
     N = 1000
     sigmaPop = 1.0

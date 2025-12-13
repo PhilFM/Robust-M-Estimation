@@ -13,7 +13,7 @@ from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
 
 from gncs_robust_mean import RobustMean
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     # configuration
     showSolution = True
 

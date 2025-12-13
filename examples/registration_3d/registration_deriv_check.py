@@ -12,7 +12,7 @@ from gnc_smoothie_philfm.check_derivs import check_derivs
 
 from point_registration import PointRegistration
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     n = 10

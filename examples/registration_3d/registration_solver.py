@@ -43,7 +43,7 @@ def plot_differences(diffs_gnc_welsch, diffs_pseudo_huber, diffs_gnc_irls_p0, di
     if not test_run:
         plt.show()
     
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
     N = 1000
     outlierRatio = 0.0 #0.5

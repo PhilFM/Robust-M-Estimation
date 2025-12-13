@@ -11,7 +11,7 @@ from gnc_smoothie_philfm.check_derivs import check_derivs
 
 from plane_fit import PlaneFit
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     all_good = True

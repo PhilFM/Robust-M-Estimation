@@ -54,7 +54,7 @@ def merge(intervals) -> [[float,float]]:
 
 def flat_welsch_mean(data, sigma, weight=None, scale=None,
                      max_niterations=100, residual_tolerance=1.e-8, diff_thres=1.e-12, print_warnings=False, m_gt=None,
-                     output_folder:str="../../Output", test_run:bool=False) -> float:
+                     output_folder:str="../../output", test_run:bool=False) -> float:
     # build +/- sigma intervals around data points
     intervals = [] #np.zeros((0,2))
     for d in data:

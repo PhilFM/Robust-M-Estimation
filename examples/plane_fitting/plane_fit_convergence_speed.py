@@ -42,7 +42,7 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
     if not test_run:
         plt.show()
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
     for test_idx in range(0,10):
         model_gt = [0.2, 0.3, -2.0]

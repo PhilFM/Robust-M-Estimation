@@ -75,7 +75,7 @@ def plot_result(data, weight,
     if not test_run:
         plt.show()
     
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     for test_idx in range(0,10):

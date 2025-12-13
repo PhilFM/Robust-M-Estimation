@@ -58,7 +58,7 @@ def plot_result(optimiser_instance, u_values:list, label:str, output_folder, fil
     if not test_run:
         plt.show()
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     model_instance = RobustMean()
 
     p = 0.0

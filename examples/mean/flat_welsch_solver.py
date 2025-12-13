@@ -13,7 +13,7 @@ from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from flat_welsch_mean import flat_welsch_mean
 from gncs_robust_mean import RobustMean
 
-def main(test_run:bool, output_folder:str="../../Output"):
+def main(test_run:bool, output_folder:str="../../output"):
     # configuration
     showSolution = True
     showGradient = False

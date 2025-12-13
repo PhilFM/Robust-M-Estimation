@@ -19,21 +19,21 @@ import mean.gnc_irls_p_solver
 import mean.trimmed_mean_efficiency
 import mean.winsorised_mean_efficiency
 
-mean.mean_deriv_check.main(test_run=True, output_folder="../Output")
-mean.mean_convergence_speed.main(test_run=True, output_folder="../Output")
-mean.majorize_examples.main(test_run=True, output_folder="../Output")
-mean.compare_influence.main(test_run=True, output_folder="../Output")
-mean.mean_check.main(test_run=True, output_folder="../Output")
-mean.student_t_solver.main(test_run=True, output_folder="../Output", quick_run=True)
-mean.robust_solver.main(test_run=True, output_folder="../Output", quick_run=True)
-mean.welsch_solver.main(test_run=True, output_folder="../Output")
-mean.welsch_efficiency.main(test_run=True, output_folder="../Output")
-mean.flat_welsch_solver.main(test_run=True, output_folder="../Output")
-mean.pseudo_huber_solver.main(test_run=True, output_folder="../Output")
-mean.geman_mcclure_solver.main(test_run=True, output_folder="../Output")
-mean.gnc_irls_p_solver.main(test_run=True, output_folder="../Output")
-mean.trimmed_mean_efficiency.main(test_run=True, output_folder="../Output")
-mean.winsorised_mean_efficiency.main(test_run=True, output_folder="../Output")
+mean.mean_deriv_check.main(test_run=True, output_folder="../output")
+mean.mean_convergence_speed.main(test_run=True, output_folder="../output")
+mean.majorize_examples.main(test_run=True, output_folder="../output")
+mean.compare_influence.main(test_run=True, output_folder="../output")
+mean.mean_check.main(test_run=True, output_folder="../output")
+mean.student_t_solver.main(test_run=True, output_folder="../test_output", quick_run=True)
+mean.robust_solver.main(test_run=True, output_folder="../test_output", quick_run=True)
+mean.welsch_solver.main(test_run=True, output_folder="../output")
+mean.welsch_efficiency.main(test_run=True, output_folder="../output")
+mean.flat_welsch_solver.main(test_run=True, output_folder="../output")
+mean.pseudo_huber_solver.main(test_run=True, output_folder="../output")
+mean.geman_mcclure_solver.main(test_run=True, output_folder="../output")
+mean.gnc_irls_p_solver.main(test_run=True, output_folder="../output")
+mean.trimmed_mean_efficiency.main(test_run=True, output_folder="../output")
+mean.winsorised_mean_efficiency.main(test_run=True, output_folder="../output")
 
 # line fitting tests
 sys.path.append("line_fitting")
@@ -42,10 +42,10 @@ import line_fitting.line_fit_solver
 import line_fitting.line_fit_convergence_speed
 import line_fitting.line_fit_param_plot
 
-line_fitting.line_fit_deriv_check.main(test_run=True, output_folder="../Output")
-line_fitting.line_fit_solver.main(test_run=True, output_folder="../Output")
-line_fitting.line_fit_convergence_speed.main(test_run=True, output_folder="../Output")
-line_fitting.line_fit_param_plot.main(test_run=True, output_folder="../Output")
+line_fitting.line_fit_deriv_check.main(test_run=True, output_folder="../output")
+line_fitting.line_fit_solver.main(test_run=True, output_folder="../output")
+line_fitting.line_fit_convergence_speed.main(test_run=True, output_folder="../output")
+line_fitting.line_fit_param_plot.main(test_run=True, output_folder="../output")
 
 # image translation, rotation and scale tests
 sys.path.append("image_trs")
@@ -53,14 +53,14 @@ import image_trs.trs_solver
 import image_trs.trs_convergence_speed
 import image_trs.trs_derivative_check
 
-image_trs.trs_solver.main(test_run=True, output_folder="../Output")
-image_trs.trs_convergence_speed.main(test_run=True, output_folder="../Output")
-image_trs.trs_derivative_check.main(test_run=True, output_folder="../Output")
+image_trs.trs_solver.main(test_run=True, output_folder="../output")
+image_trs.trs_convergence_speed.main(test_run=True, output_folder="../output")
+image_trs.trs_derivative_check.main(test_run=True, output_folder="../output")
 
 # 3D point cloud registration tests
 sys.path.append("registration_3d")
 import registration_3d.registration_solver
 import registration_3d.registration_deriv_check
 
-registration_3d.registration_solver.main(test_run=True, output_folder="../Output")
-registration_3d.registration_deriv_check.main(test_run=True, output_folder="../Output")
+registration_3d.registration_solver.main(test_run=True, output_folder="../output")
+registration_3d.registration_deriv_check.main(test_run=True, output_folder="../output")
