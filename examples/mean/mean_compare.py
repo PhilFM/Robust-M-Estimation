@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
-from robust_solver_apply import apply_to_data
+from mean_compare_apply import mean_compare_apply
 
 def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
     sigma_pop = 1.0
@@ -33,9 +33,9 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
             eff_gncirlsp_list = []
             eff_rme_list = []
             data_dict = {}
-            for outlierFraction in outlier_fraction_list:
-                output_file = '' # '../../output/solver-' + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlierFraction)) + ".png"
-                data_array,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,n_samples = apply_to_data(sigma_pop, p, xgtrange, n, n_samples_base, min_n_samples, outlierFraction, output_file=output_file, test_run=test_run)
+            for outlier_fraction in outlier_fraction_list:
+                output_file = '' # '../../output/solver-' + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlier_fraction)) + ".png"
+                data_array,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,n_samples = mean_compare_apply(sigma_pop, p, xgtrange, n, n_samples_base, min_n_samples, outlier_fraction, output_file=output_file, test_run=test_run)
 
                 outlier_dict = {}
                 outlier_dict['data'] = data_array
@@ -92,7 +92,7 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
                 efficiency_dict['RME'] = eff
 
                 outlier_dict['efficiency'] = efficiency_dict
-                data_dict['outlierFraction-'+str(outlierFraction)] = outlier_dict
+                data_dict['outlier_fraction-'+str(outlier_fraction)] = outlier_dict
 
             data_dict['n_samples'] = n_samples
             jstr = json.dumps(data_dict)
@@ -124,7 +124,7 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
                 plt.show()
 
     if test_run:
-        print("robust_solver OK")
+        print("mean_compare OK")
 
 if __name__ == "__main__":
     main(True) # test_run

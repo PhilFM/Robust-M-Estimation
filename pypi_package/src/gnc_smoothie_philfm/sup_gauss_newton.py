@@ -273,6 +273,17 @@ class SupGaussNewton(BaseIRLS):
 
         self.final_model = model
         self.final_model_ref = model_ref
+        weight = [None] * self._dsize
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                weight[didx] = np.copy(self._weight[didx])
+
+        #print("weight before",weight[0])
+        self._calc_weights(model, weight, model_ref)
+        #print("weight after",weight[0])
+        self.final_weight = weight[0]
+        self.final_weight2 = weight[1]
+        self.final_weight3 = weight[2]
 
         if self._debug:
             self.debug_n_iterations = itn + 1

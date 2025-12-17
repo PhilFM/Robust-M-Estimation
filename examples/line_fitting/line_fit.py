@@ -1,6 +1,7 @@
 import numpy as np
 
 # Line model is y = a*x + b
+# This class is for linear regression
 class LineFit:
     def __init__(self):
         pass

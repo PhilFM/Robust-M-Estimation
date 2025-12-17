@@ -8,7 +8,7 @@ from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
-from trs import TRS
+from trs_welsch import TRSWelsch
 
 def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
@@ -34,16 +34,14 @@ def main(test_run:bool, output_folder:str="../../output"):
         if not test_run:
             print("data=",data)
 
-        influence_func_instance = WelschInfluenceFunc()
-        param_instance = GNC_WelschParams(influence_func_instance, 0.2, 10.0, 50) # sigma_base, sigma_limit, num_sigma_steps
-        sup_gn_instance = SupGaussNewton(param_instance, TRS(), data, max_niterations=100, debug=True)
-        if sup_gn_instance.run():
-            model = sup_gn_instance.final_model
+        trs = TRSWelsch(0.2, 10.0, 50, max_niterations=100, debug=True)
+        if trs.run(data):
+            model = trs.final_model
 
         if not test_run:
             print("model_gt=",model_gt,"model=",model)
             print("modelDiff=",model-model_gt)
-            print("n_iterations:",sup_gn_instance.debug_n_iterations)
+            print("n_iterations:",trs.debug_n_iterations)
 
     if test_run:
         print("trs_solver OK")

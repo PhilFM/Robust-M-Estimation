@@ -235,3 +235,16 @@ class BaseIRLS:
                     )
 
         return -np.linalg.solve(Atot, atot)
+
+    def _calc_weights(self, model, weight, model_ref=None) -> None:
+        self._model_instance.cache_model(model, model_ref=model_ref)
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                model_residual_func = self._get_model_residual_func(didx)
+                for i, (d, s) in enumerate(
+                        zip(self._data[didx], self._scale[didx], strict=True)
+                ):
+                    residual = model_residual_func(d)
+                    rsqr = residual @ residual
+                    weight[didx][i] = self._weight[didx][i] * self._param_instance.influence_func_instance.rho(rsqr, s)
+

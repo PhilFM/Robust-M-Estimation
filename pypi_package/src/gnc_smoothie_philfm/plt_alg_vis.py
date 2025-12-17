@@ -84,6 +84,26 @@ model_values[key]["colour"] = "deepskyblue"
 model_values[key]["linestyle"] = (0, (4, 1))
 model_values[key]["lw"] = 1.0
 
+key = ("RANSAC", "", "")
+model_values[key] = {}
+model_values[key]["label"] = "RANSAC"
+model_values[key]["colour"] = "darkorange"
+model_values[key]["linestyle"] = (0, (2, 2))
+model_values[key]["lw"] = 1.0
+
+key = ("Hough", "", "")
+model_values[key] = {}
+model_values[key]["label"] = "Hough transform"
+model_values[key]["colour"] = "deepskyblue"
+model_values[key]["linestyle"] = (0, (4, 1))
+model_values[key]["lw"] = 1.0
+
+key = ("LS", "", "")
+model_values[key] = {}
+model_values[key]["label"] = "Least squares"
+model_values[key]["colour"] = "darkorange"
+model_values[key]["linestyle"] = (0, (2, 2))
+model_values[key]["lw"] = 1.0
 
 def gncs_draw_vline(plt,
                     x: float,
@@ -132,6 +152,8 @@ def gncs_draw_curve(
     hlight_x_value: float = None,
     ax=None,
     lw: float = None,
+    add_label: bool = True,
+    markersize: float = 2.0
 ):
     values = model_values[key]
     if xvalues is None:
@@ -140,18 +162,18 @@ def gncs_draw_curve(
                 list(range(len(vals))),
                 vals,
                 color=values["colour"],
-                label=values["label"],
+                label=values["label"] if add_label else None,
                 lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
                 marker="o",
-                markersize=2.0,
+                markersize=markersize,
             )
         else:
             plt.plot(
                 list(range(len(vals))),
                 vals,
                 color=values["colour"],
-                label=values["label"],
+                label=values["label"] if add_label else None,
                 lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
             )
@@ -161,18 +183,18 @@ def gncs_draw_curve(
                 xvalues,
                 vals,
                 color=values["colour"],
-                label=values["label"],
+                label=values["label"] if add_label else None,
                 lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
                 marker="o",
-                markersize=2.0,
+                markersize=markersize,
             )
         else:
             plt.plot(
                 xvalues,
                 vals,
                 color=values["colour"],
-                label=values["label"],
+                label=values["label"] if add_label else None,
                 lw=values["lw"] if lw is None else lw,
                 linestyle=values["linestyle"],
             )

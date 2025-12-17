@@ -49,8 +49,8 @@ class IRLS(BaseIRLS):
             debug=debug,
         )
 
-    def __residual_inflence(
-        self, residual: np.array, scale, small_diff: float = None
+    def __residual_influence(
+        self, residual: np.array, scale, small_diff: float = 1.0e-5
     ) -> float:
         rsqr = residual @ residual
         if self.numeric_derivs_influence:
@@ -67,17 +67,15 @@ class IRLS(BaseIRLS):
             return self._param_instance.influence_func_instance.rhop(rsqr, scale)
 
     def __update_weights(self, model, weight, model_ref=None) -> None:
-        small_diff = 1.0e-5  # in case numerical differentiation is specified
         self._model_instance.cache_model(model, model_ref=model_ref)
+        obj_func_sign = self._param_instance.influence_func_instance.objective_func_sign()
         for didx in range(self._dsize):
             if self._data[didx] is not None:
                 model_residual_func = self._get_model_residual_func(didx)
                 for i, (d, s) in enumerate(
                         zip(self._data[didx], self._scale[didx], strict=True)
                 ):
-                    weight[didx][i] = self._weight[didx][i] * self.__residual_inflence(
-                        model_residual_func(d), s
-                    )
+                    weight[didx][i] = self._weight[didx][i] * obj_func_sign * self.__residual_influence(model_residual_func(d), s)
 
     def run(self) -> bool:
         self._param_instance.reset()
@@ -178,6 +176,10 @@ class IRLS(BaseIRLS):
         # finish with parameters in correct final model
         self.final_model = model
         self.final_model_ref = model_ref
+        self._calc_weights(model, weight, model_ref)
+        self.final_weight = weight[0]
+        self.final_weight2 = weight[1]
+        self.final_weight3 = weight[2]
 
         if self._debug:
             self.debug_n_iterations = itn + 1

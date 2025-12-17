@@ -16,7 +16,7 @@ from line_fit import LineFit
 
 def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                      diffs_welsch_irls, diff_alpha_welsch_irls,
-                     test_run:bool, output_folder:str):
+                     test_idx: int, test_run:bool, output_folder:str):
     if not test_run:
         print("diffs_welsch_sup_gn:",diffs_welsch_sup_gn)
         print("diffs_welsch_irls:",diffs_welsch_irls)
@@ -28,32 +28,43 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
     ax.set_xlim(0,int(max(len(diffs_welsch_sup_gn),len(diffs_welsch_irls))))
 
     idx = np.argmax(diff_alpha_welsch_sup_gn)
-    gncs_draw_curve(plt, diffs_welsch_sup_gn[0:idx+1], ("SupGN", "Welsch", "GNC_Welsch"), lw=0.2, xvalues = np.arange(0,idx+1))
-    gncs_draw_curve(plt, diffs_welsch_sup_gn[idx:],    ("SupGN", "Welsch", "GNC_Welsch"), xvalues = np.arange(idx,len(diffs_welsch_sup_gn)))
+    if idx > 0:
+        gncs_draw_curve(plt, diffs_welsch_sup_gn[0:idx+1], ("SupGN", "Welsch", "GNC_Welsch"),
+                        lw=0.2, xvalues = np.arange(0,idx+1), add_label=False, markersize=1.0)
+
+    gncs_draw_curve(plt, diffs_welsch_sup_gn[idx:], ("SupGN", "Welsch", "GNC_Welsch"),
+                    xvalues = np.arange(idx,len(diffs_welsch_sup_gn)))
+
     idx = np.argmax(diff_alpha_welsch_irls)
-    gncs_draw_curve(plt, diffs_welsch_irls[0:idx+1], ("IRLS",  "Welsch", "GNC_Welsch"), lw=0.2, xvalues = np.arange(0,idx+1))
-    gncs_draw_curve(plt, diffs_welsch_irls[idx:],    ("IRLS",  "Welsch", "GNC_Welsch"), xvalues = np.arange(idx,len(diffs_welsch_irls)))
+    if idx > 0:
+        gncs_draw_curve(plt, diffs_welsch_irls[0:idx+1], ("IRLS",  "Welsch", "GNC_Welsch"),
+                        lw=0.2, xvalues = np.arange(0,idx+1), add_label=False, markersize=1.0)
+
+    gncs_draw_curve(plt, diffs_welsch_irls[idx:], ("IRLS",  "Welsch", "GNC_Welsch"),
+                    xvalues = np.arange(idx,len(diffs_welsch_irls)))
 
     ax.set_xlabel(r'Iteration count' )
     ax.set_ylabel(r'log(difference)')
 
     plt.legend()
-    plt.savefig(os.path.join(output_folder, "line_fit_convergence_speed.png"), bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "line_fit_convergence_speed_" + str(test_idx+1) + ".png"), bbox_inches='tight')
     if not test_run:
         plt.show()
 
 def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
-    for test_idx in range(0,10):
-        model_gt = [0.2, -2.0]
-        n = 10
-        data = np.zeros([n,2])
-        noiseLevel = 0.4
-        outlier_fraction = 0.0
+    with_gnc = True
+    model_gt = [2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5)]
+    n = 100
+    data = np.zeros([n,2])
+    noise_level = 0.4
+    outlier_fraction = 0.3
+    n0 = int((1.0-outlier_fraction)*n+0.5)
+    for test_idx in range(0,4):
         for i in range(n):
             x = 0.1*i
-            if i < (1.0-outlier_fraction)*n:
-                data[i] = (x, model_gt[0]*x+model_gt[1] + noiseLevel*2.0*(np.random.rand()-0.5))
+            if i < n0:
+                data[i] = (x, model_gt[0]*x+model_gt[1] + noise_level*2.0*(np.random.rand()-0.5))
             else:
                 # add outlier
                 data[i] = (x, 10.0*2.0*(np.random.rand()-0.5))
@@ -63,7 +74,7 @@ def main(test_run:bool, output_folder:str="../../output"):
 
         diff_thres = 1.e-13
         sigma_base = 0.2
-        sigma_limit = 10.0
+        sigma_limit = 10.0 if with_gnc else sigma_base
         num_sigma_steps = 10
         max_niterations = 100
         print_warnings = False
@@ -75,20 +86,25 @@ def main(test_run:bool, output_folder:str="../../output"):
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
         sup_gn_instance = SupGaussNewton(param_instance, LineFit(), data,
                                          max_niterations=max_niterations, diff_thres=diff_thres,
-                                         print_warnings=print_warnings, model_start=model_start, debug=True)
+                                         print_warnings=print_warnings,
+                                         model_start = None if with_gnc else model_start,
+                                         debug=True)
         if sup_gn_instance.run():
             diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(sup_gn_instance.debug_diff_alpha)
 
         irls_instance = IRLS(param_instance, LineFit(), data,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=print_warnings, model_start=model_start, debug=True)
+                             print_warnings=print_warnings,
+                             model_start = None if with_gnc else model_start,
+                             debug=True)
         if irls_instance.run():
             diffs_welsch_irls = irls_instance.debug_diffs
             diff_alpha_welsch_irls = np.array(sup_gn_instance.debug_diff_alpha)
     
         plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
-                         diffs_welsch_irls, diff_alpha_welsch_irls, test_run, output_folder)
+                         diffs_welsch_irls, diff_alpha_welsch_irls,
+                         test_idx, test_run, output_folder)
 
     if test_run:
         print("line_fit_convergence_speed OK")

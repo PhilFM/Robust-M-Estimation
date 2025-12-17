@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
-from robust_solver_apply import apply_to_data
+from mean_compare_apply import mean_compare_apply
 
 def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
     sigma_pop = 1.0
@@ -38,7 +38,7 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
         data_dict = {}
         for student_t_dof in student_t_dof_list:
             output_file = '' #'../../output/test.png' if student_t_dof == 2 else ''
-            data_array,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,n_samples = apply_to_data(sigma_pop, p, xgtrange, n, n_samples_base, min_n_samples, 0.0, student_t_dof=student_t_dof, output_file=output_file, test_run=test_run)
+            data_array,mgt,sdgncwelsch,sdmean,sdhuber,sdtrimmed,sdmedian,sdgncirlsp,sdrme,n_samples = mean_compare_apply(sigma_pop, p, xgtrange, n, n_samples_base, min_n_samples, 0.0, student_t_dof=student_t_dof, output_file=output_file, test_run=test_run)
 
             outlier_dict = {}
             outlier_dict['data'] = data_array
@@ -128,7 +128,7 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
             plt.show()
 
     if test_run:
-        print("student_t_solver OK")
+        print("mean_compare_student_t OK")
 
 if __name__ == "__main__":
     main(False) # test_run

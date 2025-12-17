@@ -1,6 +1,7 @@
 import numpy as np
 
 # Plane model is z = a*x + b*y + c
+# This class is for linear regression
 class PlaneFit:
     def __init__(self):
         pass

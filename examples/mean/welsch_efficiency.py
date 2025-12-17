@@ -16,7 +16,7 @@ from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
 from gncs_robust_mean import RobustMean
 
-def main(test_run:bool, output_folder:str="../../output"):
+def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
     sigma_base = 1.0
     sigma_limit = 500.0
     num_sigma_steps = 100
@@ -65,7 +65,7 @@ def main(test_run:bool, output_folder:str="../../output"):
     pmax = 1.0
     splist = np.linspace(0, pmax, num=30)
 
-    nSamples = 30 if test_run else 3000
+    n_samples = 30 if quick_run else 3000
 
     n_array = [5,10,50,100]
     col_array = ['magenta','r','g','cyan']
@@ -84,7 +84,7 @@ def main(test_run:bool, output_folder:str="../../output"):
             small_mean_var_est = 0.0
             small_mean_var_num_est = 0.0
             small_mean_var_den_est = 0.0
-            for test_idx in range(nSamples):
+            for test_idx in range(n_samples):
                 data = np.zeros((n,1))
                 weight = np.zeros(n)
                 for i in range(n):
@@ -121,19 +121,19 @@ def main(test_run:bool, output_folder:str="../../output"):
                 small_mean_var_num_est += sxemx22s2*sxemx22s2
                 small_mean_var_den_est += sfid*sfid
 
-            semx2s2 /= nSamples*n
-            sx2emx2s2 /= nSamples*n
-            sx4emx2s2 /= nSamples*n
-            semx22s2 /= nSamples*n
-            sx2emx22s2 /= nSamples*n
-            small_mean_var /= nSamples
-            small_mean_var_est /= nSamples
-            small_mean_var_num_est /= nSamples
-            small_mean_var_den_est /= nSamples
+            semx2s2 /= n_samples*n
+            sx2emx2s2 /= n_samples*n
+            sx4emx2s2 /= n_samples*n
+            semx22s2 /= n_samples*n
+            sx2emx22s2 /= n_samples*n
+            small_mean_var /= n_samples
+            small_mean_var_est /= n_samples
+            small_mean_var_num_est /= n_samples
+            small_mean_var_den_est /= n_samples
 
             p = sigma_pop/sigma_base
-            var = n*mstot/nSamples
-            lsvar = n*lsstot/nSamples
+            var = n*mstot/n_samples
+            lsvar = n*lsstot/n_samples
             if not test_run:
                 print("sigma_pop=",sigma_pop," var=",var, " est=",sigma_base*sigma_base*p*p*math.sqrt(1.0+p*p)," lsvar",lsvar," est=",sigma_base*sigma_base*p*p)
 
