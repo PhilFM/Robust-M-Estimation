@@ -9,9 +9,8 @@ def check_derivs(
     print_diffs: bool = False,
     print_derivs: bool = False,
 ) -> bool:
-
     # ensure that residual_size is filled in
-    v = optimiser_instance.objective_func(model, model_ref=model_ref)
+    optimiser_instance.objective_func(model, model_ref=model_ref)
 
     # test at different lambda values to make sure all derivatives work
     for lambda_val in (1.0, 0.5, 0.0):

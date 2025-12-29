@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import numpy.typing as npt
 import time
 
 from .base_irls import BaseIRLS
@@ -10,17 +11,17 @@ class SupGaussNewton(BaseIRLS):
         self,
         param_instance,
         model_instance,
-        data,
-        weight=None,
-        scale=None,
-        data2=None,
-        weight2=None,
-        scale2=None,
-        data3=None,
-        weight3=None,
-        scale3=None,
+        data: npt.ArrayLike,
+        weight: npt.ArrayLike = None,
+        scale: npt.ArrayLike = None,
+        data2: npt.ArrayLike = None,
+        weight2: npt.ArrayLike = None,
+        scale2: npt.ArrayLike = None,
+        data3: npt.ArrayLike = None,
+        weight3: npt.ArrayLike = None,
+        scale3: npt.ArrayLike = None,
         numeric_derivs_model: bool = False,
-        numeric_derivs_influence: bool =False,
+        numeric_derivs_influence: bool = False,
         max_niterations: int = 50,
         residual_tolerance: float = 1.0e-8,
         lambda_start: float = 1.0,
@@ -28,11 +29,12 @@ class SupGaussNewton(BaseIRLS):
         lambda_scale: float = 1.2,
         diff_thres: float = 1.0e-10,
         print_warnings: bool = False,
-        model_start = None,
-        model_ref_start = None,
+        model_start: npt.ArrayLike = None,
+        model_ref_start=None,
         debug: bool = False,
     ):
-        BaseIRLS.__init__(self,
+        BaseIRLS.__init__(
+            self,
             param_instance,
             model_instance,
             data,
@@ -59,7 +61,7 @@ class SupGaussNewton(BaseIRLS):
         self.__lambda_scale = lambda_scale
 
     def __calc_influence_func_derivatives(
-        self, residual: np.array, s: float, small_diff: float = 1.0e-5
+        self, residual: np.ndarray, s: float, small_diff: float = 1.0e-5
     ) -> (float, float):  # scale
         rsqr = residual @ residual
         r = math.sqrt(rsqr)
@@ -72,15 +74,11 @@ class SupGaussNewton(BaseIRLS):
             )  # scale
             rho_deriv = 0.5 * (rho_p - rho_n) / small_diff
             rhop = rho_deriv / r
-            rho_c = self._param_instance.influence_func_instance.rho(
-                r * r, s
-            )  # scale
+            rho_c = self._param_instance.influence_func_instance.rho(r * r, s)  # scale
             rho_2nd_deriv = (rho_n + rho_p - 2.0 * rho_c) / (small_diff * small_diff)
             Bterm = (r * rho_2nd_deriv - rho_deriv) / (r * r * r)
         else:
-            rhop = self._param_instance.influence_func_instance.rhop(
-                rsqr, 1.0
-            )  # scale
+            rhop = self._param_instance.influence_func_instance.rhop(rsqr, 1.0)  # scale
             Bterm = self._param_instance.influence_func_instance.Bterm(
                 rsqr, 1.0
             )  # scale
@@ -89,14 +87,16 @@ class SupGaussNewton(BaseIRLS):
 
     # weighted_derivs is public to allow derivatives to be checked
     def weighted_derivs(
-        self, model, lambda_val: float, model_ref=None
+        self, model: npt.ArrayLike, lambda_val: float, model_ref=None
     ) -> (np.array, np.array):
         # initialize residual_size
-        self._model_instance.cache_model(model, model_ref = model_ref)
+        self._model_instance.cache_model(model, model_ref=model_ref)
         self._initialize_residual_size_if_necessary()
 
         small_diff = 1.0e-5
-        residual_arr, residual_gradient_arr = self._calc_residual_derivatives(model, model_ref = model_ref, small_diff = small_diff)
+        residual_arr, residual_gradient_arr = self._calc_residual_derivatives(
+            model, model_ref=model_ref, small_diff=small_diff
+        )
 
         atot = np.zeros(len(model))
         AlBtot = np.zeros((len(model), len(model)))
@@ -104,7 +104,9 @@ class SupGaussNewton(BaseIRLS):
             if self._data[didx] is not None:
                 residual = residual_arr[didx]
                 residual_gradient = residual_gradient_arr[didx]
-                for i,(w,s) in enumerate(zip(self._weight[didx], self._scale[didx], strict=True)):
+                for i, (w, s) in enumerate(
+                    zip(self._weight[didx], self._scale[didx], strict=True)
+                ):
                     grad = np.matmul(np.transpose(residual_gradient[i]), residual[i])
                     rhop, Bterm = self.__calc_influence_func_derivatives(
                         residual[i], s, small_diff=small_diff
@@ -112,7 +114,10 @@ class SupGaussNewton(BaseIRLS):
 
                     atot += w * rhop * grad
                     AlBtot += w * (
-                        rhop * np.matmul(np.transpose(residual_gradient[i]), residual_gradient[i])
+                        rhop
+                        * np.matmul(
+                            np.transpose(residual_gradient[i]), residual_gradient[i]
+                        )
                         + lambda_val * Bterm * np.outer(grad, grad)
                     )
 
@@ -169,7 +174,7 @@ class SupGaussNewton(BaseIRLS):
             model_refOld = model_ref
             a, AlB = self.weighted_derivs(model_old, lambda_val, model_ref=model_ref)
             if self._debug:
-                self.debug_weighted_derivs_time += time.time()-start_time
+                self.debug_weighted_derivs_time += time.time() - start_time
                 start_time = time.time()
 
             try:
@@ -185,7 +190,7 @@ class SupGaussNewton(BaseIRLS):
                 continue
 
             if self._debug:
-                self.debug_solve_time += time.time()-start_time
+                self.debug_solve_time += time.time() - start_time
 
             model -= at
             if callable(update_model_ref):
@@ -197,7 +202,7 @@ class SupGaussNewton(BaseIRLS):
                     model = model_old
                     model_ref = model_refOld
                     lambda_val /= self.__lambda_scale
-                    print("Aborting here new lambda=",lambda_val)
+                    print("Aborting here new lambda=", lambda_val)
                     continue
 
             if self._diff_thres is not None:
@@ -262,7 +267,7 @@ class SupGaussNewton(BaseIRLS):
             if self._debug:
                 self.debug_model_list.append(
                     (
-                        (1+itn) / (self._max_niterations - 1),  # alpha
+                        (1 + itn) / (self._max_niterations - 1),  # alpha
                         np.copy(model),
                     )
                 )
@@ -278,15 +283,13 @@ class SupGaussNewton(BaseIRLS):
             if self._data[didx] is not None:
                 weight[didx] = np.copy(self._weight[didx])
 
-        #print("weight before",weight[0])
-        self._calc_weights(model, weight, model_ref)
-        #print("weight after",weight[0])
+        self._update_weights(model, weight, model_ref)
         self.final_weight = weight[0]
         self.final_weight2 = weight[1]
         self.final_weight3 = weight[2]
 
         if self._debug:
             self.debug_n_iterations = itn + 1
-            self.debug_total_time = time.time()-start_time_total
+            self.debug_total_time = time.time() - start_time_total
 
         return all_good

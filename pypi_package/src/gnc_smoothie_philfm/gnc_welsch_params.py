@@ -31,17 +31,26 @@ class GNC_WelschParams:
         self.reset(False)
 
     def reset(self, init: bool = True) -> None:
-        self.influence_func_instance.sigma = self.__sigma_limit if init else self.__sigma_base
+        self.influence_func_instance.sigma = (
+            self.__sigma_limit if init else self.__sigma_base
+        )
         self.__step = 0
 
     def n_steps(self) -> int:
         return self.__num_sigma_steps
 
     def alpha(self) -> float:
-        return self.__step/self.__num_sigma_steps if self.influence_func_instance.sigma > self.__sigma_base else 1.0
+        return (
+            self.__step / self.__num_sigma_steps
+            if self.influence_func_instance.sigma > self.__sigma_base
+            else 1.0
+        )
 
     # update sigma to a lower value
     def increment(self) -> None:
-        self.__step = min(1+self.__step, self.__num_sigma_steps)
-        self.influence_func_instance.sigma = self.__sigma_base if self.__step >= self.__num_sigma_steps else self.__beta * self.influence_func_instance.sigma
-
+        self.__step = min(1 + self.__step, self.__num_sigma_steps)
+        self.influence_func_instance.sigma = (
+            self.__sigma_base
+            if self.__step >= self.__num_sigma_steps
+            else self.__beta * self.influence_func_instance.sigma
+        )

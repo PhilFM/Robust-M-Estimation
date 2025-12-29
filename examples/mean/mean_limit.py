@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import math
 import os
 
 if __name__ == "__main__":
@@ -8,15 +7,11 @@ if __name__ == "__main__":
     sys.path.append("../../pypi_package/src")
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.irls import IRLS
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gncs_robust_mean import RobustMean
 
 # Welsch
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-
-from mean_welsch import MeanWelsch
 
 def objective_func(m, optimiser_instance):
     return optimiser_instance.objective_func([m])
@@ -37,7 +32,6 @@ def main(test_run:bool, output_folder:str="../../output"):
     # data generation
     sigma_pop = 0.2 # population distribution standard deviation
     n_points = 3
-    mean_gt = 3.0
     x_offset = 3.0
     x_range = 10.0
     data = np.zeros((n_points,1))
@@ -60,7 +54,6 @@ def main(test_run:bool, output_folder:str="../../output"):
     sigma_base = sigma_pop/p
     sigma_limit = data[n_points-1][0] - data[0][0]
     num_sigma_steps = 20
-    max_niterations = 50
 
     model_instance = RobustMean()
     param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit,

@@ -36,7 +36,8 @@ class TRSWelsch:
                                             print_warnings=self.__print_warnings,
                                             debug=self.__debug)
         if optimiser_instance.run():
-            self.final_model = optimiser_instance.final_model
+            self.final_trs = optimiser_instance.final_model
+            self.final_weight = optimiser_instance.final_weight
             if self.__debug:
                 self.debug_model_list = optimiser_instance.debug_model_list
                 self.debug_weighted_derivs_time = optimiser_instance.debug_weighted_derivs_time

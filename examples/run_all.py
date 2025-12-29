@@ -1,20 +1,23 @@
 import sys
 sys.path.append("../pypi_package/src")
 
+# miscellaneous tests
+import misc.erf_check
+import misc.welsch_majorize_check
+
+misc.erf_check.main(test_run=True, output_folder="../test_output")
+misc.welsch_majorize_check.main(test_run=True, output_folder="../test_output")
+
 # robust mean estimation tests
 sys.path.append("mean")
 import mean.mean_deriv_check
 import mean.mean_convergence_speed
 import mean.majorize_examples
-import mean.welsch_majorize_check
 import mean.compare_influence
 import mean.mean_check
-import mean.mean_welsch_solver
+import mean.mean_solver
 import mean.welsch_efficiency
 import mean.flat_welsch_solver
-import mean.mean_pseudo_huber_solver
-import mean.mean_geman_mcclure_solver
-import mean.mean_gnc_irls_p_solver
 import mean.trimmed_mean_efficiency
 import mean.winsorised_mean_efficiency
 import mean.mean_efficiency
@@ -24,14 +27,10 @@ import mean.mean_compare
 mean.mean_deriv_check.main(test_run=True, output_folder="../test_output")
 mean.mean_convergence_speed.main(test_run=True, output_folder="../test_output")
 mean.majorize_examples.main(test_run=True, output_folder="../test_output")
-mean.welsch_majorize_check.main(test_run=True, output_folder="../test_output")
 mean.compare_influence.main(test_run=True, output_folder="../test_output")
 mean.mean_check.main(test_run=True, output_folder="../test_output")
-mean.mean_welsch_solver.main(test_run=True, output_folder="../test_output")
+mean.mean_solver.main(test_run=True, output_folder="../test_output")
 mean.flat_welsch_solver.main(test_run=True, output_folder="../test_output")
-mean.mean_pseudo_huber_solver.main(test_run=True, output_folder="../test_output")
-mean.mean_geman_mcclure_solver.main(test_run=True, output_folder="../test_output")
-mean.mean_gnc_irls_p_solver.main(test_run=True, output_folder="../test_output")
 mean.trimmed_mean_efficiency.main(test_run=True, output_folder="../test_output")
 mean.winsorised_mean_efficiency.main(test_run=True, output_folder="../test_output")
 mean.welsch_efficiency.main(test_run=True, output_folder="../test_output", quick_run=True)
@@ -45,12 +44,14 @@ import line_fitting.line_fit_deriv_check
 import line_fitting.line_fit_solver
 import line_fitting.line_fit_convergence_speed
 import line_fitting.line_fit_param_plot
+import line_fitting.line_fit_breakdown
 import line_fitting.line_fit_efficiency
 
 line_fitting.line_fit_deriv_check.main(test_run=True, output_folder="../test_output")
 line_fitting.line_fit_solver.main(test_run=True, output_folder="../test_output")
 line_fitting.line_fit_convergence_speed.main(test_run=True, output_folder="../test_output")
 line_fitting.line_fit_param_plot.main(test_run=True, output_folder="../test_output")
+line_fitting.line_fit_breakdown.main(test_run=True, output_folder="../test_output")
 line_fitting.line_fit_efficiency.main(test_run=True, output_folder="../test_output", quick_run=True)
 
 # plane fitting tests

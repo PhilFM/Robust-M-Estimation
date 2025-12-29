@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import json
 import os
 import math
 from sklearn import linear_model
@@ -9,13 +8,7 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
-from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
-from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_vline, gncs_draw_curve
+from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from plane_fit_welsch import PlaneFitWelsch
 
@@ -24,7 +17,7 @@ def fit_plane_ransac(data, sigma_pop: float):
     Znp = np.array(data[:,2])
     ransac = linear_model.RANSACRegressor(linear_model.LinearRegression(), residual_threshold=1.5*sigma_pop, max_trials=2000)
     ransac.fit(X=XYnp, y=Znp)
-    inlier_mask = ransac.inlier_mask_
+    #inlier_mask = ransac.inlier_mask_
     coeff = ransac.estimator_.coef_
     intercept = ransac.estimator_.intercept_
     return np.array([coeff[0],coeff[1],intercept])

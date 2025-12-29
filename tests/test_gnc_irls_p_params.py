@@ -26,8 +26,8 @@ def test_answer():
         assert(last_alpha == 0.0)
         for i in range(param_instance.n_steps()-1):
             param_instance.increment()
-            assert(influence_func_instance.epsilon < last_sigma)
-            assert(influence_func_instance.epsilon > sigma_base)
+            assert(influence_func_instance.epsilon < last_epsilon)
+            assert(influence_func_instance.epsilon > epsilon_base)
             assert(param_instance.alpha() > last_alpha)
             assert(param_instance.alpha() < 1.0)
             last_epsilon = influence_func_instance.epsilon

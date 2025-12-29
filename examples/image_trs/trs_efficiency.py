@@ -1,21 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import json
 import os
 import math
-from sklearn import linear_model
 
 if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
-from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
-from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_vline, gncs_draw_curve
+from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from trs_welsch import TRSWelsch
 from trs import TRS
@@ -87,7 +79,7 @@ def apply_to_data(sigma_pop:float, p:float, xy_range:float, n:int, n_samples_bas
         # GNC IRLS Welsch
         trs_instance = TRSWelsch(sigma_pop/p, max(xy_range,10.0*sigma_pop), 30, max_niterations=200)
         if trs_instance.run(data):
-            trs_gnc_welsch = trs_instance.final_model
+            trs_gnc_welsch = trs_instance.final_trs
 
         diff = trs_gnc_welsch-model_gt
         var_gnc_welsch += np.outer(diff, diff)

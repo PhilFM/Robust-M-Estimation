@@ -7,7 +7,6 @@ if __name__ == "__main__":
     sys.path.append("../../pypi_package/src")
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
 from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc

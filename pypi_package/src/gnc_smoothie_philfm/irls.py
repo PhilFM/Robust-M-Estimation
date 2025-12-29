@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import numpy.typing as npt
 import time
 
 from .base_irls import BaseIRLS
@@ -10,22 +11,22 @@ class IRLS(BaseIRLS):
         self,
         param_instance,
         model_instance,
-        data,
-        weight=None,
-        scale=None,
-        data2=None,
-        weight2=None,
-        scale2=None,
-        data3=None,
-        weight3=None,
-        scale3=None,
+        data: npt.ArrayLike,
+        weight: npt.ArrayLike = None,
+        scale: npt.ArrayLike = None,
+        data2: npt.ArrayLike = None,
+        weight2: npt.ArrayLike = None,
+        scale2: npt.ArrayLike = None,
+        data3: npt.ArrayLike = None,
+        weight3: npt.ArrayLike = None,
+        scale3: npt.ArrayLike = None,
         numeric_derivs_influence: bool = False,
         max_niterations: int = 50,
-        diff_thres:float = 1.0e-12,
-        print_warnings:bool = False,
-        model_start=None,
+        diff_thres: float = 1.0e-12,
+        print_warnings: bool = False,
+        model_start: npt.ArrayLike = None,
         model_ref_start=None,
-        debug:bool = False,
+        debug: bool = False,
     ):
         BaseIRLS.__init__(
             self,
@@ -48,34 +49,6 @@ class IRLS(BaseIRLS):
             model_ref_start=model_ref_start,
             debug=debug,
         )
-
-    def __residual_influence(
-        self, residual: np.array, scale, small_diff: float = 1.0e-5
-    ) -> float:
-        rsqr = residual @ residual
-        if self.numeric_derivs_influence:
-            r = math.sqrt(rsqr)
-            rho_n = self._param_instance.influence_func_instance.rho(
-                (r - small_diff) ** 2.0, scale
-            )
-            rho_p = self._param_instance.influence_func_instance.rho(
-                (r + small_diff) ** 2.0, scale
-            )
-            rho_deriv = 0.5 * (rho_p - rho_n) / small_diff
-            return rho_deriv / r
-        else:
-            return self._param_instance.influence_func_instance.rhop(rsqr, scale)
-
-    def __update_weights(self, model, weight, model_ref=None) -> None:
-        self._model_instance.cache_model(model, model_ref=model_ref)
-        obj_func_sign = self._param_instance.influence_func_instance.objective_func_sign()
-        for didx in range(self._dsize):
-            if self._data[didx] is not None:
-                model_residual_func = self._get_model_residual_func(didx)
-                for i, (d, s) in enumerate(
-                        zip(self._data[didx], self._scale[didx], strict=True)
-                ):
-                    weight[didx][i] = self._weight[didx][i] * obj_func_sign * self.__residual_influence(model_residual_func(d), s)
 
     def run(self) -> bool:
         self._param_instance.reset()
@@ -116,9 +89,9 @@ class IRLS(BaseIRLS):
             if self._debug:
                 start_time = time.time()
 
-            self.__update_weights(model, weight, model_ref=model_ref)
+            self._update_weights(model, weight, model_ref=model_ref)
             if self._debug:
-                self.debug_update_weights_time += time.time()-start_time
+                self.debug_update_weights_time += time.time() - start_time
                 start_time = time.time()
 
             model_old = model
@@ -128,7 +101,7 @@ class IRLS(BaseIRLS):
                 model, model_ref = self._model_weighted_fit(weight)
 
             if self._debug:
-                self.debug_weighted_fit_time += time.time()-start_time
+                self.debug_weighted_fit_time += time.time() - start_time
 
             if self._param_instance.alpha() == 1.0:
                 if self._diff_thres is not None:
@@ -164,25 +137,23 @@ class IRLS(BaseIRLS):
             if self._debug:
                 self.debug_model_list.append(
                     (
-                        (1+itn) / (self._max_niterations - 1),  # alpha
+                        (1 + itn) / (self._max_niterations - 1),  # alpha
                         np.copy(model),
                     )
                 )
 
-        self._param_instance.reset(
-            False
-        )
+        self._param_instance.reset(False)
 
         # finish with parameters in correct final model
         self.final_model = model
         self.final_model_ref = model_ref
-        self._calc_weights(model, weight, model_ref)
+        self._update_weights(model, weight, model_ref)
         self.final_weight = weight[0]
         self.final_weight2 = weight[1]
         self.final_weight3 = weight[2]
 
         if self._debug:
             self.debug_n_iterations = itn + 1
-            self.debug_total_time = time.time()-start_time_total
+            self.debug_total_time = time.time() - start_time_total
 
         return all_good

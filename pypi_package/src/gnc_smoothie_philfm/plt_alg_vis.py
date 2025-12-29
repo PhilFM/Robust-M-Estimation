@@ -105,12 +105,15 @@ model_values[key]["colour"] = "darkorange"
 model_values[key]["linestyle"] = (0, (2, 2))
 model_values[key]["lw"] = 1.0
 
-def gncs_draw_vline(plt,
-                    x: float,
-                    key,
-                    use_label: bool = True,
-                    use_line_style: bool = True,
-                    lw: float = None):
+
+def gncs_draw_vline(
+    plt,
+    x: float,
+    key,
+    use_label: bool = True,
+    use_line_style: bool = True,
+    lw: float = None,
+):
     values = model_values[key]
     if use_label:
         if use_line_style:
@@ -126,7 +129,7 @@ def gncs_draw_vline(plt,
                 x=x,
                 color=values["colour"],
                 label=values["label"],
-                lw=values["lw"] if lw is None else lw
+                lw=values["lw"] if lw is None else lw,
             )  # , marker = 'o', markersize = 2.0)
     else:
         if use_line_style:
@@ -138,8 +141,7 @@ def gncs_draw_vline(plt,
             )  # , marker = 'o', markersize = 2.0)
         else:
             plt.axvline(
-                x=x, color=values["colour"],
-                lw=values["lw"] if lw is None else lw
+                x=x, color=values["colour"], lw=values["lw"] if lw is None else lw
             )  # , marker = 'o', markersize = 2.0)
 
 
@@ -153,7 +155,7 @@ def gncs_draw_curve(
     ax=None,
     lw: float = None,
     add_label: bool = True,
-    markersize: float = 2.0
+    markersize: float = 2.0,
 ):
     values = model_values[key]
     if xvalues is None:

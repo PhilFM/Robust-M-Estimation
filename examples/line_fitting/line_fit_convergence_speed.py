@@ -51,30 +51,35 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
     if not test_run:
         plt.show()
 
+def randomM11() -> float:
+    return 2.0*(np.random.rand()-0.5)
+
 def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
     with_gnc = True
-    model_gt = [2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5)]
+    model_gt = [randomM11(), randomM11()]
     n = 100
     data = np.zeros([n,2])
-    noise_level = 0.4
+    sigma_pop = 1.0
     outlier_fraction = 0.3
     n0 = int((1.0-outlier_fraction)*n+0.5)
+    y_range = 10.0
     for test_idx in range(0,4):
         for i in range(n):
-            x = 0.1*i
+            x = 0.8*i
             if i < n0:
-                data[i] = (x, model_gt[0]*x+model_gt[1] + noise_level*2.0*(np.random.rand()-0.5))
+                data[i] = (x, model_gt[0]*x+model_gt[1] + np.random.normal(0.0, sigma_pop))
             else:
                 # add outlier
-                data[i] = (x, 10.0*2.0*(np.random.rand()-0.5))
+                data[i] = (x, y_range*randomM11())
 
         if not test_run:
             print("data=",data)
 
         diff_thres = 1.e-13
-        sigma_base = 0.2
-        sigma_limit = 10.0 if with_gnc else sigma_base
+        p = 0.66667
+        sigma_base = sigma_pop/p
+        sigma_limit = max(data[:,1]) - min(data[:,1]) if with_gnc else sigma_base
         num_sigma_steps = 10
         max_niterations = 100
         print_warnings = False

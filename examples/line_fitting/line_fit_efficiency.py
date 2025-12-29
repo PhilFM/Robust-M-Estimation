@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import json
 import os
 import math
 from sklearn import linear_model
@@ -10,13 +9,7 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
-from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
-from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_vline, gncs_draw_curve
+from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
 
 from line_fit_welsch import LineFitWelsch
 
@@ -52,7 +45,7 @@ def fit_line_ransac(data, sigma_pop: float):
 
     return np.array([coeff[0],intercept])
 
-def fit_line_hough(data, sigma_pop: float):
+def fit_line_hough(data, sigma_pop: float, test_run: bool) -> np.ndarray:
     #print("data=",data)
     datap = data.reshape(-1, 1, 2).astype(np.float32)
     #print("datap=",datap)
@@ -62,7 +55,8 @@ def fit_line_hough(data, sigma_pop: float):
     #print("lines=",lines)
 
     votes, rho, theta = lines[:, 0][:, 0], lines[:, 0][:, 1], lines[:, 0][:, 2]
-    #print("votes=",votes)
+    if not test_run:
+        print("votes=",votes)
 
     # Convert to cartesian
     theta[theta == 0.] = 1e-5  # to avoid division by 0 in next line
@@ -130,7 +124,7 @@ def apply_to_data(sigma_pop,p,x_range,n,n_samples_base,min_n_samples,outlier_fra
         var_ransac += np.outer(diff, diff)
 
         # Hough transform
-        line_hough = fit_line_hough(data, sigma_pop)
+        line_hough = fit_line_hough(data, sigma_pop, test_run)
         diff = line_hough-line_gt
         #print("diff=",diff)
         var_hough += np.outer(diff, diff)

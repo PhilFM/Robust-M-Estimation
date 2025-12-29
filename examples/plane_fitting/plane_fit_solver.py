@@ -1,56 +1,101 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import os
+import open3d as o3d
 
 if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-
 from plane_fit_welsch        import PlaneFitWelsch
 from plane_fit_orthog_welsch import PlaneFitOrthogWelsch
 
-def objective_func(a:float, b:float, optimiser_instance):
-    return optimiser_instance.objective_func([a,b])
+def show_3d(data: np.array, final_weight: np.array, mesh_size, plane_vertices) -> None:
+    assert(len(data) == mesh_size*mesh_size)
 
-def gradient_func(a:float, b:float, optimiser_instance):
-    a,AlB = optimiser_instance.weighted_derivs([a,b])
-    return a
+    triangles = np.zeros((2*(mesh_size-1)*(mesh_size-1), 3), dtype=np.int32)
+    for row in range(mesh_size - 1):
+        for col in range(mesh_size - 1):
+            # 1st triangle
+            triangles[2*(row*(mesh_size-1)+col)] = [row * mesh_size + col,
+                                                    (row + 1) * mesh_size + col + 1,
+                                                    row * mesh_size + col + 1]
 
-def randomM11() -> float:
-    return 2.0*(np.random.rand()-0.5)
+            # 2nd triangle
+            triangles[2*(row*(mesh_size-1)+col)+1] = [row * mesh_size + col,
+                                                      (row + 1) * mesh_size + col,
+                                                      (row + 1) * mesh_size + col + 1]
+
+    # 3. Create TriangleMesh object
+    mesh = o3d.geometry.TriangleMesh()
+    mesh.vertices = o3d.utility.Vector3dVector(data) #vertices)
+    mesh.triangles = o3d.utility.Vector3iVector(triangles)
+    mesh.compute_vertex_normals()
+    max_weight = max(final_weight)
+    vertex_colors = np.array([[w/max_weight, 0.0, 1.0-w/max_weight] for w in final_weight])
+    #mesh.vertex_colors = o3d.utility.Vector3dVector(vertex_colors)
+
+    # View the mesh
+    o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True, front=[-0.15,-0.7,0.3]) # mesh_show_wireframe=True
+
+    # add plane mesh
+    plane_mesh = o3d.geometry.TriangleMesh()
+    plane_mesh.vertices = o3d.utility.Vector3dVector(plane_vertices)
+    plane_mesh.triangles = o3d.utility.Vector3iVector(triangles)
+    plane_mesh.vertex_colors = o3d.utility.Vector3dVector(vertex_colors)
+    #plane_mesh.paint_uniform_color([0.4, 0.4, 1])
+    plane_mesh.compute_vertex_normals()
+
+    # View the plane mesh
+    o3d.visualization.draw_geometries([plane_mesh], mesh_show_back_face=True, front=[-0.15,-0.7,0.3]) # mesh_show_wireframe=True
 
 def main(test_run:bool, output_folder:str="../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     # data is a list of [x,y,z] triplets
     plane_gt = [0.5, 0.2, -1.0]
-    n_good = 10
-    n_bad = 0 #8
-    data = np.zeros((n_good+n_bad,3))
-    for i in range(n_good):
-        data[i][0] = randomM11()
-        data[i][1] = randomM11()
-        data[i][2] = plane_gt[0]*data[i][0] + plane_gt[1]*data[i][1] + plane_gt[2]
 
-    for i in range(n_bad):
-        data[n_good+i][0] = randomM11()
-        data[n_good+i][1] = randomM11()
-        data[n_good+i][2] = randomM11()
+    # first put all points on a mesh
+    mesh_size = 9
+    sigma_pop = 0.06
+    xy_range = 8.0
+    data = np.zeros((mesh_size*mesh_size,3))
+    for i in range(mesh_size):
+        y = (-0.5 + i/(mesh_size-1))*xy_range
+        for j in range(mesh_size):
+            x = (-0.5 + j/(mesh_size-1))*xy_range
+            idx = i*mesh_size+j
+            data[idx][0] = x
+            data[idx][1] = y
+            data[idx][2] = plane_gt[0]*data[idx][0] + plane_gt[1]*data[idx][1] + plane_gt[2] + np.random.normal(0.0, sigma_pop)
 
+    # perturb some of the points
+    n_bad_points = 5
+    for k in range(n_bad_points):
+        i = np.random.randint(mesh_size)
+        j = np.random.randint(mesh_size)
+        idx = i*mesh_size+j
+        data[idx][2] = np.random.rand()
+    
     # linear regression fitter z = a*x + b*y + c
-    plane_fitter = PlaneFitWelsch(0.01, 50.0, 20, debug=True)
+    p = 0.6667
+    sigma = sigma_pop/p
+    sigma_limit = np.max(data[:,2]) - np.min(data[:,2])
+    plane_fitter = PlaneFitWelsch(sigma, sigma_limit, 20, debug=True)
     if plane_fitter.run(data):
         final_plane = plane_fitter.final_plane
+        final_weight = plane_fitter.final_weight
         debug_plane_list = plane_fitter.debug_plane_list
 
     if not test_run:
         print("Linear regression result: a,b,c,d=", final_plane)
         plane = np.array([-final_plane[0]/final_plane[2], -final_plane[1]/final_plane[2], -final_plane[3]/final_plane[2]])
         print("   error: ", plane-plane_gt)
+
+        # build vertices on the plane
+        plane_vertices = np.copy(data)
+        for pv in plane_vertices:
+            pv[2] = plane[0]*pv[0] + plane[1]*pv[1] + plane[2]
+
+        show_3d(data, final_weight, mesh_size, plane_vertices)
 
     # change to True if you want to see the progress of the algorithm
     if False:

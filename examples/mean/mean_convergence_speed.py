@@ -67,24 +67,26 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
     if not test_run:
         plt.show()
     
+def randomM11() -> float:
+    return 2.0*(np.random.rand()-0.5)
+
 def main(test_run:bool, output_folder:str="../../output"):
     random.seed(0) # We want the numbers to be the same on each run
     with_gnc = True
     n = 1000
     sigma_pop = 1.0
-    noise_sigma = 0.5 # noise
     outlier_fraction = 0.3
     n0 = int((1.0-outlier_fraction)*n+0.5)
-    xgtrange = 3.0
+    x_range = 6.0
 
     for test_idx in range(0,4):
         data = np.zeros((n,1))
-        mgt = 3.0
+        mgt = 4.0
         for i in range(n0):
             data[i] = [random.gauss(mgt, sigma_pop)]
 
         for i in range(n-n0):
-            data[n0+i] = [2.0*(np.random.rand() - 0.5)]
+            data[n0+i] = x_range*randomM11()
 
         diff_thres = 1.e-13
         num_sigma_steps = 10
@@ -92,8 +94,8 @@ def main(test_run:bool, output_folder:str="../../output"):
         residual_tolerance = 1.0e-8
         
         welsch_p = 0.666667
-        welsch_sigma = noise_sigma/welsch_p
-        welsch_sigma_limit = 10.0*noise_sigma if with_gnc else welsch_sigma
+        welsch_sigma = sigma_pop/welsch_p
+        welsch_sigma_limit = max(data) - min(data) if with_gnc else welsch_sigma
 
         model_start = [mgt+0.5]
 
@@ -172,7 +174,7 @@ def main(test_run:bool, output_folder:str="../../output"):
                 print("Pseudo-Huber IRLS times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"total",irls_instance.debug_total_time)
 
         gncIrlsp_rscale = 1.0
-        gncIrlsp_sigma_base = noise_sigma
+        gncIrlsp_sigma_base = sigma_pop
         gncIrlsp_epsilon_base = gncIrlsp_rscale*gncIrlsp_sigma_base
         gncIrlsp_epsilon_limit = gncIrlsp_epsilon_base #gncIrlsp_rscale*gnsIrlsp_sigma_limit
         gncIrlsp_beta = 0.8 #math.exp((math.log(gncIrlsp_sigma_base) - math.log(gncIrlsp_sigma_limit))/(num_sigma_steps - 1.0))

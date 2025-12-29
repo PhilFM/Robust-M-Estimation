@@ -5,7 +5,7 @@ Example code illustrating how to compute a plane that fits to 3D points with out
 Example code:
 
 - [plane_fit_solver.py](plane_fit_solver.py) Example code using plane fitting and the `gnc_smoothie` package.
-- [plane_fit_welsch.py](plane_fit_welsch.py] Python API for GNC Sup-GN plane fitting with linear regression, to be used by external programs.
+- [plane_fit_welsch.py](plane_fit_welsch.py] Class for GNC Sup-GN plane fitting with linear regression, to be used by external programs.
 - [plane_fit_orthog_welsch.py](plane_fit_orthog_welsch.py] Python API for GNC IRLS plane fitting with orthogonal regression, to be used by external programs.
 
 Runnable code samples:
