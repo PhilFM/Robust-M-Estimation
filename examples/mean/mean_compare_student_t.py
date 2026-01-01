@@ -131,4 +131,4 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
         print("mean_compare_student_t OK")
 
 if __name__ == "__main__":
-    main(False) # test_run
+    main(True) # test_run

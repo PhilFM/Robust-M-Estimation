@@ -51,7 +51,7 @@ line_fitting.line_fit_deriv_check.main(test_run=True, output_folder="../test_out
 line_fitting.line_fit_solver.main(test_run=True, output_folder="../test_output")
 line_fitting.line_fit_convergence_speed.main(test_run=True, output_folder="../test_output")
 line_fitting.line_fit_param_plot.main(test_run=True, output_folder="../test_output")
-line_fitting.line_fit_breakdown.main(test_run=True, output_folder="../test_output")
+line_fitting.line_fit_breakdown.main(test_run=True, output_folder="../test_output", quick_run=True)
 line_fitting.line_fit_efficiency.main(test_run=True, output_folder="../test_output", quick_run=True)
 
 # plane fitting tests
@@ -59,11 +59,13 @@ sys.path.append("plane_fitting")
 import plane_fitting.plane_fit_deriv_check
 import plane_fitting.plane_fit_solver
 import plane_fitting.plane_fit_convergence_speed
+import plane_fitting.plane_fit_breakdown
 import plane_fitting.plane_fit_efficiency
 
 plane_fitting.plane_fit_deriv_check.main(test_run=True, output_folder="../test_output")
 plane_fitting.plane_fit_solver.main(test_run=True, output_folder="../test_output")
 plane_fitting.plane_fit_convergence_speed.main(test_run=True, output_folder="../test_output")
+plane_fitting.plane_fit_breakdown.main(test_run=True, output_folder="../test_output", quick_run=True)
 plane_fitting.plane_fit_efficiency.main(test_run=True, output_folder="../test_output", quick_run=True)
 
 # image translation, rotation and scale tests
@@ -71,11 +73,13 @@ sys.path.append("image_trs")
 import image_trs.trs_solver
 import image_trs.trs_convergence_speed
 import image_trs.trs_derivative_check
+import image_trs.trs_breakdown
 import image_trs.trs_efficiency
 
 image_trs.trs_solver.main(test_run=True, output_folder="../test_output")
 image_trs.trs_convergence_speed.main(test_run=True, output_folder="../test_output")
 image_trs.trs_derivative_check.main(test_run=True, output_folder="../test_output")
+image_trs.trs_breakdown.main(test_run=True, output_folder="../test_output", quick_run=True)
 image_trs.trs_efficiency.main(test_run=True, output_folder="../test_output", quick_run=True)
 
 # 3D point cloud registration tests

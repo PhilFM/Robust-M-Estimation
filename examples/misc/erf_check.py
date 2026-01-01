@@ -48,12 +48,15 @@ def main(test_run:bool, output_folder:str="../../output"):
 
     small_val = 0.0001
     x = 0.1
-    print("grad erf num=", 0.5*(math.erf(x+small_val) - math.erf(x-small_val))/small_val, " (",erf_deriv(x),")")
-    print("grad erf div num=", 0.5*(erf_div_func(x+small_val) - erf_div_func(x-small_val))/small_val, " (",erf_div_deriv(x),")")
-    print("normal 2nd deriv=", (normal_func(small_val) + normal_func(-small_val) - 2.0*normal_func(0.))/(small_val*small_val))
-    print("erf div 2nd deriv=", (erf_div_func(x+small_val) + erf_div_func(x-small_val) - 2.0*erf_div_func(x))/(small_val*small_val), " (", erf_div_2nd_deriv(x),")",erf_div_2nd_deriv(x)*math.sqrt(math.pi)*0.75,-4.0/(3.0*math.sqrt(math.pi)))
+    if not test_run:
+        print("grad erf num=", 0.5*(math.erf(x+small_val) - math.erf(x-small_val))/small_val, " (",erf_deriv(x),")")
+        print("grad erf div num=", 0.5*(erf_div_func(x+small_val) - erf_div_func(x-small_val))/small_val, " (",erf_div_deriv(x),")")
+        print("normal 2nd deriv=", (normal_func(small_val) + normal_func(-small_val) - 2.0*normal_func(0.))/(small_val*small_val))
+        print("erf div 2nd deriv=", (erf_div_func(x+small_val) + erf_div_func(x-small_val) - 2.0*erf_div_func(x))/(small_val*small_val), " (", erf_div_2nd_deriv(x),")",erf_div_2nd_deriv(x)*math.sqrt(math.pi)*0.75,-4.0/(3.0*math.sqrt(math.pi)))
+
     xsol = brentq(erf_div_2nd_deriv, -0.0001, -5000.0)
-    print("erf div 2nd deriv zero point =",xsol)
+    if not test_run:
+        print("erf div 2nd deriv zero point =",xsol)
 
     plt.plot(rlist, gauFuncV(rlist), lw = 1.0, color = 'blue')
     plt.plot(rlist, erfFuncV(rlist), lw = 1.0, color = 'green') #, label="erf div test")

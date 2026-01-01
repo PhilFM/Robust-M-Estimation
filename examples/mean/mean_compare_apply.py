@@ -100,7 +100,11 @@ def mean_compare_apply(sigma_pop,p,xgtrange,n,n_samples_base,min_n_samples,outli
             #m_trimmed = trimmed_mean(data, trim_size=trim_size)
             #vec_trimmed1 += math.pow(m_trimmed-m_gt, 2.0)
 
-        trim_size = n//4
+        if student_t_dof == 0:
+            trim_size = int(0.5 + 0.5*outlier_fraction*n)
+        else:
+            trim_size = n//4
+
         m_trimmed = trimmed_mean(data, weight, trim_size=trim_size)
         vec_trimmed += math.pow(m_trimmed-m_gt, 2.0)
 
