@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 #[tool.setuptools]
 #ext-modules = [
-#  {name = "gnc_smoothie_philfm", sources = ["gnc_smoothie_philfm/cython/*.pyx"]}
+#  {name = "gnc_smoothie_philfm.cython", sources = ["gnc_smoothie_philfm/cython/*.pyx"]}
 #]
 #include-package-data = true
 
