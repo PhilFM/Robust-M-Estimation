@@ -43,7 +43,7 @@ def main(test_run:bool, output_folder:str="../../output"):
             weight[i] = 1.0
 
         all_good = True
-        if check_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), PointRegistration(), data, weight=weight),
+        if check_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), data, model_instance=PointRegistration(), weight=weight),
                         np.array([0.0,0.0,0.0,t[0],t[1],t[2]]), model_ref=R, diff_threshold_AlB=1.e-4, print_derivs=False, print_diffs=False) is False:
             all_good = False
 

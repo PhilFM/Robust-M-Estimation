@@ -13,8 +13,7 @@ from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
 from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
-
-from gncs_robust_mean import RobustMean
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 def objective_func(x, optimiser_instance):
     if optimiser_instance.objective_func_sign() < 0.0:
@@ -58,36 +57,36 @@ def plot_result(optimiser_instance, u_values:list, label:str, output_folder, fil
         plt.show()
 
 def main(test_run:bool, output_folder:str="../../output"):
-    model_instance = RobustMean()
-
+    model_instance = LinearRegressor(np.array([0.]))
+    
     p = 0.0
     rscale = 1.0
     epsilon = 0.1
     param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), p, rscale, epsilon)
-    plot_result(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0], numeric_derivs_influence=True),
+    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0], numeric_derivs_influence=True),
                 [1.0, 2.0], "GNC IRLSp0 influence function", output_folder, "gnc_irls_p0_majorizers", test_run)
 
     p = 0.5
     param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), p, rscale, epsilon)
-    plot_result(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0], numeric_derivs_influence=True),
+    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0], numeric_derivs_influence=True),
                 [1.0, 2.0], "GNC IRLSp0.5 influence function", output_folder, "gnc_irls_ph_majorizers", test_run)
 
     p = 1.0
     param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), p, rscale, epsilon)
-    plot_result(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0], numeric_derivs_influence=True),
+    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0], numeric_derivs_influence=True),
                 [1.0, 2.0], "GNC IRLSp1 influence function", output_folder, "gnc_irls_p1_majorizers", test_run)
 
     sigma = 1.0
     param_instance = GNC_NullParams(WelschInfluenceFunc(sigma))
-    plot_result(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0]),
+    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0]),
                 [1.5, 2.0], "Welsch influence function", output_folder, "welsch_majorizers", test_run)
 
     param_instance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma))
-    plot_result(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0]),
+    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0]),
                 [1.5, 2.0], "Pseudo-Huber influence function", output_folder, "pseudo_huber_majorizers", test_run)
     
     param_instance = GNC_NullParams(GemanMcClureInfluenceFunc(sigma))
-    plot_result(SupGaussNewton(param_instance, model_instance, [[0.0]], weight=[1.0]),
+    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0]),
                 [1.0, 2.0], "Geman-McClure influence function", output_folder, "geman_mcclure_majorizers", test_run)
 
     if test_run:

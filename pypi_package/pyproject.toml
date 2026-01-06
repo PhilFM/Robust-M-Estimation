@@ -1,10 +1,20 @@
 [build-system]
 # Minimum requirements for the build system to execute.
-requires = ["setuptools"]
+requires = ["setuptools", "Cython", "numpy"]
+build-backend = "setuptools.build_meta"
+
+#[tool.setuptools]
+#ext-modules = [
+#  {name = "gnc_smoothie_philfm", sources = ["gnc_smoothie_philfm/cython/*.pyx"]}
+#]
+#include-package-data = true
+
+#[tool.setuptools.package-data]
+#src = ['gnc_smoothie_philfm/cython/*.pyx']
 
 [project]
 name = "gnc_smoothie_philfm"
-version = "0.0.51"
+version = "0.0.54"
 authors = [
   { name="Philip McLauchlan", email="philipmclauchlan6@gmail.com" },
 ]

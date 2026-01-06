@@ -9,9 +9,9 @@ if __name__ == "__main__":
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 from flat_welsch_mean import flat_welsch_mean
-from gncs_robust_mean import RobustMean
 
 def main(test_run:bool, output_folder:str="../../output"):
     # configuration
@@ -76,7 +76,8 @@ def main(test_run:bool, output_folder:str="../../output"):
     mlist = np.linspace(x_min, x_max, num=300)
 
     # plot stuff
-    optimiser_instance = SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=sigma)), RobustMean(), data, weight)
+    optimiser_instance = SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=sigma)), data,
+                                        model_instance=LinearRegressor(data[0]), weight=weight)
 
     def objective_func(m):
         return optimiser_instance.objective_func([m])
@@ -87,7 +88,6 @@ def main(test_run:bool, output_folder:str="../../output"):
 
     if showGradient:
         for mx in mlist:
-            #print("x=", mx, " grad=", robustMeanGradient(mx, sigma, data))
             y_min = min(y_min, gradient_func(mx))
             y_max = max(y_max, gradient_func(mx))
     else:

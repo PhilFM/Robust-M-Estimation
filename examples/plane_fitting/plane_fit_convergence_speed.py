@@ -5,14 +5,15 @@ import os
 if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/linear_model")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/cython")
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
-
-from plane_fit import PlaneFit
+from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                      diffs_welsch_irls, diff_alpha_welsch_irls,
@@ -72,8 +73,8 @@ def main(test_run:bool, output_folder:str="../../output"):
                     # add outlier
                     data[i] = (x, y, 10.0*2.0*(np.random.rand()-0.5))
 
-        if not test_run:
-            print("data=",data)
+        #if not test_run:
+        #    print("data=",data)
 
         diff_thres = 1.e-13
         sigma_base = 0.2
@@ -86,24 +87,25 @@ def main(test_run:bool, output_folder:str="../../output"):
         for i in range(3):
             model_start[i] = model_gt[i] + 0.02
 
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
-        sup_gn_instance = SupGaussNewton(param_instance, PlaneFit(), data,
-                                         max_niterations=max_niterations, diff_thres=diff_thres,
-                                         print_warnings=print_warnings,
-                                         model_start = None if with_gnc else model_start,
-                                         debug=True)
-        if sup_gn_instance.run():
-            diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
-            diff_alpha_welsch_sup_gn = np.array(sup_gn_instance.debug_diff_alpha)
+        plane_fitter = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
+                                             max_niterations=max_niterations, diff_thres=diff_thres,
+                                             print_warnings=print_warnings,
+                                             model_start = None if with_gnc else model_start,
+                                             debug=True)
+        if plane_fitter.run(data):
+            diffs_welsch_sup_gn = plane_fitter.debug_diffs
+            diff_alpha_welsch_sup_gn = np.array(plane_fitter.debug_diff_alpha)
 
-        irls_instance = IRLS(param_instance, PlaneFit(), data,
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
+        model_instance = LinearRegressor(data[0])
+        irls_instance = IRLS(param_instance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=print_warnings,
                              model_start = None if with_gnc else model_start,
                              debug=True)
         if irls_instance.run():
             diffs_welsch_irls = irls_instance.debug_diffs
-            diff_alpha_welsch_irls = np.array(sup_gn_instance.debug_diff_alpha)
+            diff_alpha_welsch_irls = np.array(irls_instance.debug_diff_alpha)
     
         plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                          diffs_welsch_irls, diff_alpha_welsch_irls,

@@ -5,12 +5,13 @@ import sys
 
 if __name__ == "__main__":
     sys.path.append("../../pypi_package/src")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/linear_model")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/cython")
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-
-from plane_fit import PlaneFit
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 sys.path.append("../misc")
 from check_for_breakdown import check_for_breakdown
@@ -93,7 +94,7 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
                 data[idx][2] = plane_bad[0]*data[idx][0] + plane_bad[1]*data[idx][1] + plane_bad[2]
                 bad_xy_idx = next_bad_point(bad_xy_idx, n_points_xy)
 
-                idx_bl = 0
+            idx_bl = 0
             idx_br = n_points_xy-1
             idx_tl = (n_points_xy-1)*n_points_xy
             idx_tr = (n_points_xy-1)*n_points_xy + n_points_xy-1
@@ -106,9 +107,9 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
             plane_good = [0.0, 0.0, 0.0]
 
             influence_func = WelschInfluenceFunc()
-            plane_fit = PlaneFit()
+            model_instance = LinearRegressor(data[0])
             param_instance = GNC_WelschParams(influence_func, sigma_base, sigma_limit, num_sigma_steps)
-            optimiser_instance = SupGaussNewton(param_instance, plane_fit, data, model_start=plane_good)
+            optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, model_start=plane_good)
 
             def plane_a(a, data):
                 return optimiser_instance.objective_func([a,plane_good[1],plane_good[2]])

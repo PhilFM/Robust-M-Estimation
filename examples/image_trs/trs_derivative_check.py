@@ -28,7 +28,7 @@ def main(test_run:bool, output_folder:str="../../output"):
                           2.0*(np.random.rand()-0.5), # tx
                           2.0*(np.random.rand()-0.5)]) # ty
 
-        optimiser_instance = SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), TRS(), data, weight=weight)
+        optimiser_instance = SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), data, model_instance=TRS(), weight=weight)
         if not check_derivs(optimiser_instance, model, diff_threshold_AlB=1.e-5): #, print_diffs=True, print_derivs=False):
             all_good = False
 

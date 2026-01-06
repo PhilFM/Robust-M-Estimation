@@ -30,7 +30,7 @@ class TRSWelsch:
             weight: np.array = None,
             scale: np.array = None):
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), self.__sigma, self.__sigma_limit, self.__num_sigma_steps)
-        optimiser_instance = SupGaussNewton(param_instance, TRS(), data, weight=weight, scale=scale,
+        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=TRS(), weight=weight, scale=scale,
                                             max_niterations=self.__max_niterations,
                                             diff_thres=self.__diff_thres,
                                             print_warnings=self.__print_warnings,

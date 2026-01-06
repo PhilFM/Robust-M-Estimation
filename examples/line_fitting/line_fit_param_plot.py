@@ -5,12 +5,13 @@ import os
 if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/linear_model")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/cython")
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-
-from line_fit import LineFit
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 def lineFitFunc(a, b, optimiser_instance):
     return optimiser_instance.objective_func([a,b])
@@ -25,7 +26,7 @@ def main(test_run:bool, output_folder:str="../../output"):
     alist = np.linspace(-5, 5, num=200)
     blist = np.linspace(-2.0, 2.0, num=200)
     param_instance = GNC_NullParams(WelschInfluenceFunc(0.2)) # sigma
-    optimiser_instance = SupGaussNewton(param_instance, LineFit(), data, weight=weight)
+    optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight)
     rmfv = np.vectorize(lineFitFunc, excluded={"optimiser_instance"})
     plt.close("all")
     plt.figure(num=1, dpi=120)

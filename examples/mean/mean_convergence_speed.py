@@ -16,8 +16,7 @@ from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
-
-from gncs_robust_mean import RobustMean
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                      diffs_welsch_irls, diff_alpha_welsch_irls,
@@ -99,10 +98,10 @@ def main(test_run:bool, output_folder:str="../../output"):
 
         model_start = [mgt+0.5]
 
-        model_instance = RobustMean()
+        model_instance = LinearRegressor(data[0])
     
         welschParamInstance = GNC_WelschParams(WelschInfluenceFunc(), welsch_sigma, welsch_sigma_limit, num_sigma_steps)
-        sup_gn_instance = SupGaussNewton(welschParamInstance, model_instance, data,
+        sup_gn_instance = SupGaussNewton(welschParamInstance, data, model_instance=model_instance,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
                                          print_warnings=False,
@@ -120,7 +119,7 @@ def main(test_run:bool, output_folder:str="../../output"):
                 print("GNC Welsch SUP-GN diff alpha=",diff_alpha_welsch_sup_gn)
                 print("GNC Welsch SUP-GN times weighted_derivs",sup_gn_instance.debug_weighted_derivs_time,"solve",sup_gn_instance.debug_solve_time,"total",sup_gn_instance.debug_total_time)
 
-        irls_instance = IRLS(welschParamInstance, model_instance, data,
+        irls_instance = IRLS(welschParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=False,
                              model_start = None if with_gnc else model_start,
@@ -138,7 +137,7 @@ def main(test_run:bool, output_folder:str="../../output"):
                 print("GNC Welsch IRLS times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"total",irls_instance.debug_total_time)
 
         pseudoHuberParamInstance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma=welsch_sigma))
-        sup_gn_instance = SupGaussNewton(pseudoHuberParamInstance, model_instance, data,
+        sup_gn_instance = SupGaussNewton(pseudoHuberParamInstance, data, model_instance=model_instance,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
                                          print_warnings=False,
@@ -156,7 +155,7 @@ def main(test_run:bool, output_folder:str="../../output"):
                 print("Pseudo-Huber G-N diff alpha=",diff_alpha_pseudo_huber_sup_gn)
                 print("Pseudo-Huber G-N times weighted_derivs",sup_gn_instance.debug_weighted_derivs_time,"solve",sup_gn_instance.debug_solve_time,"total",sup_gn_instance.debug_total_time)
 
-        irls_instance = IRLS(pseudoHuberParamInstance, model_instance, data,
+        irls_instance = IRLS(pseudoHuberParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=False,
                              model_start = None if with_gnc else model_start,
@@ -180,7 +179,7 @@ def main(test_run:bool, output_folder:str="../../output"):
         gncIrlsp_beta = 0.8 #math.exp((math.log(gncIrlsp_sigma_base) - math.log(gncIrlsp_sigma_limit))/(num_sigma_steps - 1.0))
         gncIrlspParamInstance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                 0.0, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta)
-        irls_instance = IRLS(gncIrlspParamInstance, model_instance, data,
+        irls_instance = IRLS(gncIrlspParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=False,
                              model_start = None if with_gnc else model_start,
@@ -198,7 +197,7 @@ def main(test_run:bool, output_folder:str="../../output"):
                 print("GNC IRLS-p0 times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"total",irls_instance.debug_total_time)
 
         gncIrlspParamInstance.influence_func_instance.p = 1.0
-        irls_instance = IRLS(gncIrlspParamInstance, model_instance, data,
+        irls_instance = IRLS(gncIrlspParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=False,
                              model_start = None if with_gnc else model_start,

@@ -18,20 +18,20 @@ class PseudoHuberInfluenceFunc:
     # rho(r) = sqrt(1 + r^2/(sigma*sigma)) - 1.0
     def rho(self, rsqr: float, s: float) -> float:
         sigma = s * self.sigma
-        invVar = 1.0 / (sigma * sigma)
-        return math.sqrt(1.0 + rsqr * invVar) - 1.0
+        inv_var = 1.0 / (sigma * sigma)
+        return math.sqrt(1.0 + rsqr * inv_var) - 1.0
 
     # rho'(r)/r used in IRLS, as well as a and A terms in SupGaussNewton
     def rhop(self, rsqr: float, s: float) -> float:
         sigma = s * self.sigma
-        invVar = 1.0 / (sigma * sigma)
-        return invVar / math.sqrt(1.0 + rsqr * invVar)
+        inv_var = 1.0 / (sigma * sigma)
+        return inv_var / math.sqrt(1.0 + rsqr * inv_var)
 
     # (r*rho''(r) - rho'(r))/(r^3) used for B term in SupGaussNewton
     def Bterm(self, rsqr: float, s: float) -> float:
         sigma = s * self.sigma
-        invVar = 1.0 / (sigma * sigma)
-        return -invVar * invVar * math.pow(1.0 + rsqr * invVar, -1.5)
+        inv_var = 1.0 / (sigma * sigma)
+        return -inv_var * inv_var * math.pow(1.0 + rsqr * inv_var, -1.5)
 
     def summary(self) -> str:
         return "sigma=" + str(self.sigma)

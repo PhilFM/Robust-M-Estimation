@@ -90,7 +90,7 @@ def main(test_run:bool, output_folder:str="../../output"):
         model_instance = TRS()
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
-        sup_gn_instance = SupGaussNewton(param_instance, model_instance, data,
+        sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=model_instance,
                                          max_niterations=max_niterations, diff_thres=diff_thres,
                                          print_warnings=print_warnings,
                                          model_start = None if with_gnc else model_start,
@@ -100,7 +100,7 @@ def main(test_run:bool, output_folder:str="../../output"):
             diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(sup_gn_instance.debug_diff_alpha)
 
-        irls_instance = IRLS(param_instance, model_instance, data,
+        irls_instance = IRLS(param_instance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=print_warnings,
                              model_start = None if with_gnc else model_start,

@@ -9,8 +9,7 @@ if __name__ == "__main__":
     sys.path.append("../../pypi_package/src")
 
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
-
-from plane_fit_welsch import PlaneFitWelsch
+from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
 
 def fit_plane_ransac(data, sigma_pop: float):
     XYnp = np.array(data[:,0:2]).reshape((len(data),2))
@@ -19,6 +18,7 @@ def fit_plane_ransac(data, sigma_pop: float):
     ransac.fit(X=XYnp, y=Znp)
     #inlier_mask = ransac.inlier_mask_
     coeff = ransac.estimator_.coef_
+    #print("coeff=",coeff)
     intercept = ransac.estimator_.intercept_
     return np.array([coeff[0],coeff[1],intercept])
 
@@ -83,7 +83,7 @@ def apply_to_data(sigma_pop:float, p:float, xy_range:float, n:int, n_samples_bas
 
     for i in range(n_samples):
         plane_gt = [randomM11(), randomM11(), randomM11()]
-        data = np.zeros([n,3])
+        data = np.zeros((n,3))
         for i in range(ssize):
             y = xy_scale*i - half_xy_range
             for j in range(ssize):
@@ -97,11 +97,11 @@ def apply_to_data(sigma_pop:float, p:float, xy_range:float, n:int, n_samples_bas
             data[i] = (half_xy_range*randomM11(), half_xy_range*randomM11(), 10.0*randomM11())
 
         # GNC IRLS Welsch
-        plane_fitter = PlaneFitWelsch(sigma_pop/p, max(xy_range,10.0*sigma_pop), 30, max_niterations=200)
+        plane_fitter = LinearRegressorWelsch(sigma_pop/p, max(xy_range,10.0*sigma_pop), 30, max_niterations=200)
         if plane_fitter.run(data):
-            # convert normalised a*x+b*y+c*z+d=0 parameters to z=a*x+b*y+c parameters
-            final_plane = plane_fitter.final_plane
-            plane_gnc_welsch = np.array([-final_plane[0]/final_plane[2], -final_plane[1]/final_plane[2], -final_plane[3]/final_plane[2]])
+            coeff = plane_fitter.final_coeff
+            intercept = plane_fitter.final_intercept
+            plane_gnc_welsch = np.array([coeff[0][0], coeff[0][1], intercept[0]])
 
         diff = plane_gnc_welsch-plane_gt
         var_gnc_welsch += np.outer(diff, diff)
@@ -194,4 +194,4 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
         print("plane_fit_efficiency OK")
 
 if __name__ == "__main__":
-    main(True, quick_run=False) # test_run
+    main(False, quick_run=False) # test_run

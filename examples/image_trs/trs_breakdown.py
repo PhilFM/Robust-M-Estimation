@@ -109,7 +109,7 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
 
         influence_func = WelschInfluenceFunc()
         param_instance = GNC_WelschParams(influence_func, sigma_base, sigma_limit, num_sigma_steps)
-        optimiser_instance = SupGaussNewton(param_instance, TRS(), data)
+        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=TRS())
 
         trs_bad = [s_bad, 0.0, 0.0, 0.0] #150.0*randomM11(), 70.0*randomM11()]
         bad_xy_idx = [0,0]

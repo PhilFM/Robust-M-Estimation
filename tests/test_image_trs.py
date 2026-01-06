@@ -35,7 +35,7 @@ def test_answer():
             data[n_good_point_pairs+i][3] = 3*(np.random.rand() - 0.5)
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), 0.01, 50.0, 20) # sigma_base, sigma_limit, num_sigma_steps
-        optimiser_instance = SupGaussNewton(param_instance, TRS(), data)
+        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=TRS())
         assert(optimiser_instance.run())
         model = optimiser_instance.final_model
         for i in range(4):

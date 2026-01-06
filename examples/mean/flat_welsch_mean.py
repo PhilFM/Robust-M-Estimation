@@ -7,8 +7,7 @@ from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
-
-from gncs_robust_mean import RobustMean
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 def objective_func(m, optimiser_instance) -> float:
     return optimiser_instance.objective_func([m])
@@ -75,7 +74,7 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
     max_x = 0.0
     sample_val = []
     param_instance = GNC_NullParams(WelschInfluenceFunc(sigma=sigma))
-    optimiser_instance = SupGaussNewton(param_instance, RobustMean(), data, weight=weight, scale=scale)
+    optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, scale=scale)
     for x in sample_x:
         v = optimiser_instance.objective_func([x])
         sample_val.append(v)
@@ -106,7 +105,7 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
             print("scale=",scale)
             plot_result(optimiser_instance, data, weight, x, sigma, "Init m", m_gt, output_folder, test_run)
 
-        sup_gn_instance = SupGaussNewton(param_instance, RobustMean(), data, weight=weight, scale=scale,
+        sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, scale=scale,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=0.99, lambda_max=0.99, diff_thres=diff_thres,
                                          model_start=[x], print_warnings=print_warnings)

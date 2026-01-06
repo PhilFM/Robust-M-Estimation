@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import sys
 
 from robust_mean import M_estimator
 
@@ -14,9 +15,11 @@ from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluence
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_vline, gncs_draw_curve
+from gnc_smoothie_philfm.cython.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
+from gnc_smoothie_philfm.cython.linear_regressor_pseudo_huber_evaluator import LinearRegressorPseudoHuberEvaluator
+from gnc_smoothie_philfm.cython.linear_regressor_gnc_irls_p_evaluator import LinearRegressorGNC_IRLSpEvaluator
 
 from trimmed_mean import trimmed_mean
-from gncs_robust_mean import RobustMean
 from weighted_mean import weighted_mean
 
 show_others = True
@@ -63,14 +66,14 @@ def mean_compare_apply(sigma_pop,p,xgtrange,n,n_samples_base,min_n_samples,outli
 
         data_array.append(datap)
 
-        model_instance = RobustMean()
+        evaluator_instance = LinearRegressorWelschEvaluator(data[0])
 
         gnc_welsch_sigma = sigma_pop/p
         welsch_irls_instance = IRLS(GNC_WelschParams(WelschInfluenceFunc(), gnc_welsch_sigma, max(xgtrange,10.0*sigma_pop), 100),
-                                    model_instance, data, weight=weight, max_niterations=200)
+                                    data, evaluator_instance=evaluator_instance, weight=weight, max_niterations=200)
 
         welsch_supgn_instance = SupGaussNewton(GNC_WelschParams(WelschInfluenceFunc(), gnc_welsch_sigma, max(xgtrange,10.0*sigma_pop), 100),
-                                               model_instance, data, weight=weight, max_niterations=200)
+                                               data, evaluator_instance=evaluator_instance, weight=weight, max_niterations=200)
         if smoothie:
             # for the smoothie paper use Sup-GN
             if welsch_supgn_instance.run():
@@ -83,25 +86,31 @@ def mean_compare_apply(sigma_pop,p,xgtrange,n,n_samples_base,min_n_samples,outli
         vec_gnc_welsch += math.pow(m_gncwelsch-m_gt, 2.0)
 
         if not smoothie:
-            mean = weighted_mean(data, weight)
+            mean = evaluator_instance.weighted_fit([data], [weight])
             vec_mean += math.pow(mean[0]-m_gt, 2.0)
+
+            evaluator_instance = LinearRegressorPseudoHuberEvaluator(data[0])
 
             pseudo_huber_sigma = sigma_pop/p
             pseudo_huber_irls_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudo_huber_sigma)),
-                                              model_instance, data, weight=weight)
+                                              data, evaluator_instance=evaluator_instance, weight=weight)
             pseudo_huber_irls_instance.run()  # this can fail but let's use the result anyway
             m_pseudo_huber = pseudo_huber_irls_instance.final_model
 
             vec_pseudo_huber += math.pow(m_pseudo_huber-m_gt, 2.0)
             pseudo_huber_supgn_instance = SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudo_huber_sigma)),
-                                                         model_instance, data, weight=weight)
+                                                         data, evaluator_instance=evaluator_instance, weight=weight)
 
             #trim_size = n//10
             #m_trimmed = trimmed_mean(data, trim_size=trim_size)
             #vec_trimmed1 += math.pow(m_trimmed-m_gt, 2.0)
 
         if student_t_dof == 0:
-            trim_size = int(0.5 + 0.5*outlier_fraction*n)
+            # correct trim_size to match level of outliers would be 0.5*outlier_fraction*n, but this assumes that the outliers
+            # are evenly distributed above and below the good data. To allow for all the outliers to be below (or above) the
+            # good data would require a trim size of outlier_fraction*n, but this is overly pessimistic.
+            # So let's compromise with 0.75.
+            trim_size = int(0.5 + 0.75*outlier_fraction*n)
         else:
             trim_size = n//4
 
@@ -117,9 +126,12 @@ def mean_compare_apply(sigma_pop,p,xgtrange,n,n_samples_base,min_n_samples,outli
             gnc_irls_p_epsilon_limit = 1.0
             gnc_irls_p_p = 0.0
             gnc_irls_p_beta = 0.8
+
+            evaluator_instance = LinearRegressorGNC_IRLSpEvaluator(data[0])
+
             gnc_irls_p_instance = IRLS(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                        gnc_irls_p_p, gnc_irls_p_rscale, gnc_irls_p_epsilon_base, gnc_irls_p_epsilon_limit, gnc_irls_p_beta),
-                                       model_instance, data, weight=weight)
+                                       data, evaluator_instance=evaluator_instance, weight=weight)
             gnc_irls_p_instance.run() # this can fail but let's use the result anyway
             m_gnc_irls_p = gnc_irls_p_instance.final_model
 
@@ -127,7 +139,7 @@ def mean_compare_apply(sigma_pop,p,xgtrange,n,n_samples_base,min_n_samples,outli
             gnc_irlsp_supgn_instance = SupGaussNewton(GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                                       gnc_irls_p_p, gnc_irls_p_rscale, gnc_irls_p_epsilon_base,
                                                                       gnc_irls_p_epsilon_limit, gnc_irls_p_beta),
-                                                      model_instance, data, weight=weight)
+                                                      data, evaluator_instance=evaluator_instance, weight=weight)
 
             m_rme = M_estimator(data, beta=1)
             vec_rme += math.pow(m_rme-m_gt, 2.0)

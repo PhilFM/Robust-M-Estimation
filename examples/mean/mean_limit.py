@@ -7,7 +7,7 @@ if __name__ == "__main__":
     sys.path.append("../../pypi_package/src")
 
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gncs_robust_mean import RobustMean
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 # Welsch
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
@@ -55,10 +55,10 @@ def main(test_run:bool, output_folder:str="../../output"):
     sigma_limit = data[n_points-1][0] - data[0][0]
     num_sigma_steps = 20
 
-    model_instance = RobustMean()
+    model_instance = LinearRegressor(data[0])
     param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit,
                                       num_sigma_steps=num_sigma_steps)
-    sup_gn_instance = SupGaussNewton(param_instance, model_instance, data)
+    sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=model_instance)
     x_border = 0.5*(data[n_points-1][0] - data[0][0])
     x_min = data[0][0]          - x_border
     x_max = data[n_points-1][0] + x_border
@@ -78,7 +78,7 @@ def main(test_run:bool, output_folder:str="../../output"):
     # example gaussians for individual data points
     for i in range(n_points):
         data_point = [data[i]]
-        data_point_instance = SupGaussNewton(param_instance, model_instance, data_point)
+        data_point_instance = SupGaussNewton(param_instance, data_point, model_instance=model_instance)
         plt.plot(mlist, hmfv(mlist, optimiser_instance=data_point_instance), lw = 1.0, color="limegreen", label="Data point contribution" if i==0 else None)
         
     plt.plot(mlist, hmfv(mlist, optimiser_instance=sup_gn_instance), lw = 1.0, color="green", label="Objective function")

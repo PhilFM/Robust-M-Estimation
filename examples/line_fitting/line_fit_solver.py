@@ -5,8 +5,11 @@ import os
 if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/linear_model")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/cython")
 
-from line_fit_welsch        import LineFitWelsch
+from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+
 from line_fit_orthog_welsch import LineFitOrthogWelsch
 
 def objective_func(a:float, b:float, optimiser_instance):
@@ -22,16 +25,17 @@ def randomM11() -> float:
 def test_with_sigma(line_gt, data, sigma: float, output_folder: str, test_run: bool):
     # linear regression fitter y = a*x + b
     y_range = max(data[:,1]) - min(data[:,1])
-    line_fitter = LineFitWelsch(sigma, y_range, 20, debug=True)
+    line_fitter = LinearRegressorWelsch(sigma, y_range, 20, debug=True, max_niterations=200)
     if line_fitter.run(data):
-        final_line = line_fitter.final_line
+        coeff = line_fitter.final_coeff
+        intercept = line_fitter.final_intercept
+        final_line = np.array([coeff[0][0], intercept[0]])
         final_weight = line_fitter.final_weight
-        debug_line_list = line_fitter.debug_line_list
+        debug_line_list = line_fitter.debug_model_list
 
     if not test_run:
         print("Linear regression result: a,b,c", final_line)
-        line = np.array([-final_line[0]/final_line[1], -final_line[2]/final_line[1]])
-        print("   error: ", line-line_gt)
+        print("   error: ", final_line-line_gt)
 
     # orthogonal regression fitter a*x + b*y + c = 0 where a^2+b^2=1
     line_fitter_orthog = LineFitOrthogWelsch(sigma, y_range, 20, debug=True)
@@ -79,7 +83,7 @@ def test_with_sigma(line_gt, data, sigma: float, output_folder: str, test_run: b
         color = [alpha, 0.0, 1.0-alpha]
         plt.plot(d[0], d[1], color = color, marker = 'o')
 
-    (a,b) = (-final_line[0]/final_line[1], -final_line[2]/final_line[1])
+    (a,b) = (final_line[0],final_line[1])
     plt.axline((x_min, a*x_min+b), (x_max, a*x_max+b), color = "green", linewidth=1.5)
 
     plt.legend()

@@ -271,9 +271,12 @@ Here are the parameters that need to be passed to the `IRLS` class constructor. 
            Returns the stage reached in the GNC schedule, as a value between zero (start)
 	   and one (end)
    - `increment(self) -> None` Updates the influence_func_instance to the next step in the GNC schedule.
-- `model_instance` The model being fitted to the data, an instance of a class you design
+- `data` An array of data items. Each data item should itself be an array.
+
+Now the optional parameters for the `IRLS` class constructor:
+- `model_instance` A Python-based model being fitted to the data, an instance of a class you design
      that provides at minimum following methods:
-   - `cache_model(self, model, model_ref=None)`
+   - `cache_model(self, model, model_ref=None) -> None`
      Use this method to cache the model, prior to the `residual()` method being called on each data item.
      If the model contains reference parameters e.g. for estimating rotation, these are passed
      as `model_ref`.
@@ -304,9 +307,17 @@ Here are the parameters that need to be passed to the `IRLS` class constructor. 
      In that case the `weighted_fit()` should be omitted.
      If second and possibly third types of data item are being used, add arguments `data2`
      `weight2`, `scale2` and `data3`, `weight3`, `scale3` as appropriate.
-- `data` An array of data items. Each data item should itself be an array.
-
-Now the optional parameters for the `IRLS` class constructor:
+- `evaluator_instance` A Cython-based evaluator that provides a fast implementation of the model
+     specific to the influence function. It should be a class instance that provides at least
+     the following methods.
+   - `set_residual_size(self, residual_size: npt.ArrayLike) -> None`
+       Sets the residual size for each data type.
+   - `update_weights(self, model: npt.ArrayLike, model_ref, influence_func_instance,
+                     data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike,
+                     new_weight: npt.ArrayLike) -> None`
+       Update IRLS weights.
+   - `weighted_fit(self, data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike) -> np.array`
+       Return the model fitted to the data, taking the weights into account.
 - `weight` An array of float weight values for each data item.
      If not provided, weights are initialised to one.
 - `scale` An array of scale values, indicating that one or more data items are known to
@@ -413,7 +424,10 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
 	   and one (end)
    - `increment(self) -> None` Updates the influence_func_instance to the next step in the GNC schedule.
 
-- `model_instance` The model being fitted to the data, an instance of a class you design
+- `data` An array of data items. Each data item should itself be an array.
+
+Now the optional parameters for the `SupGaussNewton` class constructor:
+- `model_instance` A Python-based model being fitted to the data, an instance of a class you design
   that provides at minimum the following methods:
    - `cache_model(self, model, model_ref=None)`
      Use this method to cache the model, prior to `residual()` and `residual_gradient()`
@@ -463,9 +477,19 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
      In that case the `weighted_fit()` method should be omitted.
      If second and possibly third types of data item are being used, add arguments `data2`
      `weight2`, `scale2` and `data3`, `weight3`, `scale3` as appropriate.
-- `data` An array of data items. Each data item should itself be an array.
-
-Now the optional parameters for the `SupGaussNewton` class constructor:
+- `evaluator_instance` A Cython-based evaluator that provides a fast implementation of the model
+     specific to the influence function. It should be a class instance that provides at least
+     the following methods.
+   - `set_residual_size(self, residual_size: npt.ArrayLike) -> None`
+       Sets the residual size for each data type.
+   - `objective_func(self, model: npt.ArrayLike, model_ref, influence_func_instance,
+                     data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike) -> float`
+       Returns the total Sup-GN objective function evaluated over all data.
+   - `weighted_derivs(self, model: npt.ArrayLike, model_ref, influence_func_instance, lambda_val: float,
+                      data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike) -> (np.array, np.array)`
+       Returns the sums of weighted derivatives used in the Sup-GN algorithm.
+   - `weighted_fit(self, data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike) -> np.array`
+       Return the model fitted to the data, taking the weights into account.
 - `weight` An array of float weight values for each data item.
      If not provided, weights are initialised to one
 - `scale` An array of scale values, indicating that one or more data items are known to
@@ -533,7 +557,7 @@ class LineFit:
         pass
 
     # copy model parameters and apply any internal calculations
-    def cache_model(self, model, model_ref=None):
+    def cache_model(self, model, model_ref=None) -> None:
         self.__a = model[0]
         self.__b = model[1]
 

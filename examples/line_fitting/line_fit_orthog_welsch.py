@@ -34,7 +34,7 @@ class LineFitOrthogWelsch:
             weight: np.array = None,
             scale: np.array = None):
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), self.__sigma, self.__sigma_limit, self.__num_sigma_steps)
-        optimiser_instance = IRLS(param_instance, LineFitOrthog(), data, weight=weight, scale=scale,
+        optimiser_instance = IRLS(param_instance, data, model_instance=LineFitOrthog(), weight=weight, scale=scale,
                                   max_niterations=self.__max_niterations,
                                   diff_thres=self.__diff_thres,
                                   print_warnings=self.__print_warnings,

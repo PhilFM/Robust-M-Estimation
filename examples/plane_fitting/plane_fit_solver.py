@@ -4,8 +4,11 @@ import open3d as o3d
 if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/linear_model")
+    sys.path.append("../../pypi_package/src/gnc_smoothie_philfm/cython")
 
-from plane_fit_welsch        import PlaneFitWelsch
+from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+
 from plane_fit_orthog_welsch import PlaneFitOrthogWelsch
 
 def show_3d(data: np.array, final_weight: np.array, mesh_size, plane_vertices) -> None:
@@ -26,7 +29,7 @@ def show_3d(data: np.array, final_weight: np.array, mesh_size, plane_vertices) -
 
     # 3. Create TriangleMesh object
     mesh = o3d.geometry.TriangleMesh()
-    mesh.vertices = o3d.utility.Vector3dVector(data) #vertices)
+    mesh.vertices = o3d.utility.Vector3dVector(data)
     mesh.triangles = o3d.utility.Vector3iVector(triangles)
     mesh.compute_vertex_normals()
     max_weight = max(final_weight)
@@ -38,7 +41,7 @@ def show_3d(data: np.array, final_weight: np.array, mesh_size, plane_vertices) -
 
     # add plane mesh
     plane_mesh = o3d.geometry.TriangleMesh()
-    plane_mesh.vertices = o3d.utility.Vector3dVector(plane_vertices)
+    plane_mesh.vertices = o3d.utility.Vector3dVector(np.reshape(plane_vertices, (len(plane_vertices),3)))
     plane_mesh.triangles = o3d.utility.Vector3iVector(triangles)
     plane_mesh.vertex_colors = o3d.utility.Vector3dVector(vertex_colors)
     #plane_mesh.paint_uniform_color([0.4, 0.4, 1])
@@ -79,32 +82,34 @@ def main(test_run:bool, output_folder:str="../../output"):
     p = 0.6667
     sigma = sigma_pop/p
     sigma_limit = np.max(data[:,2]) - np.min(data[:,2])
-    plane_fitter = PlaneFitWelsch(sigma, sigma_limit, 20, debug=True)
-    if plane_fitter.run(data):
-        final_plane = plane_fitter.final_plane
-        final_weight = plane_fitter.final_weight
-        debug_plane_list = plane_fitter.debug_plane_list
+    linear_regressor = LinearRegressorWelsch(sigma, sigma_limit, 20, use_slow_version=False, debug=True)
+    if linear_regressor.run(data):
+        coeff = linear_regressor.final_coeff
+        intercept = linear_regressor.final_intercept
+        final_plane = np.array([coeff[0][0], coeff[0][1], intercept[0]])
+        final_weight = linear_regressor.final_weight
+        debug_plane_list = linear_regressor.debug_model_list
 
     if not test_run:
-        print("Linear regression result: a,b,c,d=", final_plane)
-        plane = np.array([-final_plane[0]/final_plane[2], -final_plane[1]/final_plane[2], -final_plane[3]/final_plane[2]])
-        print("   error: ", plane-plane_gt)
+        print("Linear regression plane result:", final_plane)
+        print("   error: ", final_plane-plane_gt)
 
         # build vertices on the plane
         plane_vertices = np.copy(data)
         for pv in plane_vertices:
-            pv[2] = plane[0]*pv[0] + plane[1]*pv[1] + plane[2]
+            pv[2] = final_plane[0]*pv[0] + final_plane[1]*pv[1] + final_plane[2]
 
         show_3d(data, final_weight, mesh_size, plane_vertices)
 
     # change to True if you want to see the progress of the algorithm
-    if False:
+    if False: #not test_run:
+        print("Intermediate model values:")
         for plane in debug_plane_list:
             if not test_run:
-                print(plane)
+                print("   ",plane)
 
     # orthogonal regression fitter a*x + b*y + c*z + d = 0 where a^2+b^2+c^2=1
-    plane_fitter_orthog = PlaneFitOrthogWelsch(0.01, 50.0, 20, debug=True)
+    plane_fitter_orthog = PlaneFitOrthogWelsch(0.01, 50.0, 20, max_niterations=200, debug=True)
     if plane_fitter_orthog.run(data):
         final_plane_orthog = plane_fitter_orthog.final_plane
         debug_plane_list_orthog = plane_fitter_orthog.debug_plane_list
@@ -116,9 +121,10 @@ def main(test_run:bool, output_folder:str="../../output"):
 
     # change to True if you want to see the progress of the algorithm
     if False:
+        print("Intermediate model values (orthog):")
         for plane in debug_plane_list_orthog:
             if not test_run:
-                print(plane)
+                print("   ",plane)
 
     if test_run:
         print("plane_fit_solver OK")

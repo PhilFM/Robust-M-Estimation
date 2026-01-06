@@ -10,8 +10,7 @@ if __name__ == "__main__":
     sys.path.append("../../pypi_package/src")
 
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
-
-from line_fit_welsch import LineFitWelsch
+from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
 
 def fit_line_ls(data):
     Sxx = Sx = Sy = Sxy = 0.0
@@ -55,8 +54,8 @@ def fit_line_hough(data, sigma_pop: float, test_run: bool) -> np.ndarray:
     #print("lines=",lines)
 
     votes, rho, theta = lines[:, 0][:, 0], lines[:, 0][:, 1], lines[:, 0][:, 2]
-    if not test_run:
-        print("votes=",votes)
+    #if not test_run:
+    #    print("votes=",votes)
 
     # Convert to cartesian
     theta[theta == 0.] = 1e-5  # to avoid division by 0 in next line
@@ -99,7 +98,7 @@ def apply_to_data(sigma_pop,p,x_range,n,n_samples_base,min_n_samples,outlier_fra
     for i in range(n_samples):
         line_gt = [randomM11(), randomM11()]
         #print("line_gt=",line_gt)
-        data = np.zeros([n,2])
+        data = np.zeros((n,2))
         for i in range(n0):
             x = x_scale*i - half_x_range
             data[i] = (x, line_gt[0]*x+line_gt[1] + np.random.normal(0.0, sigma_pop))
@@ -109,11 +108,11 @@ def apply_to_data(sigma_pop,p,x_range,n,n_samples_base,min_n_samples,outlier_fra
             data[i] = (half_x_range*randomM11(), 10.0*randomM11())
 
         # GNC IRLS Welsch
-        line_fitter = LineFitWelsch(sigma_pop/p, max(x_range,10.0*sigma_pop), 30, max_niterations=200)
+        line_fitter = LinearRegressorWelsch(sigma_pop/p, max(x_range,10.0*sigma_pop), 30, max_niterations=200)
         if line_fitter.run(data):
-            # convert normalised a*x+b*y+c=0 parameters to y=a*x+b parameters
-            final_line = line_fitter.final_line
-            line_gnc_welsch = np.array([-final_line[0]/final_line[1], -final_line[2]/final_line[1]])
+            coeff = line_fitter.final_coeff
+            intercept = line_fitter.final_intercept
+            line_gnc_welsch = np.array([coeff[0][0], intercept[0]])
 
         diff = line_gnc_welsch-line_gt
         var_gnc_welsch += np.outer(diff, diff)
@@ -226,4 +225,4 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
         print("line_fit_efficiency OK")
 
 if __name__ == "__main__":
-    main(True, quick_run=False) # test_run
+    main(False, quick_run=False) # test_run

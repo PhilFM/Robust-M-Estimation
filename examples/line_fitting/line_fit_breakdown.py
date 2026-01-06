@@ -9,8 +9,7 @@ if __name__ == "__main__":
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-
-from line_fit import LineFit
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 sys.path.append("../misc")
 from check_for_breakdown import check_for_breakdown
@@ -39,11 +38,7 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
     # So when a' == erf_div_2nd_deriv_zero_point, a = sqrt(2)*sigma*a'/D
     coeff_a = erf_div_2nd_deriv_zero_point*math.sqrt(2.0)
 
-    influence_func = WelschInfluenceFunc()
-    line_fit = LineFit()
-    param_instance = GNC_WelschParams(influence_func, sigma_base, sigma_limit, num_sigma_steps)
     Dlist = (2.0,3.0) if quick_run else (1.0,2.0,3.0,4.0,5.0)
-
     for D in Dlist:
         if not test_run:
             print("D=",D)
@@ -53,6 +48,11 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
             x = -D + i*2.0*D/(n_points-1)
             data[i][0] = x
             data[i][1] = np.random.normal(0.0,sigma_pop) # good line is a=b=0
+
+        influence_func = WelschInfluenceFunc()
+        model_instance = LinearRegressor(data[0])
+        param_instance = GNC_WelschParams(influence_func, sigma_base, sigma_limit, num_sigma_steps)
+        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, model_start=line_good)
 
         for a_idx in range(2 if quick_run else 10):
             if not test_run:
@@ -65,7 +65,6 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
                 ip = n_points-i-1
                 data[ip][1] = line_bad[0]*data[ip][0] + line_bad[1]
 
-            optimiser_instance = SupGaussNewton(param_instance, line_fit, data, model_start=line_good)
             def line_a(a, data):
                 return optimiser_instance.objective_func([a,line_good[1]])
 
@@ -89,7 +88,6 @@ def main(test_run:bool, output_folder:str="../../output", quick_run:bool=False):
                 ip = n_points-i-1
                 data[ip][1] = line_bad[0]*data[ip][0] + line_bad[1]
 
-            optimiser_instance = SupGaussNewton(param_instance, line_fit, data, model_start=line_good)
             def line_b(b, data):
                 return optimiser_instance.objective_func([line_good[0],b])
 

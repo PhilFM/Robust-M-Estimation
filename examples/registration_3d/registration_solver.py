@@ -110,7 +110,7 @@ def main(test_run:bool, output_folder:str="../../output"):
         model_ref_start = R_gt #np.matmul(Rs,R_gt)
         welsch_param_instance = GNC_WelschParams(WelschInfluenceFunc(),
                                                  noise_sigma/welsch_p, noise_sigma/welsch_p, num_sigma_steps) # sigma_base, sigma_limit, numSigmaStep
-        optimiser_instance = SupGaussNewton(welsch_param_instance, PointRegistration(), data, weight=weight,
+        optimiser_instance = SupGaussNewton(welsch_param_instance, data, model_instance=PointRegistration(), weight=weight,
                                             max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                             lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres, print_warnings=print_warnings,
                                             model_start=model_start, model_ref_start=model_ref_start, debug=True)
@@ -126,7 +126,7 @@ def main(test_run:bool, output_folder:str="../../output"):
                 print("GNC Welsch tdiff=",model[3:6]-t_gt)
 
         optimiser_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(noise_sigma/welsch_p)),
-                                  PointRegistration(), data, weight=weight,
+                                  data, model_instance=PointRegistration(), weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
                                   model_start=model_start, model_ref_start=model_ref_start, debug=True)
         if optimiser_instance.run():
@@ -145,7 +145,7 @@ def main(test_run:bool, output_folder:str="../../output"):
         gnc_irls_p_beta = 0.8 #math.exp((math.log(gnc_irls_p_sigma_base) - math.log(gnc_irls_p_sigma_limit))/(num_sigma_steps - 1.0))
         gnc_irls_p_paramInstance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                    0.0, gnc_irls_p_rscale, gnc_irls_p_epsilon_base, gnc_irls_p_epsilon_base, gnc_irls_p_beta)
-        optimiser_instance = IRLS(gnc_irls_p_paramInstance, PointRegistration(), data, weight=weight,
+        optimiser_instance = IRLS(gnc_irls_p_paramInstance, data, model_instance=PointRegistration(), weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
                                   model_start=model_start, model_ref_start=model_ref_start, debug=True)
         if optimiser_instance.run():
@@ -159,7 +159,7 @@ def main(test_run:bool, output_folder:str="../../output"):
                 print("GNC IRLS-p0 tdiff=",model[3:6]-t_gt)
 
         gnc_irls_p_paramInstance.influence_func_instance.p = 1.0
-        optimiser_instance = IRLS(gnc_irls_p_paramInstance, PointRegistration(), data, weight=weight,
+        optimiser_instance = IRLS(gnc_irls_p_paramInstance, data, model_instance=PointRegistration(), weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
                                   model_start=model_start, model_ref_start=model_ref_start, debug=True)
         if optimiser_instance.run():

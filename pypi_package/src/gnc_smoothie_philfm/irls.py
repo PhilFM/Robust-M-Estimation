@@ -10,8 +10,9 @@ class IRLS(BaseIRLS):
     def __init__(
         self,
         param_instance,
-        model_instance,
         data: npt.ArrayLike,
+        model_instance = None, # Python model
+        evaluator_instance = None, # Cython model
         weight: npt.ArrayLike = None,
         scale: npt.ArrayLike = None,
         data2: npt.ArrayLike = None,
@@ -31,8 +32,9 @@ class IRLS(BaseIRLS):
         BaseIRLS.__init__(
             self,
             param_instance,
-            model_instance,
             data,
+            model_instance=model_instance,
+            evaluator_instance=evaluator_instance,
             weight=weight,
             scale=scale,
             data2=data2,
@@ -89,16 +91,16 @@ class IRLS(BaseIRLS):
             if self._debug:
                 start_time = time.time()
 
-            self._update_weights(model, weight, model_ref=model_ref)
+            self.update_weights(model, weight, model_ref=model_ref)
             if self._debug:
                 self.debug_update_weights_time += time.time() - start_time
                 start_time = time.time()
 
             model_old = model
-            if callable(self._linear_model_size):
-                model = self.weighted_fit(weight)
+            if self._evaluator_instance is not None or callable(self._linear_model_size):
+                model, model_ref = self.weighted_fit(weight)
             else:
-                model, model_ref = self._model_weighted_fit(weight)
+                model, model_ref = self.model_weighted_fit(weight)
 
             if self._debug:
                 self.debug_weighted_fit_time += time.time() - start_time
@@ -147,7 +149,7 @@ class IRLS(BaseIRLS):
         # finish with parameters in correct final model
         self.final_model = model
         self.final_model_ref = model_ref
-        self._update_weights(model, weight, model_ref)
+        self.update_weights(model, weight, model_ref)
         self.final_weight = weight[0]
         self.final_weight2 = weight[1]
         self.final_weight3 = weight[2]

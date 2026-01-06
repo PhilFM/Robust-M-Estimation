@@ -7,11 +7,11 @@ sys.path.append("../pypi_package/src")
 from gnc_smoothie_philfm.base_irls import BaseIRLS
 from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
 
 sys.path.append("../examples/mean")
 from flat_welsch_mean import flat_welsch_mean
-from gncs_robust_mean import RobustMean
 
 def objective_func(m, optimiser_instance) -> float:
     return optimiser_instance.objective_func([m])
@@ -61,7 +61,7 @@ def test_answer():
 
             # determine ground truth by sampling
             param_instance = GNC_NullParams(WelschInfluenceFunc(sigma))
-            optimiser_instance = BaseIRLS(param_instance, RobustMean(), data, weight=weight, scale=scale)
+            optimiser_instance = BaseIRLS(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, scale=scale)
 
             n_samples = 200
             xlist = np.linspace(0.0, x_range, num=n_samples)

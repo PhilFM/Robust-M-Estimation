@@ -17,8 +17,7 @@ from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluence
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
 from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_vline, gncs_draw_curve
-
-from gncs_robust_mean import RobustMean
+from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 n = 10
 xgtrange = 10.0
@@ -109,10 +108,10 @@ def main(test_run:bool, output_folder:str="../../output"):
         sigma_base = sigma_pop/welsch_p
         sigma_limit = xgtrange
 
-        model_instance = RobustMean()
+        model_instance = LinearRegressor(data[0])
 
         welsch_optimiser_instance = SupGaussNewton(GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps),
-                                                   model_instance, data, weight=weight,
+                                                   data, model_instance=model_instance, weight=weight,
                                                    max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                                    lambda_start=lambda_start, lambda_scale=lambda_scale, diff_thres=diff_thres,
                                                    print_warnings=print_warnings)
@@ -121,7 +120,8 @@ def main(test_run:bool, output_folder:str="../../output"):
             if not test_run:
                 print("m_welsch-m_gt=",m_welsch-m_gt)
 
-        pseudo_huber_supgn_optimiser_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)), model_instance, data, weight=weight,
+        pseudo_huber_supgn_optimiser_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)), data,
+                                                     model_instance=model_instance, weight=weight,
                                                      max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
         if pseudo_huber_supgn_optimiser_instance.run():
             m_pseudo_huber = pseudo_huber_supgn_optimiser_instance.final_model
@@ -129,7 +129,7 @@ def main(test_run:bool, output_folder:str="../../output"):
                 print("m_pseudo_huber-m_gt=",m_pseudo_huber-m_gt)
 
         pseudo_huber_supgn_optimiser_instance = SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)),
-                                                               model_instance, data, weight=weight,
+                                                               data, model_instance=model_instance, weight=weight,
                                                                max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
     
         gnc_irls_p_p = 0.0
@@ -139,14 +139,14 @@ def main(test_run:bool, output_folder:str="../../output"):
         gnc_irls_p_beta = math.exp((math.log(sigma_base) - math.log(sigma_limit))/(num_sigma_steps - 1.0))
         gnc_irls_p_param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                     gnc_irls_p_p, gnc_irls_p_rscale, gnc_irls_p_epsilon_base, gnc_irls_p_epsilon_limit, gnc_irls_p_beta)
-        gnc_irls_p_optimiser_instance = IRLS(gnc_irls_p_param_instance, model_instance, data, weight=weight,
+        gnc_irls_p_optimiser_instance = IRLS(gnc_irls_p_param_instance, data, model_instance=model_instance, weight=weight,
                                              max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
         if gnc_irls_p_optimiser_instance.run():
             m_gnc_irls_p = gnc_irls_p_optimiser_instance.final_model
             if not test_run:
                 print("m_gnc_irls_p-m_gt=",m_gnc_irls_p-m_gt)
 
-        gnc_irls_p_supgn_optimiser_instance = SupGaussNewton(gnc_irls_p_param_instance, model_instance, data, weight=weight,
+        gnc_irls_p_supgn_optimiser_instance = SupGaussNewton(gnc_irls_p_param_instance, data, model_instance=model_instance, weight=weight,
                                                              max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                                              lambda_start=lambda_start, lambda_scale=lambda_scale, diff_thres=diff_thres,
                                                              print_warnings=print_warnings)
