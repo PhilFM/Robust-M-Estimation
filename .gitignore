@@ -12,10 +12,10 @@ __pycache__
 */__pycache__
 */*/__pycache__
 build
-examples/cython/*.c
-examples/cython/*.so
-pypi_package/src/gnc_smoothie_philfm/cython/*.c
-pypi_package/src/gnc_smoothie_philfm/cython/*.so
+examples/src/cython_files/*.c
+examples/src/cython_files/*.so
+pypi_package/src/gnc_smoothie_philfm/cython_files/*.c
+pypi_package/src/gnc_smoothie_philfm/cython_files/*.so
 pypi_package/dist
 pypi_package/src/gnc_smoothie_philfm.egg-info
 pypi_package/gnc_smoothie_philfm.egg-info
