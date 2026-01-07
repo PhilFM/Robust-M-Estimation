@@ -2,7 +2,7 @@ import sys
 import pytest
 import numpy as np
 
-sys.path.append("../mean")
+sys.path.append("../src/mean")
 from trimmed_mean import trimmed_mean
 
 def test_answer():

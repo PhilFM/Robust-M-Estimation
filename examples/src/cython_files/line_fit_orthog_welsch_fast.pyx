@@ -4,7 +4,7 @@ cimport numpy as np
 
 np.import_array()
 
-from cython.cimports.cython_files.welsch_influence_func import welsch_rho, welsch_rhop, welsch_Bterm
+from cython.cimports.src.cython_files.welsch_influence_func import welsch_rho, welsch_rhop, welsch_Bterm
 
 @cython.boundscheck(False)  # Deactivate bounds checking
 

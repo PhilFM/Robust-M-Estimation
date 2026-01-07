@@ -8,7 +8,7 @@ from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
-sys.path.append("../image_trs")
+sys.path.append("../src/image_trs")
 from trs import TRS
 
 def test_answer():

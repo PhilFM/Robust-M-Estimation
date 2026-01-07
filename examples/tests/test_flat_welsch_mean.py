@@ -10,7 +10,7 @@ from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
 
-sys.path.append("../mean")
+sys.path.append("../src/mean")
 from flat_welsch_mean import flat_welsch_mean
 
 def objective_func(m, optimiser_instance) -> float:
@@ -96,7 +96,7 @@ def test_answer():
                 y_max = optimiser_instance.objective_func([x_max])
                 break
 
-        m = flat_welsch_mean(data, sigma, weight=weight, scale=scale, print_warnings=False, output_folder="../Output")
+        m = flat_welsch_mean(data, sigma, weight=weight, scale=scale, print_warnings=False, output_folder="../../output")
         #plotResult(optimiser_instance, data, weight, scale, m, x_max, sigma)
         assert(m == pytest.approx(x_max, 1.e-4))
 

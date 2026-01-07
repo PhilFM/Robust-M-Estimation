@@ -9,7 +9,7 @@ from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
-sys.path.append("../registration_3d")
+sys.path.append("../src/registration_3d")
 from point_registration import PointRegistration
 
 def test_answer():

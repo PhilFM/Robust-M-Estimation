@@ -2,7 +2,7 @@ import sys
 import pytest
 import numpy as np
 
-sys.path.append("../mean")
+sys.path.append("../src/mean")
 from weighted_mean import weighted_mean
 
 def test_answer():

@@ -12,10 +12,10 @@ sys.path.append("../../pypi_package/tests")
 from evaluator_test import evaluator_test
 
 # supports import of Cython stuff
-sys.path.append("../cython_files")
+sys.path.append("../src/cython_files")
 from line_fit_orthog_welsch_evaluator import LineFitOrthogWelschEvaluator
 
-sys.path.append("../line_fitting")
+sys.path.append("../src/line_fitting")
 from line_fit_orthog import LineFitOrthog
 from line_fit_orthog_welsch import LineFitOrthogWelsch
 
