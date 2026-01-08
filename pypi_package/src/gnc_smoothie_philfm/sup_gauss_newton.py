@@ -218,7 +218,8 @@ class SupGaussNewton(BaseIRLS):
             if self._debug:
                 self.debug_solve_time += time.time() - start_time
 
-            model -= lambda_a*at
+            at *= lambda_a
+            model -= at
             if callable(update_model_ref):
                 model_ref = update_model_ref(model, model_ref)
 
@@ -231,7 +232,8 @@ class SupGaussNewton(BaseIRLS):
                     print("Aborting here new lambda=", lambda_val)
                     continue
 
-            if self._diff_thres is not None:
+            # only check for termination if we have reached the end of any GNC schedule
+            if self._diff_thres is not None and self._param_instance.alpha() == 1.0:
                 model_max_diff = np.linalg.norm(at, ord=np.inf)
                 if self._debug is True and model_max_diff > 0.0:
                     self.debug_diffs.append(math.log10(model_max_diff))
