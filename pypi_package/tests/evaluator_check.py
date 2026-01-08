@@ -8,9 +8,9 @@ import numpy.typing as npt
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.irls import IRLS
 
-def evaluator_test(evaluator_instance, param_instance, model_instance,
-                   model: npt.ArrayLike, data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike,
-                   irls_only: bool=False) -> bool:
+def evaluator_check(evaluator_instance, param_instance, model_instance,
+                    model: npt.ArrayLike, data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike,
+                    irls_only: bool=False) -> bool:
     # reference slow instance
     if irls_only:
         optimiser_instance = IRLS(param_instance, data, model_instance=model_instance, weight=weight, scale=scale)

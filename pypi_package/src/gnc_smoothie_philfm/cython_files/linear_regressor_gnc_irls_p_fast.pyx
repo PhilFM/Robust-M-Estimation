@@ -19,7 +19,7 @@ def linear_regressor_gnc_irls_p_objective_func(cython.double p, cython.double rs
     return tot
 
 def linear_regressor_gnc_irls_p_weighted_derivs(cython.double p, cython.double rscale, cython.double epsilon,
-                                                cython.double lambda_val, cython.double[:] model,
+                                                cython.double lambda_b, cython.double[:] model,
                                                 cython.double[:,:,:] data, cython.double[:] weight,
                                                 cython.double[:] scale,
                                                 cython.double[:] residual, cython.double[:,:] grad,
@@ -30,7 +30,7 @@ def linear_regressor_gnc_irls_p_weighted_derivs(cython.double p, cython.double r
         linear_regressor_calc_grad(data[i], residual, grad)
         rhop: cython.double = gnc_irls_p_rhop(rsqr, p, rscale, scale[i]*epsilon)
         Bterm: cython.double = gnc_irls_p_Bterm(rsqr, p, rscale, scale[i]*epsilon)
-        increment_weighted_deriv_sums(lambda_val, data[i], grad, rhop, Bterm, weight[i], atot, AlBtot)
+        increment_weighted_deriv_sums(lambda_b, data[i], grad, rhop, Bterm, weight[i], atot, AlBtot)
 
     # fill in lower diagonal entries in AlBtot
     k: cython.Py_ssize_t

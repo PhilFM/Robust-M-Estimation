@@ -126,6 +126,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
     n_good_points = 10
     n_bad_points = 8
     sigma_pop = 0.1
+
+    # let's use the SciPy data format convention here, separating the "training data" X and "output" y
     data_x = np.zeros(n_good_points+n_bad_points)
     data_y = np.zeros(n_good_points+n_bad_points)
     for i in range(n_good_points):

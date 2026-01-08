@@ -84,9 +84,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
     sigma_limit = np.max(data[:,2]) - np.min(data[:,2])
     linear_regressor = LinearRegressorWelsch(sigma, sigma_limit, 20, use_slow_version=False, debug=True)
     if linear_regressor.run(data):
-        coeff = linear_regressor.final_coeff
-        intercept = linear_regressor.final_intercept
-        final_plane = np.array([coeff[0][0], coeff[0][1], intercept[0]])
+        final_plane = linear_regressor.final_model
         final_weight = linear_regressor.final_weight
         debug_plane_list = linear_regressor.debug_model_list
 

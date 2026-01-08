@@ -22,7 +22,7 @@ def objective_func(x, optimiser_instance):
         return optimiser_instance.objective_func([x])
 
 def gradient(x, optimiser_instance):
-    a,AlB = optimiser_instance.weighted_derivs([x], 1.0) # lambda_val
+    a,AlB = optimiser_instance.weighted_derivs([x], 1.0) # lambda_b
     return optimiser_instance.objective_func_sign()*a[0]
 
 def centred_quadratic(x, a, c):

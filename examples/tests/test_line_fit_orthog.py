@@ -9,7 +9,7 @@ from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 
 sys.path.append("../../pypi_package/tests")
-from evaluator_test import evaluator_test
+from evaluator_check import evaluator_check
 
 # supports import of Cython stuff
 sys.path.append("../src/cython_files")
@@ -112,7 +112,7 @@ def test_evaluator():
         a /= norm
         b /= norm
         model = [a, b, np.random.rand()] # a,b,c
-        assert(evaluator_test(evaluator_instance, param_instance, LineFitOrthog(), model, data, weight, scale, irls_only=True))
+        assert(evaluator_check(evaluator_instance, param_instance, LineFitOrthog(), model, data, weight, scale, irls_only=True))
 
         # fast IRLS
         max_niterations=200

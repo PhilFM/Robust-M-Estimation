@@ -28,7 +28,7 @@ cdef inline linear_regressor_calc_grad(cython.double[:,:] data_item, cython.doub
 
         grad[j][dim] = residual[j]
 
-cdef inline increment_weighted_deriv_sums(cython.double lambda_val, cython.double[:,:] data_item, cython.double[:,:] grad,
+cdef inline increment_weighted_deriv_sums(cython.double lambda_b, cython.double[:,:] data_item, cython.double[:,:] grad,
                                           cython.double rhop, cython.double Bterm, cython.double w,
                                           cython.double[:] atot, cython.double[:,:] AlBtot):
     j: cython.Py_ssize_t
@@ -41,22 +41,22 @@ cdef inline increment_weighted_deriv_sums(cython.double lambda_val, cython.doubl
         for k in range(dim):
             atot[offset+k] += w * rhop * grad[j][k]
             for l in range(k,dim):
-                AlBtot[offset+k][offset+l] += w * (rhop*data_item[j][k]*data_item[j][l] + lambda_val * Bterm * grad[j][k]*grad[j][l])
+                AlBtot[offset+k][offset+l] += w * (rhop*data_item[j][k]*data_item[j][l] + lambda_b * Bterm * grad[j][k]*grad[j][l])
 
-            AlBtot[offset+k][offset+dim] += w * (rhop*data_item[j][k] + lambda_val * Bterm * grad[j][k]*grad[j][dim])
+            AlBtot[offset+k][offset+dim] += w * (rhop*data_item[j][k] + lambda_b * Bterm * grad[j][k]*grad[j][dim])
 
         atot[offset+dim] += w * rhop * grad[j][dim]
-        AlBtot[offset+dim][offset+dim] += w * (rhop + lambda_val * Bterm * grad[j][dim]*grad[j][dim])
+        AlBtot[offset+dim][offset+dim] += w * (rhop + lambda_b * Bterm * grad[j][dim]*grad[j][dim])
         for m in range(j+1,data_item.shape[0]):
             offsetp: cython.Py_ssize_t = m*data_item.shape[1]
             for k in range(dim):
                 for l in range(dim):
-                    AlBtot[offset+k][offsetp+l] += w * lambda_val * Bterm * grad[j][k]*grad[m][l]
+                    AlBtot[offset+k][offsetp+l] += w * lambda_b * Bterm * grad[j][k]*grad[m][l]
 
-                AlBtot[offset+k][offsetp+dim] += w * lambda_val * Bterm * grad[j][k]*grad[m][dim]
+                AlBtot[offset+k][offsetp+dim] += w * lambda_b * Bterm * grad[j][k]*grad[m][dim]
                         
             for l in range(dim):
-                AlBtot[offset+dim][offsetp+l] += w * lambda_val * Bterm * grad[j][dim]*grad[m][l]
+                AlBtot[offset+dim][offsetp+l] += w * lambda_b * Bterm * grad[j][dim]*grad[m][l]
 
-            AlBtot[offset+dim][offsetp+dim] += w * lambda_val * Bterm * grad[j][dim]*grad[m][dim]
+            AlBtot[offset+dim][offsetp+dim] += w * lambda_b * Bterm * grad[j][dim]*grad[m][dim]
 

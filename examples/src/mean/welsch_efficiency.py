@@ -23,7 +23,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
     small_val = 1.e-10
 
     def small_mean(optimiser_instance):
-        a,AlB = optimiser_instance.weighted_derivs([0.0], 1.0) # model, lambda_val
+        a,AlB = optimiser_instance.weighted_derivs([0.0], 1.0) # model, lambda_b
         return -a[0]/AlB[0][0]
 
     def efficiency_est_func(p):

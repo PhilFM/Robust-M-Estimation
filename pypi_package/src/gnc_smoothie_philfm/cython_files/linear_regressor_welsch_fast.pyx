@@ -20,7 +20,7 @@ def linear_regressor_welsch_objective_func(cython.double sigma,
 
     return tot
 
-def linear_regressor_welsch_weighted_derivs(cython.double sigma, cython.double lambda_val,
+def linear_regressor_welsch_weighted_derivs(cython.double sigma, cython.double lambda_b,
                                             cython.double[:] model,
                                             cython.double[:,:,:] data, cython.double[:] weight,
                                             cython.double[:] scale,
@@ -34,7 +34,7 @@ def linear_regressor_welsch_weighted_derivs(cython.double sigma, cython.double l
         inv_var: cython.double = 1.0 / (this_sigma * this_sigma)
         rhop: cython.double = welsch_rhop(rsqr, inv_var)
         Bterm: cython.double = welsch_Bterm(rsqr, inv_var)
-        increment_weighted_deriv_sums(lambda_val, data[i], grad, rhop, Bterm, weight[i], atot, AlBtot)
+        increment_weighted_deriv_sums(lambda_b, data[i], grad, rhop, Bterm, weight[i], atot, AlBtot)
 
     # fill in lower diagonal entries in AlBtot
     k: cython.Py_ssize_t

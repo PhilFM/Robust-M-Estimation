@@ -37,7 +37,7 @@ def mean_welsch_solver(data: np.array, x_range: float, use_slow_version: bool, t
     mean_finder = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
                                         max_niterations=max_niterations, use_slow_version=use_slow_version, print_warnings=False, debug=True)
     if mean_finder.run(data):
-        m = mean_finder.final_intercept[0]
+        m = mean_finder.final_model[0]
         final_weight = mean_finder.final_weight
         if not test_run:
             print("Welsch Sup-GN optimisation result: m=", m)

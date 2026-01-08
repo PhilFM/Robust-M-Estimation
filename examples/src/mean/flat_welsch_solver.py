@@ -83,7 +83,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         return optimiser_instance.objective_func([m])
 
     def gradient_func(m):
-        a,AlB = optimiser_instance.weighted_derivs([m],1.0) # lambda_val
+        a,AlB = optimiser_instance.weighted_derivs([m],1.0) # lambda_b
         return a[0]
 
     if showGradient:

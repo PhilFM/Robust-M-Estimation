@@ -110,9 +110,7 @@ def apply_to_data(sigma_pop,p,x_range,n,n_samples_base,min_n_samples,outlier_fra
         # GNC IRLS Welsch
         line_fitter = LinearRegressorWelsch(sigma_pop/p, max(x_range,10.0*sigma_pop), 30, max_niterations=200)
         if line_fitter.run(data):
-            coeff = line_fitter.final_coeff
-            intercept = line_fitter.final_intercept
-            line_gnc_welsch = np.array([coeff[0][0], intercept[0]])
+            line_gnc_welsch = line_fitter.final_model
 
         diff = line_gnc_welsch-line_gt
         var_gnc_welsch += np.outer(diff, diff)

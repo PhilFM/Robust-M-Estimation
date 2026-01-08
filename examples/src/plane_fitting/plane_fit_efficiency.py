@@ -99,9 +99,7 @@ def apply_to_data(sigma_pop:float, p:float, xy_range:float, n:int, n_samples_bas
         # GNC IRLS Welsch
         plane_fitter = LinearRegressorWelsch(sigma_pop/p, max(xy_range,10.0*sigma_pop), 30, max_niterations=200)
         if plane_fitter.run(data):
-            coeff = plane_fitter.final_coeff
-            intercept = plane_fitter.final_intercept
-            plane_gnc_welsch = np.array([coeff[0][0], coeff[0][1], intercept[0]])
+            plane_gnc_welsch = plane_fitter.final_model
 
         diff = plane_gnc_welsch-plane_gt
         var_gnc_welsch += np.outer(diff, diff)

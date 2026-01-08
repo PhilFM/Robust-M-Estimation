@@ -286,7 +286,6 @@ class BaseIRLS:
                             np.transpose(residual_gradient[i]), residual_gradient[i]
                         )
 
-            #print("Atot:",Atot)
             return -np.linalg.solve(Atot, atot),None
         else:
             return self._evaluator_instance.weighted_fit(self._data,

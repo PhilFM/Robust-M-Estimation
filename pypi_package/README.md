@@ -1,4 +1,10 @@
 # GNC Smoothie package
+- [M-estimation](#m-estimation)
+- [The Welsch influence function](#the-welsch-influence-function)
+- [Iteratively reweighted least squares](#iteratively-reweighted-least-squares)
+- [Supervised Gauss-Newton algorithm](#supervised-gauss-newton-algorithm)
+- [GNC Smoothie software](#gnc-smoothie-software)
+- [Designing your own GNC-Smoothie model classes](#designing-your-own-gnc-smoothie-model-classes)
 
 Python library supporting M-estimation using two algorithms: the well-known Iteratively Reweighted Least Squares (IRLS)
 and our custom Supervised Gauss-Newton algorithm. Author: Philip McLauchlan `philipmclauchlan6@gmail.com`.
@@ -16,11 +22,11 @@ $$
 for some observation model function $ {\bf h}_i({\bf x}) $.
 The distribution of the noise determined by the population PDF, which is defined as some function
 $$
-  f({\bf z}_i - {\bf h}_i({\bf x})) = f({\bf r}_i)
+  f({\bf h}_i({\bf x}) - {\bf z}_i) = f({\bf r}_i)
 $$
 defining the $ i $'th data error or "residual" vector $ {\bf r}_i $ as
 $$
-  {\bf r}_i({\bf x}) = {\bf z}_i - {\bf h}_i({\bf x})
+  {\bf r}_i({\bf x}) = {\bf h}_i({\bf x}) - {\bf z}_i
 $$
 
 For instance for Normal distributed observation errors with standard deviation $ \sigma $ we would have
@@ -96,7 +102,7 @@ requires a good initial estimate of the solution and comes with no guarantees of
 Graduated-Non-Convextity [4] has clarified that this is not always the case, and for many practical problems we can
 achieve the *global* optimum solution without any initial model estimate being provided.
 
-## Iteratively reweighted least squares (IRLS)
+## Iteratively reweighted least squares
 
 IRLS is the standard technique used to solve the non-linear optimisation problems that arise in M-estimation using robust
 influence functions. IRLS assumes that the non-robust least-squares solution
@@ -104,7 +110,7 @@ for $ {\bf x} $ is soluble in closed form, given some "weights" assigned
 to the data points. In other words there is a (simple) algorithm that can be used to solve the optimisation problem
 
 $$
-  \widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( \sum_{i=1}^n w_i || {\bf z}_i - {\bf h}_i({\bf x}) ||^2)\right)
+  \widehat{\bf x} = \underset{{\bf x}}{\text{arg}\,\text{min}} \left( \sum_{i=1}^n w_i || {\bf h}_i({\bf x}) - {\bf z}_i ||^2)\right)
 $$
 
 or
@@ -114,7 +120,7 @@ $$
 
 where
 $$
-  F_{\text{LS}}({\bf x}) = \sum_{i=1}^n w_i r_i({\bf x})^2 = \sum_{i=1}^n w_i ||{\bf z}_i - {\bf h}_i({\bf x})||^2
+  F_{\text{LS}}({\bf x}) = \sum_{i=1}^n w_i r_i({\bf x})^2 = \sum_{i=1}^n w_i ||{\bf h}_i({\bf x}) - {\bf z}_i||^2
 $$
 
 for weights $ w_i $.
@@ -147,7 +153,9 @@ IRLS repeats the following two steps to convergence, given an initial state esti
 IRLS normally requires a good initial estimate $ \widehat{\bf x} $ of $ {\bf x} $ to avoid local
 minimal in the objective function.
 
-## Supervised Gauss-Newton algorithm (Sup-GN)
+## Supervised Gauss-Newton algorithm
+
+Now we describe an alternative to IRLS, which we term Supervised Gauss-Newton or ``Sup-GN``
 
 Beginning with the objective function $ F({\bf x}) $, let us assume that we have an existing estimate $ \widehat{\bf x}^{*} $
 of $ {\bf x} $. We can then try to improve this estimate by solving
@@ -240,10 +248,18 @@ It is well known that Gauss-Newton iterations can provide quadratic convergence 
 still maintaining the option of pure IRLS iterations to guarantee convergence.
 
 ## GNC Smoothie software
+- [IRLS class](#irls-class)
+- [Supervised Gauss-Newton class](#supervised-gauss-newton-class)
+- [Example code for the IRLS and Sup-GN classes](#example-code-for-the-irls-and-sup-gn-classes)
+- [Base class for IRLS and Sup-GN algorithms](#base-class-for-irls-and-sup-gn-algorithms)
+- [Accelerated Robust Linear regression](#accelerated-robust-linear-regression)
+- [Alternative API for Robust Linear regression](#alternative-api-for-robust-linear-regression)
 
 The Python library is based on `numpy` and contains the following top-level modules:
 
-### IRLS class: `irls.py`
+### IRLS class
+
+Implementation in [irls.py](src/gnc_smoothie_philfm/irls.py)
 
 Top-level 'IRLS' class. Once you have constructed an instance of this class, call the `run()`
 method to run it. This returns `True` on successful convergence, `False` on failure.
@@ -252,7 +268,7 @@ whether the `run()` method succeeds or not.
 
 Here are the parameters that need to be passed to the `IRLS` class constructor. Optional parameters follow.
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
-   this can be a `GNC_NullParams` instance imported from `gnc_null_params.py`.
+   this can be a `GNC_NullParams` instance imported from [gnc_null_params.py](src/gnc_smoothie_philfm/gnc_null_params.py).
    Should have an internal `influence_func_instance`
    that specifies the IRLS influence function to be used. The influence_func_instance
    should provide the following method:
@@ -303,11 +319,11 @@ Now the optional parameters for the `IRLS` class constructor:
      scale value > 1, indicating that the influence function for that data item
      should be stretched by the given scale factor.
      For non-linear problems with no closed-form solution, pass a suitable starting
-     point as the model_start (and optionally model_ref_start) parameters, see below.
+     point as the `model_start` (and optionally model_ref_start) parameters, see below.
      In that case the `weighted_fit()` should be omitted.
      If second and possibly third types of data item are being used, add arguments `data2`
      `weight2`, `scale2` and `data3`, `weight3`, `scale3` as appropriate.
-- `evaluator_instance` A Cython-based evaluator that provides a fast implementation of the model
+- `evaluator_instance` A vectorised evaluator that provides a fast implementation of the model
      specific to the influence function. It should be a class instance that provides at least
      the following methods.
    - `set_residual_size(self, residual_size: npt.ArrayLike) -> None`
@@ -318,6 +334,7 @@ Now the optional parameters for the `IRLS` class constructor:
        Update IRLS weights.
    - `weighted_fit(self, data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike) -> np.array`
        Return the model fitted to the data, taking the weights into account.
+     We expect that the implementation of the above vectorised functions will use [Cython](https://cython.org/).
 - `weight` An array of float weight values for each data item.
      If not provided, weights are initialised to one.
 - `scale` An array of scale values, indicating that one or more data items are known to
@@ -341,14 +358,14 @@ Now the optional parameters for the `IRLS` class constructor:
      from a provided `rho()` method or directly using a provided `rhop()` method.
 - `max_niterations: int` Maximum number of IRLS iterations to apply before aborting.
 - `diff_thres: float` Terminate when successful update changes the model model parameters by less than this value.
+- `model_start` Starting value for model model parameters.
 - `print_warnings: bool` Whether to print debugging information.
-- `model_start` Starting value for model model parameters
 - `model_ref_start` Starting reference parameters for model, e.g. if optimising rotation
 - `debug: bool` Whether to add extra debugging data to the `IRLS` class instance on exit:
-   - `debug_n_iterations` The number of iterations actually applied
-   - `debug_model_list` A list of the model parameters at each iteration
+   - `debug_n_iterations` The number of iterations actually applied.
+   - `debug_model_list` A list of the model parameters at each iteration.
    - `debug_diffs` A list of norm of model parameter changes applied at each iteration,
-      as a list of difference values
+      as a list of difference values.
    - `debug_diff_alpha` A list of alpha values corresponding to the difference values `debug_diffs`, indicating
       the GNC stage reached when each model change was applied. Alpha equal to zero indicates
       the start of the GNC schedule, alpha equal to one indicates the final stage of the
@@ -357,7 +374,9 @@ Now the optional parameters for the `IRLS` class constructor:
    - `debug_weighted_fit_time` The total time spent fitting the model to data in seconds
    - `debug_total_time` The total time spent in the algorithm in seconds.
 
-### Supervised Gauss-Newton class: `sup_gauss_newton.py`
+### Supervised Gauss-Newton class
+
+Implementation at [sup_gauss_newton.py](src/gnc_smoothie_philfm/sup_gauss_newton.py)
 
 Top-level `SupGaussNewton` class, an implementation of Supervised Gauss-Newton (Sup-GN).
 Sup-GN is an alternative to IRLS most suitable for the two cases:
@@ -382,7 +401,7 @@ The parameters to the `SupGaussNewton` constructor are very similar to the `IRLS
 but there are some twists due to Sup-GN requiring differentiation of the model residual.
 Here are the parameters you need to pass to the `SupGaussNewton` class:
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
-    this can be a `GNC_NullParams` instance imported from `gnc_null_params.py`.
+    this can be a `GNC_NullParams` instance imported from [gnc_null_params.py](src/gnc_smoothie_philfm/gnc_null_params.py).
     Should have an internal `influence_func_instance`
     that specifies the IRLS influence function to be used. This `influence_func_instance`
     should provide these methods:
@@ -391,7 +410,8 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
         increases for large residuals (one) or decreases (minus one). Typical IRLS
         objective functions such as Huber and Geman-McClure increase for large residuals,
         so most functions will return one. The version of Welsch we have implemented in
-        `gnc_welsch_params.py` uses a nagative sense, which slightly simplifies the
+        [gnc_welsch_params.py](src/gnc_smoothie_philfm/gnc_welsch_params.py)
+        uses a nagative sense, which slightly simplifies the
         implementation, because otherwise we would have to add one to the objective
         function in order to keep it positive.
    - `rho(self, rsqr: float, s: float) -> float`
@@ -477,7 +497,7 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
      In that case the `weighted_fit()` method should be omitted.
      If second and possibly third types of data item are being used, add arguments `data2`
      `weight2`, `scale2` and `data3`, `weight3`, `scale3` as appropriate.
-- `evaluator_instance` A Cython-based evaluator that provides a fast implementation of the model
+- `evaluator_instance` A vectorised evaluator that provides a fast implementation of the model
      specific to the influence function. It should be a class instance that provides at least
      the following methods.
    - `set_residual_size(self, residual_size: npt.ArrayLike) -> None`
@@ -490,6 +510,7 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
        Returns the sums of weighted derivatives used in the Sup-GN algorithm.
    - `weighted_fit(self, data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike) -> np.array`
        Return the model fitted to the data, taking the weights into account.
+     We expect that the implementation of the above vectorised functions will use [Cython](https://cython.org/).
 - `weight` An array of float weight values for each data item.
      If not provided, weights are initialised to one
 - `scale` An array of scale values, indicating that one or more data items are known to
@@ -527,23 +548,23 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
      When the iteration is not successful, the model change is reverted and $ \lambda $ is divided
      by this factor to increase the damping at the next iteration.
 - `diff_thres: float` Terminate when successful update changes the model parameters by less than this value.
+- `model_start` Starting value for model parameters.
 - `print_warnings: bool` Whether to print debugging information.
-- `model_start` Starting value for model parameters
-- `model_ref_start` Starting reference parameters for model, e.g. if optimising rotation
+- `model_ref_start` Starting reference parameters for model, e.g. if optimising rotation.
 - `debug: bool` Whether to add extra debugging data to the `SupGaussNewton` class instance on exit:
-   - `debug_n_iterations` The number of iterations actually applied
-   - `debug_model_list` A list of the model parameters at each iteration
+   - `debug_n_iterations` The number of iterations actually applied.
+   - `debug_model_list` A list of the model parameters at each iteration.
    - `debug_diffs` A list of norm of model parameter changes applied at each iteration,
-      as a list of difference values
+      as a list of difference values.
    - `debug_diff_alpha` A list of alpha values corresponding to the difference values `debug_diffs`, indicating
       the GNC stage reached when each model change was applied. Alpha equal to zero indicates
       the start of the GNC schedule, alpha equal to one indicates the final stage of the
       GNC schedule.
    - `debug_weighted_derivs_time` The total time spend calculating derivatives in seconds.
-   - `debug_solve_time` The total time spent solving for the model in seconds
+   - `debug_solve_time` The total time spent solving for the model in seconds.
    - `debug_total_time` The total time spent in the algorithm in seconds.
 
-### Example code for the `IRLS` and `SupGaussNewton` classes
+### Example code for the IRLS and Sup-GN classes
 
 The simplest non-trivial example of an IRLS/Sup-GN model class
 is to support fitting a straight line through 2D data, with the model $ y=ax+b $, where $ a $ is the gradient of the line and
@@ -590,7 +611,7 @@ from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 sigma = 0.2
 param_instance = GNC_NullParams(WelschInfluenceFunc(sigma))
 model_instance = LineFit()
-optimiser_instance = SupGaussNewton(param_instance, model_instance, data)
+optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance)
 if optimiser_instance.run():
     model = optimiser_instance.final_model
     print("line a b:",model)
@@ -601,12 +622,109 @@ line a b: [0.5 0.9]
 ```
 To use Supervised Gauss-Newton instead simply substitute `SupGaussNewton` for `IRLS` in the above code.
 
-### Base class for IRLS and Sup-GN algorithms `base_irls.py`
+### Base class for IRLS and Sup-GN algorithms
+
+Implementation in [base_irls.py](src/gnc_smoothie_philfm/base_irls.py)
 
 Implements the many features in common between IRLS and Sup-GN. Should not be used directly in
 your code.
 
-### Checking derivatives: `check_derivs.py`
+### Accelerated Robust Linear regression
+
+Implementation in [linear_regressor_welsch.py](src/gnc_smoothie_philfm/linear_model/linear_regressor_welsch.py).
+
+We have implemented a vectorised Cython-based version of robust linear regression.
+There is also a pure Python-based reference implementation at
+[linear_regressor.py](src/gnc_smoothie_philfm/linear_model/linear_regressor.py), used mainly for
+regression testing the Cython implementation. The residual model is
+$$
+  {\bf r}_i({\bf x}) = \left( \begin{array}{c} {\bf x}_1.{\bf z}_{i1} + x_1 - z_{i1} \\ {\bf x}_2.{\bf z}_{i2} + x_2 - z_{i2} \\ ... \\ {\bf x}_m.{\bf z}_{im} + x_m - z_{im} \end{array} \right)
+$$
+where we organise the state estimate as a matrix 
+$$
+  X = \left( \begin{array}{cc} {\bf x}_1^\intercal & x_1 \\ {\bf x}_2^\intercal & x_2 \\ ... & ... \\ {\bf x}_m^\intercal & x_m \end{array} \right)
+$$
+and $m$ is the dimension of the residual vector. We can write the $i$'th observation in matrix form as
+$$
+  Z_i = \left( \begin{array}{cc} {\bf z}_{i1}^\intercal & z_{i1} \\ {\bf z}_{i2}^\intercal & z_{i2} \\ ... & ... \\ {\bf z}_{im}^\intercal & z_{im} \end{array} \right)
+$$
+
+To use the vectorised linear regression,
+incorporating our recommended Welsch influence function [2], you will need the following line:
+```
+    from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+```
+Then you will need to create an linear regression instance with a line like
+```
+    linear_regressor = LinearRegressorWelsch(1.0, sigma_limit=100.0, num_sigma_steps=20)
+```
+The only obligatory parameter is
+- `sigma_base: float` The final small value of $\sigma$ in the [GNC Welsch influence function schedule](#gnc-welsch-schedule-class)
+
+Optional parameters are:
+- `sigma_limit: float` The initial high value of $\sigma$ in the [GNC Welsch influence function schedule](#gnc-welsch-schedule-class)
+- `num_sigma_steps: int` The number of steps of $\sigma$ in the [GNC Welsch influence function schedule](#gnc-welsch-schedule-class)
+- `max_niterations: int` Maximum number of Sup-GN iterations to apply before aborting.
+- `diff_thres: float` Terminate when successful update changes the model model parameters by less than this value.
+- `use_slow_version: bool` Whether to use the slower pure Python [implementation](src/gnc_smoothie_philfm/linear_model/linear_regressor.py).
+- `model_start: npt.ArrayLike` Starting value for model model parameters.
+- `print_warnings: bool` Whether to print debugging information.
+- `debug: bool` Whether to add extra debugging data to the `LinearRegressorWelsch` class instance on exit:
+   - `debug_n_iterations` The number of iterations actually applied.
+   - `debug_model_list` A list of the model parameters at each iteration.
+   - `debug_diffs` A list of norm of model parameter changes applied at each iteration,
+      as a list of difference values.
+   - `debug_diff_alpha` A list of alpha values corresponding to the difference values `debug_diffs`, indicating
+      the GNC stage reached when each model change was applied. Alpha equal to zero indicates
+      the start of the GNC schedule, alpha equal to one indicates the final stage of the
+      GNC schedule.
+   - `debug_update_weights_time` The total time spent updating weights in seconds.
+   - `debug_solve_time` The total time spent solving for the model in seconds.
+   - `debug_total_time` The total time spent in the algorithm in seconds.
+
+To run the GNC Smoothie linear regressor, create a `data` array in the format described below and call
+```
+    if linear_regressor.run(data):
+        model = linear_regressor.final_model
+```
+Mapping the mathematical representation above to the software, the model vector ${\bf x}$ is the rows of $X$ concatenated:
+$$
+  {\bf x} = \left( {\bf x}_1^\intercal ~ x_1 ~|~ {\bf x}_2^\intercal ~ x_2 ~|~ ... ~|~ {\bf x}_m^\intercal ~ x_m \right)^\intercal
+$$
+This is the vector returned as the `final_model` by the linear regression software. The `data` array should
+be organised as an array of the $Z_i$ matrices defined above. The `data` array should therefore
+be three-dimensional. If the dimension $m$ of the residual vector is one, we also support
+a two-dimensional format for `data`. In summary, the
+`data` array should have either two or three dimensions. For a two-dimensional data array, the `data` format is
+1. First dimension - The number of data items.
+1. Second dimension - The size of the row of the $Z$ matrix.
+
+A three-dimensional `data` array has the following dimensions:
+1. First dimension - The number of data items.
+1. Second dimension - The size $m$ of the residual vector.
+1. Third dimension - The size of the row of the $Z$ matrix.
+
+### Alternative API for Robust Linear regression
+
+To allow for interchange of 
+
+
+## Designing your own GNC Smoothie model classes
+
+- [Checking derivatives](#checking-derivatives)
+- [Welsch influence function](#welsch-influence-function)
+- [GNC Welsch schedule class](#gnc-welsch-schedule-class)
+- [Pseudo-Huber influence function](#pseudo-huber-influence-function)
+- [Geman-McClure influence function](#geman-mcclure-influence-function)
+- [GNC IRLS-p influence function](#gnc-irls-p-influence-function)
+- [GNC IRLS-p schedule class](#gnc-irls-p-schedule-class)
+- [Quadratic influence function](#quadratic-influence-function)
+- [Null GNC parameter class](#null-gnc-parameter-class)
+- [Using a model reference](#using-a-model-reference)
+
+### Checking derivatives
+
+Implementation in [check_derivs.py](src/gnc_smoothie_philfm/check_derivs.py)
 
 When you design a model class to be used for Sup-GN optimisation, and have written your `residual()`
 method defining how to calculate the model/data errors, you have a design choice:
@@ -635,7 +753,7 @@ Optional argmuments that may be required:
   derivative estimates.
 - `print_derivs: bool` Whether to print all the derivatives being compared.
 
-For example, to test the derivatives of the `LineFit` class above you could use this code:
+For example, to test the derivatives of the [LineFit](#example-code-for-the-irls-and-sup-gn-classes) class above you could use this code:
 
 ```
 from gnc_smoothie.sup_gauss_newton import SupGaussNewton
@@ -644,13 +762,15 @@ from gnc_smoothie.quadratic_influence_func import QuadraticInfluenceFunc
 from gnc_smoothie.check_derivs import check_derivs
 
 data = [[2.0, -1.0]] # single data point
-derivs_good = check_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), LineFit(), data), [1.0, 2.0], # model a,b
+derivs_good = check_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), data, model_instance=LineFit()), [1.0, 2.0], # model a,b
                            diff_threshold_AlB=1.e-4)
 ```
 Note that we use the simplest parameter class `GNC_NullParams` and influence function class `QuadraticInfluenceFunc` to build
 the `SupGaussNewton` instance, although the derivative testing will work for other classes.
 
-### Welsch influence function `welsch_influence_func.py`
+### Welsch influence function
+
+Implementation in [welsch_influence_func.py](src/gnc_smoothie_philfm/welsch_influence_func.py)
 
 This provides the class `WelschInfluenceFunc`, that implements the Welsch influence function, defined as
 $$
@@ -663,14 +783,18 @@ We recommend using the Welsch influence function over others because of its simp
 This provides it with remarkable robustness, even in the presence of very bad outliers.
 Wrap it with a `GNC_WelschParams` class to provide it with a GNC schedule and outstanding convergence.
 
-### GNC Welsch schedule class `gnc_welsch_params.py`
+### GNC Welsch schedule class
+
+Implementation in [gnc_welsch_params.py](src/gnc_smoothie_philfm/gnc_welsch_params.py)
 
 Build a parameter class instance by building a `GNC_WelschInfluenceFunc` instance and then
 wrapping it into this `GNC_WelschParams` class to provide the GNC schedule. The `sigma` value
 starts at a high value `sigma_limit` and descends geometrically through `num_sigma_steps`
 values to a low value `sigma_base` that approximates the population error standard deviation.
 
-### Pseudo-Huber influence function `pseudo_huber_influence_func.py`
+### Pseudo-Huber influence function
+
+Implementation in [pseudo_huber_influence_func.py](src/gnc_smoothie_philfm/pseudo_huber_influence_func.py)
 
 The class `PseudoHuberInfluenceFunc` implements the fully differentiable
 version [1] of the original Huber influence function [7].
@@ -683,7 +807,9 @@ are relatively small. The Pseudo-Huber objective function $ \rho(r) $ is convex,
 need to use a GNC schedule. Instead use it with `GNC_NullParams`. On the other hand, if the outliers are
 very bad then it will fail to converge to the correct solution.
 
-### Geman-McClure influence function `geman_mcclure_influence_func.py`
+### Geman-McClure influence function
+
+Implementation in [geman_mcclure_influence_func.py](src/gnc_smoothie_philfm/geman_mcclure_influence_func.py)
 
 This `GemanMcClureInfluenceFunc` class implements the Geman-McClure influence function [8], defined by
 $$
@@ -695,7 +821,9 @@ so it is suitable for being embedded in a GNC schedule and handling large outlie
 same `GNC_WelschParams` GNC schedule class used for the Welsch influence function if you want
 to try this, but we still recommend using the Welsch influence function over Geman-McClure.
 
-### GNC IRLS-p influence function `gnc_irls_p_influence_func.py`
+### GNC IRLS-p influence function
+
+Implementation in [gnc_irls_p_influence_func.py](src/gnc_smoothie_philfm/gnc_irls_p_influence_func.py)
 
 This `GNC_IRLSpInfluenceFunc` class implements the GNC schedule recommended by Peng et al. in their
 excellent paper [3]. Peng et al. prove that for many IRLS problems, GNC IRLS-p provides guaranteed
@@ -703,27 +831,33 @@ fast convergence. The influence function is more complex than the above alternat
 and the code for details. Combining this class with the GNC schedule class `GNC_IRLSpParams` (see below)
 provides an alternative to our recommended `GNC_WelschParams` + `GNC_WelschInfluenceFunc` combination.
 
-### GNC IRLS-p schedule class `gnc_irls_p_params.py`
+### GNC IRLS-p schedule class
+
+Implementation in [gnc_irls_p_params.py](src/gnc_smoothie_philfm/gnc_irls_p_params.py)
 
 Build a parameter class instance by building a `GNC_IRLSpInfluenceFunc` instance and then
 wrapping it into this `GNC_IRLSpParams` class to provide the GNC schedule.
 
-### Quadratic influence function `quadratic_influence_func.py`
+### Quadratic influence function
+
+Implementation in [quadratic_influence_func.py](src/gnc_smoothie_philfm/quadratic_influence_func.py)
 
 This file provides the `QuadraticInfluenceFunc` class that implements the quadratic objective function that
 is used in non-robust least squares. The main use of this class is to provide a simple mechanism for
 building an instance of `SupGaussNewton` for the purpose of checking derivative calculations in the model
 `residual_gradient()` method.
 
-### Null GNC parameter class `gnc_null_params.py`
+### Null GNC parameter class
+
+Implementation in [gnc_null_params.py](src/gnc_smoothie_philfm/gnc_null_params.py)
 
 When you want to apply standard IRLS, or use Sup-GN optimisation without GNC, wrap your influence function
 in a `GNC_NullParams` instance. 
 
-### Using a model reference `model_ref`
+### Using a model reference
 
 It is usually desirable to model your system with the minimum number of parameters, to avoid redundancy.
-This is sometimes in conflict with symmetry and gauge invariance issues. The canonical example of this
+However this principle is sometimes in conflict with symmetry and gauge invariance issues. The canonical example of this
 is estimating a model containing a rotation. Consider the *3D point registration* problem of calculating the rotation and
 translation between two point clouds, where the correspondence is known in advance. There is a closed-form
 solution for this problem [9], but in the case of outliers we should look to implement this in the IRLS
@@ -734,7 +868,7 @@ because of the non-linearities present in any minimal representation of rotation
 
 The solution to this problem is to use a non-minimal rotation representation as a "reference" for estimating
 small changes. For instance you can use a rotation matrix, and combine it with a small rotation representation
-such as Rodrigues parameters as implemented in `scipy.spatial.transform.Rotation.from_mrp`.
+such as Rodrigues parameters as implemented in [scipy.spatial.transform.Rotation.from_mrp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.from_mrp.html).
 The idea is that before each IRLS/Sup-GN iteration, the reference rotation matrix is updated to the latest
 rotation, including the change made at the previous iteration. The residual is calculated by combining
 the reference rotation with the small rotation change at the current iteration. The residual derivatives

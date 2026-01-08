@@ -30,6 +30,7 @@ class SupGaussNewton(BaseIRLS):
         lambda_start: float = 1.0,
         lambda_max: float = 1.0,
         lambda_scale: float = 1.2,
+        lambda_thres: float = 0.0,
         diff_thres: float = 1.0e-10,
         print_warnings: bool = False,
         model_start: npt.ArrayLike = None,
@@ -63,6 +64,7 @@ class SupGaussNewton(BaseIRLS):
         self.__lambda_start = lambda_start
         self.__lambda_max = lambda_max
         self.__lambda_scale = lambda_scale
+        self.__lambda_thres = lambda_thres
 
     def __calc_influence_func_derivatives(
         self, residual: np.ndarray, s: float, small_diff: float = 1.0e-5
@@ -91,7 +93,7 @@ class SupGaussNewton(BaseIRLS):
 
     # weighted_derivs is public to allow derivatives to be checked
     def weighted_derivs(
-        self, model: npt.ArrayLike, lambda_val: float, model_ref=None
+            self, model: npt.ArrayLike, lambda_b: float, model_ref=None
     ) -> (np.array, np.array):
         if self._evaluator_instance is None:
             # initialize residual_size
@@ -123,7 +125,7 @@ class SupGaussNewton(BaseIRLS):
                             * np.matmul(
                                 np.transpose(residual_gradient[i]), residual_gradient[i]
                             )
-                            + lambda_val * Bterm * np.outer(grad, grad)
+                            + lambda_b * Bterm * np.outer(grad, grad)
                         )
 
             return atot, AlBtot
@@ -132,7 +134,7 @@ class SupGaussNewton(BaseIRLS):
                 model,
                 model_ref,
                 self._param_instance.influence_func_instance,
-                lambda_val,
+                lambda_b,
                 self._data,
                 self._weight,
                 self._scale)
@@ -147,7 +149,7 @@ class SupGaussNewton(BaseIRLS):
         update_model_ref = getattr(self._model_instance, "update_model_ref", None)
 
         if self._print_warnings:
-            a, AlB = self.weighted_derivs(model, lambda_val, model_ref=model_ref)
+            a, AlB = self.weighted_derivs(model, self.__lambda_start, model_ref=model_ref)
             print("Initial model=", model)
             print("Initial model_ref=", model_ref)
             print(
@@ -188,7 +190,14 @@ class SupGaussNewton(BaseIRLS):
             model_old = model.copy()
             model_ref_old = model_ref
 
-            a, AlB = self.weighted_derivs(model_old, lambda_val, model_ref=model_ref_old)
+            if self.__lambda_thres == 0.0 or lambda_val > self.__lambda_thres:
+                lambda_a = 1.0
+            else:
+                lambda_a = lambda_val/self.__lambda_thres
+
+            lambda_b = max(0.0, lambda_val - self.__lambda_thres)
+            #print("lambda_val=",lambda_val,"lambda_a=",lambda_a,"lambda_b=",lambda_b,"lambda_thres=",self.__lambda_thres)
+            a, AlB = self.weighted_derivs(model_old, lambda_b, model_ref=model_ref_old)
 
             if self._debug:
                 self.debug_weighted_derivs_time += time.time() - start_time
@@ -209,7 +218,7 @@ class SupGaussNewton(BaseIRLS):
             if self._debug:
                 self.debug_solve_time += time.time() - start_time
 
-            model -= at
+            model -= lambda_a*at
             if callable(update_model_ref):
                 model_ref = update_model_ref(model, model_ref)
 

@@ -136,7 +136,7 @@ def mean_welsch_solver(data: np.array, scale: np.array, x_range: float, sigma_po
     mean_finder = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
                                         max_niterations=max_niterations, print_warnings=False, debug=True)
     if mean_finder.run(data):
-        m = mean_finder.final_intercept[0]
+        m = mean_finder.final_model[0]
         final_weight = mean_finder.final_weight
         if not test_run:
             print("Welsch Sup-GN optimisation result: m=", m)
@@ -144,7 +144,7 @@ def mean_welsch_solver(data: np.array, scale: np.array, x_range: float, sigma_po
 
     # check result when scale is included
     if mean_finder.run(data, scale=scale):
-        mscale = mean_finder.final_intercept[0]
+        mscale = mean_finder.final_model[0]
         if not test_run:
             print("Welsch scale result difference=", mscale-m)
 
@@ -182,7 +182,7 @@ def mean_pseudo_huber_solver(data: np.array, scale: np.array, x_range: float, si
 
     mean_finder = LinearRegressorPseudoHuber(sigma, print_warnings=False, debug=True)
     if mean_finder.run(data):
-        m = mean_finder.final_intercept[0]
+        m = mean_finder.final_model[0]
         final_weight = mean_finder.final_weight
         if not test_run:
             print("Pseudo-Huber Linear Regression optimisation result: m=", m)
@@ -287,7 +287,7 @@ def mean_gnc_irls_p_solver(data: np.array, scale: np.array, x_range: float, sigm
     mean_finder = LinearRegressorGNC_IRLSp(p, rscale, epsilon_base, epsilon_limit, beta,
                                            print_warnings=False, debug=True)
     if mean_finder.run(data):
-        m = mean_finder.final_intercept[0]
+        m = mean_finder.final_model[0]
         final_weight = mean_finder.final_weight
         if not test_run:
             print("Pseudo-Huber Linear Regression optimisation result: m=", m)

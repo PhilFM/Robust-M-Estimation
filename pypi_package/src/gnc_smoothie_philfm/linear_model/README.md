@@ -1,6 +1,5 @@
 ## Robust linear regression
 
-
 Support code:
 - [linear_regressor.py](linear_regressor.py) Reference model class for linear regression.
 - [linear_regressor_welsch.py](linear_regressor_welsch.py) Top-level linear regressor class using Welsch influence function.
