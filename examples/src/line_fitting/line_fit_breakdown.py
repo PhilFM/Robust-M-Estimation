@@ -52,7 +52,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
         influence_func = WelschInfluenceFunc()
         model_instance = LinearRegressor(data[0])
         param_instance = GNC_WelschParams(influence_func, sigma_base, sigma_limit, num_sigma_steps)
-        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, model_start=line_good)
+        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance)
 
         for a_idx in range(2 if quick_run else 10):
             if not test_run:

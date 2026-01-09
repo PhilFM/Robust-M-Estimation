@@ -47,19 +47,20 @@ class IRLS(BaseIRLS):
             max_niterations=max_niterations,
             diff_thres=diff_thres,
             print_warnings=print_warnings,
-            model_start=model_start,
-            model_ref_start=model_ref_start,
             debug=debug,
         )
 
-    def run(self) -> bool:
+    def run(self,
+            model_start: npt.ArrayLike = None,
+            model_ref_start: npt.ArrayLike=None,
+            ) -> bool:
         self._param_instance.reset()
         weight = [None] * self._dsize
         for didx in range(self._dsize):
             if self._data[didx] is not None:
                 weight[didx] = np.copy(self._weight[didx])
 
-        model, model_ref = self._init_model()
+        model, model_ref = self._init_model(model_start, model_ref_start)
         if self._print_warnings:
             print(
                 "Initial model=",

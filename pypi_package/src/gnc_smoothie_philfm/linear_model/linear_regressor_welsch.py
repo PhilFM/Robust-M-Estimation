@@ -31,7 +31,6 @@ class LinearRegressorWelsch(LinearRegressorBase):
             lambda_thres: float = 0.0,
             diff_thres: float = 1.e-10,
             use_slow_version: bool = False,
-            model_start: npt.ArrayLike = None,
             print_warnings: bool = False,
             debug: bool = False
             ):
@@ -44,7 +43,6 @@ class LinearRegressorWelsch(LinearRegressorBase):
             lambda_thres=lambda_thres,
             diff_thres=diff_thres,
             use_slow_version=use_slow_version,
-            model_start=model_start,
             print_warnings=print_warnings,
             debug=debug
         )
@@ -53,7 +51,8 @@ class LinearRegressorWelsch(LinearRegressorBase):
     def run(self,
             data,
             weight: np.array = None,
-            scale: np.array = None):
+            scale: np.array = None,
+            model_start: npt.ArrayLike = None):
         data = self.convert_data(data)
         evaluator_instance = None if self._use_slow_version else LinearRegressorWelschEvaluator(data[0])
-        return self.run_base(data, self.__param_instance, evaluator_instance, weight, scale)
+        return self.run_base(data, self.__param_instance, evaluator_instance, weight, scale, model_start)

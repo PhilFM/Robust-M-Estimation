@@ -113,8 +113,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         optimiser_instance = SupGaussNewton(welsch_param_instance, data, model_instance=PointRegistration(), weight=weight,
                                             max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                             lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres, print_warnings=print_warnings,
-                                            model_start=model_start, model_ref_start=model_ref_start, debug=True)
-        if optimiser_instance.run():
+                                            debug=True)
+        if optimiser_instance.run(model_start=model_start, model_ref_start=model_ref_start):
             model = optimiser_instance.final_model
             model_ref = optimiser_instance.final_model_ref
             n_iterations = optimiser_instance.debug_n_iterations
@@ -128,8 +128,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         optimiser_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(noise_sigma/welsch_p)),
                                   data, model_instance=PointRegistration(), weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
-                                  model_start=model_start, model_ref_start=model_ref_start, debug=True)
-        if optimiser_instance.run():
+                                  debug=True)
+        if optimiser_instance.run(model_start=model_start, model_ref_start=model_ref_start):
             model = optimiser_instance.final_model
             model_ref = optimiser_instance.final_model_ref
             n_iterations = optimiser_instance.debug_n_iterations
@@ -147,8 +147,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
                                                    0.0, gnc_irls_p_rscale, gnc_irls_p_epsilon_base, gnc_irls_p_epsilon_base, gnc_irls_p_beta)
         optimiser_instance = IRLS(gnc_irls_p_paramInstance, data, model_instance=PointRegistration(), weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
-                                  model_start=model_start, model_ref_start=model_ref_start, debug=True)
-        if optimiser_instance.run():
+                                  debug=True)
+        if optimiser_instance.run(model_start=model_start, model_ref_start=model_ref_start):
             model = optimiser_instance.final_model
             model_ref = optimiser_instance.final_model_ref
             n_iterations = optimiser_instance.debug_n_iterations
@@ -161,8 +161,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         gnc_irls_p_paramInstance.influence_func_instance.p = 1.0
         optimiser_instance = IRLS(gnc_irls_p_paramInstance, data, model_instance=PointRegistration(), weight=weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings,
-                                  model_start=model_start, model_ref_start=model_ref_start, debug=True)
-        if optimiser_instance.run():
+                                  debug=True)
+        if optimiser_instance.run(model_start=model_start, model_ref_start=model_ref_start):
             model = optimiser_instance.final_model
             model_ref = optimiser_instance.final_model_ref
             n_iterations = optimiser_instance.debug_n_iterations

@@ -24,7 +24,6 @@ class LinearRegressorBase:
             lambda_thres: float = 0.0,
             diff_thres: float = 1.e-10,
             use_slow_version: bool = False,
-            model_start: npt.ArrayLike = None,
             print_warnings: bool = False,
             debug: bool = False
             ):
@@ -35,7 +34,6 @@ class LinearRegressorBase:
         self.__lambda_thres = lambda_thres
         self.__diff_thres = diff_thres
         self._use_slow_version = use_slow_version
-        self.__model_start = model_start
         self.__print_warnings = print_warnings
         self.__debug = debug
 
@@ -88,7 +86,8 @@ class LinearRegressorBase:
                  param_instance,
                  evaluator_instance, # only set if use_slow_version is False
                  weight: np.array,
-                 scale: np.array):
+                 scale: np.array,
+                 model_start):
         optimiser_instance = SupGaussNewton(param_instance, data,
                                             model_instance = LinearRegressor(data[0]) if self._use_slow_version else None,
                                             evaluator_instance = evaluator_instance,
@@ -99,10 +98,9 @@ class LinearRegressorBase:
                                             lambda_scale=self.__lambda_scale,
                                             lambda_thres=self.__lambda_thres,
                                             diff_thres=self.__diff_thres,
-                                            model_start=self.__model_start,
                                             print_warnings=self.__print_warnings,
                                             debug=self.__debug)
-        if optimiser_instance.run():
+        if optimiser_instance.run(model_start):
             if self.__data_is_tuple:
                 self.final_coeff,self.final_intercept = self.__convert_model(optimiser_instance.final_model, data[0])
             else:

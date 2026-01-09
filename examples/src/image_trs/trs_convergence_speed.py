@@ -93,19 +93,17 @@ def main(test_run:bool, output_folder:str="../../../output"):
         sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=model_instance,
                                          max_niterations=max_niterations, diff_thres=diff_thres,
                                          print_warnings=print_warnings,
-                                         model_start = None if with_gnc else model_start,
                                          debug=True,
                                          lambda_start=1.0)
-        if sup_gn_instance.run():
+        if sup_gn_instance.run(model_start = None if with_gnc else model_start):
             diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(sup_gn_instance.debug_diff_alpha)
 
         irls_instance = IRLS(param_instance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=print_warnings,
-                             model_start = None if with_gnc else model_start,
                              debug=True)
-        irls_instance.run() # this can fail but we don't care in this context
+        irls_instance.run(model_start = None if with_gnc else model_start) # this can fail but we don't care in this context
         diffs_welsch_irls = irls_instance.debug_diffs
         diff_alpha_welsch_irls = np.array(sup_gn_instance.debug_diff_alpha)
     

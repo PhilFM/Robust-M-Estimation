@@ -90,9 +90,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         plane_fitter = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
                                              max_niterations=max_niterations, diff_thres=diff_thres,
                                              print_warnings=print_warnings,
-                                             model_start = None if with_gnc else model_start,
                                              debug=True)
-        if plane_fitter.run(data):
+        if plane_fitter.run(data, model_start = None if with_gnc else model_start):
             diffs_welsch_sup_gn = plane_fitter.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(plane_fitter.debug_diff_alpha)
 
@@ -101,9 +100,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         irls_instance = IRLS(param_instance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              print_warnings=print_warnings,
-                             model_start = None if with_gnc else model_start,
                              debug=True)
-        if irls_instance.run():
+        if irls_instance.run(model_start = None if with_gnc else model_start):
             diffs_welsch_irls = irls_instance.debug_diffs
             diff_alpha_welsch_irls = np.array(irls_instance.debug_diff_alpha)
     

@@ -108,8 +108,8 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
         sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, scale=scale,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=0.99, lambda_max=0.99, diff_thres=diff_thres,
-                                         model_start=[x], print_warnings=print_warnings)
-        if sup_gn_instance.run():
+                                         print_warnings=print_warnings)
+        if sup_gn_instance.run(model_start=[x]):
             m = sup_gn_instance.final_model
             testVal = optimiser_instance.objective_func([m])
             if testVal > max_val:

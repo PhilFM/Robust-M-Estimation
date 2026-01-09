@@ -180,14 +180,14 @@ class BaseIRLS:
                 scale3=self._scale[2],
             )
 
-    def _init_model(self) -> None:
-        if self._model_start is None and self._model_ref_start is None:
+    def _init_model(self, model_start: npt.ArrayLike, model_ref_start: npt.ArrayLike) -> None:
+        if model_start is None and model_ref_start is None:
             if self._evaluator_instance is not None or callable(self._linear_model_size):
                 return self.weighted_fit()
             else:
                 return self.model_weighted_fit()
         else:
-            return self._model_start, self._model_ref_start
+            return np.copy(model_start), np.copy(model_ref_start)
 
     def _calc_residual_derivatives(
             self, model: npt.ArrayLike, model_ref=None, small_diff: float = 1.0e-5

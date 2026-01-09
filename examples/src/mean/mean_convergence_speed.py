@@ -104,10 +104,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         sup_gn_instance = SupGaussNewton(welschParamInstance, data, model_instance=model_instance,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
-                                         print_warnings=False,
-                                         model_start = None if with_gnc else model_start,
-                                         debug=True)
-        if sup_gn_instance.run():
+                                         print_warnings=False, debug=True)
+        if sup_gn_instance.run(model_start = None if with_gnc else model_start):
             m = sup_gn_instance.final_model
             n_iterations = sup_gn_instance.debug_n_iterations
             diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
@@ -140,10 +138,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         sup_gn_instance = SupGaussNewton(pseudoHuberParamInstance, data, model_instance=model_instance,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
-                                         print_warnings=False,
-                                         model_start = None if with_gnc else model_start,
-                                         debug=True)
-        if sup_gn_instance.run():
+                                         print_warnings=False, debug=True)
+        if sup_gn_instance.run(model_start = None if with_gnc else model_start):
             m = sup_gn_instance.final_model
             n_iterations = sup_gn_instance.debug_n_iterations
             diffs_pseudo_huber_sup_gn = sup_gn_instance.debug_diffs
@@ -157,10 +153,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
         irls_instance = IRLS(pseudoHuberParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=False,
-                             model_start = None if with_gnc else model_start,
-                             debug=True)
-        if irls_instance.run():
+                             print_warnings=False, debug=True)
+        if irls_instance.run(model_start = None if with_gnc else model_start):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
             diffs_pseudo_huber_irls = irls_instance.debug_diffs
@@ -181,10 +175,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
                                                 0.0, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta)
         irls_instance = IRLS(gncIrlspParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=False,
-                             model_start = None if with_gnc else model_start,
-                             debug=True)
-        if irls_instance.run():
+                             print_warnings=False, debug=True)
+        if irls_instance.run(model_start = None if with_gnc else model_start):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
             diffs_gnc_irls_p0 = irls_instance.debug_diffs
@@ -199,10 +191,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         gncIrlspParamInstance.influence_func_instance.p = 1.0
         irls_instance = IRLS(gncIrlspParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=False,
-                             model_start = None if with_gnc else model_start,
-                             debug=True)
-        if irls_instance.run():
+                             print_warnings=False, debug=True)
+        if irls_instance.run(model_start = None if with_gnc else model_start):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
             diffs_gnc_irls_p1 = irls_instance.debug_diffs

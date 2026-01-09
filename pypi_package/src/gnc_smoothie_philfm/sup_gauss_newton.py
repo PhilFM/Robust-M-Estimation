@@ -33,8 +33,6 @@ class SupGaussNewton(BaseIRLS):
         lambda_thres: float = 0.0,
         diff_thres: float = 1.0e-10,
         print_warnings: bool = False,
-        model_start: npt.ArrayLike = None,
-        model_ref_start=None,
         debug: bool = False,
     ):
         BaseIRLS.__init__(
@@ -56,8 +54,6 @@ class SupGaussNewton(BaseIRLS):
             max_niterations=max_niterations,
             diff_thres=diff_thres,
             print_warnings=print_warnings,
-            model_start=model_start,
-            model_ref_start=model_ref_start,
             debug=debug,
         )
         self.__residual_tolerance = residual_tolerance
@@ -139,10 +135,12 @@ class SupGaussNewton(BaseIRLS):
                 self._weight,
                 self._scale)
 
-    def run(self) -> bool:
+    def run(self,
+            model_start: npt.ArrayLike = None,
+            model_ref_start: npt.ArrayLike=None) -> bool:
         self._param_instance.reset()
         lambda_val = self.__lambda_start
-        model, model_ref = self._init_model()
+        model, model_ref = self._init_model(model_start, model_ref_start)
         last_tot = self.objective_func(model, model_ref=model_ref)
 
         model_is_valid = getattr(self._model_instance, "model_is_valid", None)
