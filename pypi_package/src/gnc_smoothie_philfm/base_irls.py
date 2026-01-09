@@ -340,3 +340,23 @@ class BaseIRLS:
                 weight
             )
             
+    def finalise(self, model, model_ref=None, weight=None, itn:int=0, total_time=0):
+        self._param_instance.reset(False)
+
+        self.final_model = model
+        self.final_model_ref = model_ref
+        if weight is None:
+            weight = [None] * self._dsize
+            for didx in range(self._dsize):
+                if self._data[didx] is not None:
+                    weight[didx] = np.copy(self._weight[didx])
+
+        self.update_weights(model, weight, model_ref)
+        self.final_weight = weight[0]
+        self.final_weight2 = weight[1]
+        self.final_weight3 = weight[2]
+
+        if self._debug:
+            self.debug_n_iterations = itn + 1
+            self.debug_total_time = total_time
+

@@ -301,24 +301,5 @@ class SupGaussNewton(BaseIRLS):
                     )
                 )
 
-        self._param_instance.reset(
-            False
-        )  # finish with parameters in correct final model
-
-        self.final_model = model
-        self.final_model_ref = model_ref
-        weight = [None] * self._dsize
-        for didx in range(self._dsize):
-            if self._data[didx] is not None:
-                weight[didx] = np.copy(self._weight[didx])
-
-        self.update_weights(model, weight, model_ref)
-        self.final_weight = weight[0]
-        self.final_weight2 = weight[1]
-        self.final_weight3 = weight[2]
-
-        if self._debug:
-            self.debug_n_iterations = itn + 1
-            self.debug_total_time = time.time() - start_time_total
-
+        self.finalise(model, model_ref, None, itn, time.time() - start_time_total if self._debug else 0)
         return all_good
