@@ -53,9 +53,7 @@ def fit_line_hough(data, sigma_pop: float, test_run: bool) -> np.ndarray:
                                    theta_step=np.pi/200)
     #print("lines=",lines)
 
-    votes, rho, theta = lines[:, 0][:, 0], lines[:, 0][:, 1], lines[:, 0][:, 2]
-    #if not test_run:
-    #    print("votes=",votes)
+    _, rho, theta = lines[:, 0][:, 0], lines[:, 0][:, 1], lines[:, 0][:, 2]
 
     # Convert to cartesian
     theta[theta == 0.] = 1e-5  # to avoid division by 0 in next line
@@ -68,7 +66,7 @@ def fit_line_hough(data, sigma_pop: float, test_run: bool) -> np.ndarray:
 def randomM11() -> float:
     return 2.0*(np.random.rand()-0.5)
 
-def apply_to_data(sigma_pop,p,x_range,n,n_samples_base,min_n_samples,outlier_fraction,
+def apply_to_data(sigma_pop,q,x_range,n,n_samples_base,min_n_samples,outlier_fraction,
                   test_run:bool=False, quick_run:bool=False):
     var_gnc_welsch = np.zeros((2,2))
     var_ransac = np.zeros((2,2))
@@ -108,7 +106,8 @@ def apply_to_data(sigma_pop,p,x_range,n,n_samples_base,min_n_samples,outlier_fra
             data[i] = (half_x_range*randomM11(), 10.0*randomM11())
 
         # GNC IRLS Welsch
-        line_fitter = LinearRegressorWelsch(sigma_pop/p, max(x_range,10.0*sigma_pop), 30, max_niterations=200)
+        line_fitter = LinearRegressorWelsch(sigma_pop/q, sigma_limit=max(x_range,10.0*sigma_pop),
+                                            num_sigma_steps=30, max_niterations=200)
         if line_fitter.run(data):
             line_gnc_welsch = line_fitter.final_model
 
@@ -140,7 +139,7 @@ def apply_to_data(sigma_pop,p,x_range,n,n_samples_base,min_n_samples,outlier_fra
 
 def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=False):
     sigma_pop = 0.01
-    p = 0.66666667
+    q = 0.66666667
 
     # number of samples used for statistics
     n_samples_base = 100 if quick_run else 20000
@@ -157,7 +156,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             eff_hough_list = []
             eff_ls_list = []
             for outlier_fraction in outlier_fraction_list:
-                var_predicted,var_gnc_welsch,var_ransac,var_hough,var_ls = apply_to_data(sigma_pop, p, x_range, n, n_samples_base, min_n_samples, outlier_fraction, test_run=test_run)
+                var_predicted,var_gnc_welsch,var_ransac,var_hough,var_ls = apply_to_data(sigma_pop, q, x_range, n, n_samples_base, min_n_samples, outlier_fraction, test_run=test_run)
 
                 # GNC IRLS Welsch
                 fac = np.linalg.cholesky(var_gnc_welsch)

@@ -1,13 +1,13 @@
 import numpy as np
 import numpy.typing as npt
-import math
+from typing import TextIO
 import sys
 
 try:
     from ..gnc_welsch_params import GNC_WelschParams
     from ..welsch_influence_func import WelschInfluenceFunc
     from ..cython_files.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
-except:
+except ImportError:
     sys.path.append("..")
     from gnc_welsch_params import GNC_WelschParams
     from welsch_influence_func import WelschInfluenceFunc
@@ -15,13 +15,14 @@ except:
 
 try:
     from .linear_regressor_base import LinearRegressorBase
-except:
+except ImportError:
     from linear_regressor_base import LinearRegressorBase
 
 class LinearRegressorWelsch(LinearRegressorBase):
     def __init__(
             self,
             sigma_base: float,
+            *,
             sigma_limit: float = 20.0,
             num_sigma_steps: int = 20,
             max_niterations: int = 50,
@@ -31,7 +32,7 @@ class LinearRegressorWelsch(LinearRegressorBase):
             lambda_thres: float = 0.0,
             diff_thres: float = 1.e-10,
             use_slow_version: bool = False,
-            print_warnings: bool = False,
+            messages_file: TextIO = None,
             debug: bool = False
             ):
         LinearRegressorBase.__init__(
@@ -43,13 +44,14 @@ class LinearRegressorWelsch(LinearRegressorBase):
             lambda_thres=lambda_thres,
             diff_thres=diff_thres,
             use_slow_version=use_slow_version,
-            print_warnings=print_warnings,
+            messages_file=messages_file,
             debug=debug
         )
-        self.__param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
+        self.__param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
 
     def run(self,
             data,
+            *,
             weight: np.array = None,
             scale: np.array = None,
             model_start: npt.ArrayLike = None):

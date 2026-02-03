@@ -1,8 +1,9 @@
 import numpy as np
+import numpy.typing as npt
 
 from weighted_mean import weighted_mean
 
-def trimmed_mean(data, weight, trim_size):
+def trimmed_mean(data:npt.ArrayLike, trim_size: int, weight:npt.ArrayLike=None):
     # if array would be deleted by trim, return the median
     if 2*trim_size >= len(data):
         return np.median(data)
@@ -18,11 +19,16 @@ def trimmed_mean(data, weight, trim_size):
     #print("Trimmed indices: ", trimmed_idx)
 
     trimmed_data = np.zeros((len(trimmed_idx),1))
-    trimmed_weight = np.zeros(len(trimmed_idx))
-    for i,idx in enumerate(trimmed_idx):
-        trimmed_data[i] = data[idx]
-        trimmed_weight[i] = weight[idx]
+    if weight is None:
+        for i,idx in enumerate(trimmed_idx):
+            trimmed_data[i] = data[idx]
 
-    #print("Trimmed data=", trimmed_data)
-    return weighted_mean(trimmed_data, trimmed_weight)
+        return weighted_mean(trimmed_data)
+    else:
+        trimmed_weight = np.zeros(len(trimmed_idx))
+        for i,idx in enumerate(trimmed_idx):
+            trimmed_data[i] = data[idx]
+            trimmed_weight[i] = weight[idx]
+
+        return weighted_mean(trimmed_data, trimmed_weight)
 

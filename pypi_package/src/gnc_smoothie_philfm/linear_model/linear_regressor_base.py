@@ -1,22 +1,22 @@
 import numpy as np
-import numpy.typing as npt
-import math
 import sys
+from typing import TextIO
 
 try:
     from ..sup_gauss_newton import SupGaussNewton
-except:
+except ImportError:
     sys.path.append("..")
     from sup_gauss_newton import SupGaussNewton
 
 try:
     from .linear_regressor import LinearRegressor
-except:
+except ImportError:
     from linear_regressor import LinearRegressor
 
 class LinearRegressorBase:
     def __init__(
             self,
+            *,
             max_niterations: int = 50,
             lambda_start: float = 1.0,
             lambda_max: float = 1.0,
@@ -24,7 +24,7 @@ class LinearRegressorBase:
             lambda_thres: float = 0.0,
             diff_thres: float = 1.e-10,
             use_slow_version: bool = False,
-            print_warnings: bool = False,
+            messages_file: TextIO = None,
             debug: bool = False
             ):
         self.__max_niterations = max_niterations
@@ -34,7 +34,7 @@ class LinearRegressorBase:
         self.__lambda_thres = lambda_thres
         self.__diff_thres = diff_thres
         self._use_slow_version = use_slow_version
-        self.__print_warnings = print_warnings
+        self.__messages_file = messages_file
         self.__debug = debug
 
     # check for scipy style X/y "training data/target" arguments, and convert to single data array
@@ -98,9 +98,9 @@ class LinearRegressorBase:
                                             lambda_scale=self.__lambda_scale,
                                             lambda_thres=self.__lambda_thres,
                                             diff_thres=self.__diff_thres,
-                                            print_warnings=self.__print_warnings,
+                                            messages_file=self.__messages_file,
                                             debug=self.__debug)
-        if optimiser_instance.run(model_start):
+        if optimiser_instance.run(model_start=model_start):
             if self.__data_is_tuple:
                 self.final_coeff,self.final_intercept = self.__convert_model(optimiser_instance.final_model, data[0])
             else:

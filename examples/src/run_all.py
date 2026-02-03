@@ -27,6 +27,7 @@ import mean.welsch_efficiency
 import mean.mean_efficiency
 import mean.mean_compare_student_t
 import mean.mean_compare
+import mean.mean_leave_out
 
 mean.mean_convergence_speed.main(test_run=True, output_folder="../../test_output")
 mean.majorize_examples.main(test_run=True, output_folder="../../test_output")
@@ -41,6 +42,7 @@ mean.welsch_efficiency.main(test_run=True, output_folder="../../test_output", qu
 mean.mean_efficiency.main(test_run=True, output_folder="../../test_output", quick_run=True)
 mean.mean_compare_student_t.main(test_run=True, output_folder="../../test_output", quick_run=True)
 mean.mean_compare.main(test_run=True, output_folder="../../test_output", quick_run=True)
+mean.mean_leave_out.main(test_run=True, output_folder="../../test_output", quick_run=True)
 
 # line fitting examples
 sys.path.append("line_fitting")

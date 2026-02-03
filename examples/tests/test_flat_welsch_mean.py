@@ -32,7 +32,7 @@ def plotResult(optimiser_instance, data, weight, scale, m, x_max, sigma) -> None
     mlist = np.linspace(xMin, xMax, num=300)
 
     plt.figure(num=1, dpi=240)
-    gncs_draw_data_points(plt, data, weight, xMin, xMax, len(data), scale=0.05)
+    gncs_draw_data_points(plt, data, xMin, xMax, len(data), weight=weight, scale=0.05)
     plt.axvline(x = x_max, color = 'gray', label = 'Sampled', lw = 1.0, linestyle = 'solid')
 
     rmfv = np.vectorize(objective_func, excluded="optimiser_instance")
@@ -96,7 +96,7 @@ def test_answer():
                 y_max = optimiser_instance.objective_func([x_max])
                 break
 
-        m = flat_welsch_mean(data, sigma, weight=weight, scale=scale, print_warnings=False, output_folder="../../output")
+        m = flat_welsch_mean(data, sigma, weight=weight, scale=scale, messages_file=None, output_folder="../../output")
         #plotResult(optimiser_instance, data, weight, scale, m, x_max, sigma)
         assert(m == pytest.approx(x_max, 1.e-4))
 

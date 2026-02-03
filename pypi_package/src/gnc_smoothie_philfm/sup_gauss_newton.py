@@ -1,11 +1,12 @@
 import math
 import numpy as np
 import numpy.typing as npt
+from typing import TextIO
 import time
 
 try:
     from .base_irls import BaseIRLS
-except:
+except ImportError:
     from base_irls import BaseIRLS
 
 class SupGaussNewton(BaseIRLS):
@@ -13,6 +14,7 @@ class SupGaussNewton(BaseIRLS):
         self,
         param_instance,
         data: npt.ArrayLike,
+        *,
         model_instance = None, # Python model
         evaluator_instance = None, # Cython model
         weight: npt.ArrayLike = None,
@@ -32,7 +34,7 @@ class SupGaussNewton(BaseIRLS):
         lambda_scale: float = 1.2,
         lambda_thres: float = 0.0,
         diff_thres: float = 1.0e-10,
-        print_warnings: bool = False,
+        messages_file: TextIO = None,
         debug: bool = False,
     ):
         BaseIRLS.__init__(
@@ -53,7 +55,7 @@ class SupGaussNewton(BaseIRLS):
             numeric_derivs_influence=numeric_derivs_influence,
             max_niterations=max_niterations,
             diff_thres=diff_thres,
-            print_warnings=print_warnings,
+            messages_file=messages_file,
             debug=debug,
         )
         self.__residual_tolerance = residual_tolerance
@@ -62,8 +64,14 @@ class SupGaussNewton(BaseIRLS):
         self.__lambda_scale = lambda_scale
         self.__lambda_thres = lambda_thres
 
+    def model_instance(self):
+        return self._model_instance()
+
     def __calc_influence_func_derivatives(
-        self, residual: np.ndarray, s: float, small_diff: float = 1.0e-5
+        self, residual: np.ndarray,
+        s: float,
+        *,
+        small_diff: float = 1.0e-5
     ) -> (float, float):  # scale
         rsqr = residual @ residual
         r = math.sqrt(rsqr)
@@ -89,7 +97,11 @@ class SupGaussNewton(BaseIRLS):
 
     # weighted_derivs is public to allow derivatives to be checked
     def weighted_derivs(
-            self, model: npt.ArrayLike, lambda_b: float, model_ref=None
+            self,
+            model: npt.ArrayLike,
+            lambda_b: float,
+            *,
+            model_ref=None
     ) -> (np.array, np.array):
         if self._evaluator_instance is None:
             # initialize residual_size
@@ -126,6 +138,9 @@ class SupGaussNewton(BaseIRLS):
 
             return atot, AlBtot
         else:
+            if self._messages_file is not None:
+                print("Here sup 2", file=self._messages_file)
+
             return self._evaluator_instance.weighted_derivs(
                 model,
                 model_ref,
@@ -136,6 +151,7 @@ class SupGaussNewton(BaseIRLS):
                 self._scale)
 
     def run(self,
+            *,
             model_start: npt.ArrayLike = None,
             model_ref_start: npt.ArrayLike=None) -> bool:
         self._param_instance.reset()
@@ -146,13 +162,16 @@ class SupGaussNewton(BaseIRLS):
         model_is_valid = getattr(self._model_instance, "model_is_valid", None)
         update_model_ref = getattr(self._model_instance, "update_model_ref", None)
 
-        if self._print_warnings:
+        if self._messages_file is not None:
+            print("Here sup 1", file=self._messages_file)
+
             a, AlB = self.weighted_derivs(model, self.__lambda_start, model_ref=model_ref)
-            print("Initial model=", model)
-            print("Initial model_ref=", model_ref)
+            print("Initial model=", model, file=self._messages_file)
+            print("Initial model_ref=", model_ref, file=self._messages_file)
             print(
                 "Initial params=",
                 self._param_instance.influence_func_instance.summary(),
+                file=self._messages_file
             )
             print(
                 "Initial tot=",
@@ -161,9 +180,10 @@ class SupGaussNewton(BaseIRLS):
                 a.dtype, a,
                 "diff_thres=",
                 self._diff_thres,
+                file=self._messages_file
             )
-            print("Initial weighted derivative lambda_val=", lambda_val, ":")
-            print("Initial AlB=", AlB.dtype, AlB)
+            print("Initial weighted derivative lambda_val=", lambda_val, ":", file=self._messages_file)
+            print("Initial AlB=", AlB.dtype, AlB, file=self._messages_file)
 
         if self._debug:
             self.debug_diffs = []
@@ -205,10 +225,11 @@ class SupGaussNewton(BaseIRLS):
                 at = np.linalg.solve(AlB, a)
             except np.linalg.LinAlgError:
                 lambda_val /= self.__lambda_scale
-                if self._print_warnings:
+                if self._messages_file is not None:
                     print(
                         "Weighted derivative matrix is singular - rejecting new lambda_val=",
                         lambda_val,
+                        file=self._messages_file
                     )
 
                 continue
@@ -227,7 +248,12 @@ class SupGaussNewton(BaseIRLS):
                     model = model_old
                     model_ref = model_ref_old
                     lambda_val /= self.__lambda_scale
-                    print("Aborting here new lambda=", lambda_val)
+                    if self._messages_file is not None:
+                        print(
+                            "Aborting here new lambda=",
+                            lambda_val,
+                            file=self._messages_file)
+
                     continue
 
             # only check for termination if we have reached the end of any GNC schedule
@@ -238,15 +264,15 @@ class SupGaussNewton(BaseIRLS):
                     self.debug_diff_alpha.append(self._param_instance.alpha())
 
                 if model_max_diff < self._diff_thres:
-                    if self._print_warnings:
-                        print("Difference threshold reached")
+                    if self._messages_file is not None:
+                        print("Difference threshold reached", file=self._messages_file)
 
                     all_good = True
                     break
 
             tot = self.objective_func(model, model_ref=model_ref)
 
-            if self._print_warnings:
+            if self._messages_file:
                 print(
                     "itn=",
                     itn,
@@ -258,6 +284,7 @@ class SupGaussNewton(BaseIRLS):
                     self._param_instance.influence_func_instance.summary(),
                     "tot=",
                     tot,
+                    file=self._messages_file
                 )
 
             if (
@@ -266,7 +293,7 @@ class SupGaussNewton(BaseIRLS):
                 * (tot - last_tot)
                 > self.__residual_tolerance
             ):
-                if self._print_warnings:
+                if self._messages_file is not None:
                     print(
                         "Reject lambda_val=",
                         lambda_val,
@@ -274,6 +301,7 @@ class SupGaussNewton(BaseIRLS):
                         last_tot - tot,
                         "reverting to model",
                         model_old,
+                        file=self._messages_file
                     )
 
                 model = model_old
@@ -281,8 +309,8 @@ class SupGaussNewton(BaseIRLS):
                 lambda_val /= self.__lambda_scale
                 last_tot = self.objective_func(model, model_ref=model_ref)
             else:
-                if self._print_warnings:
-                    print("Accept lambda_val=", lambda_val, "model=", model)
+                if self._messages_file is not None:
+                    print("Accept lambda_val=", lambda_val, "model=", model, file=self._messages_file)
 
                 lambda_val = min(self.__lambda_scale * lambda_val, self.__lambda_max)
                 self._param_instance.increment()
@@ -299,5 +327,5 @@ class SupGaussNewton(BaseIRLS):
                     )
                 )
 
-        self.finalise(model, model_ref, None, itn, time.time() - start_time_total if self._debug else 0)
+        self.finalise(model, model_ref=model_ref, itn=itn, total_time = time.time() - start_time_total if self._debug else 0)
         return all_good

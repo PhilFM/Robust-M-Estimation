@@ -1,3 +1,5 @@
+import numpy as np
+
 model_values = {}
 
 key = ("GroundTruth", "", "")
@@ -77,6 +79,13 @@ model_values[key]["colour"] = "deeppink"
 model_values[key]["linestyle"] = (0, (3, 1, 1, 1))
 model_values[key]["lw"] = 1.0
 
+key = ("Trimean", "Basic", "")
+model_values[key] = {}
+model_values[key]["label"] = "Tukey trimean"
+model_values[key]["colour"] = "darkgreen"
+model_values[key]["linestyle"] = (0, (3, 1, 1, 1))
+model_values[key]["lw"] = 1.0
+
 key = ("RME", "", "")
 model_values[key] = {}
 model_values[key]["label"] = "RME"
@@ -110,6 +119,7 @@ def gncs_draw_vline(
     plt,
     x: float,
     key,
+    *,
     use_label: bool = True,
     use_line_style: bool = True,
     lw: float = None,
@@ -149,6 +159,7 @@ def gncs_draw_curve(
     plt,
     vals,
     key,
+    *,
     xvalues=None,
     draw_markers: bool = True,
     hlight_x_value: float = None,
@@ -215,3 +226,46 @@ def gncs_draw_curve(
 
                 xprev = x
                 yprev = y
+
+def gncs_draw_histogram(
+    plt,
+    x_min:float,
+    x_max:float,
+    bin_size:float,
+    vals,
+    key,
+    *,
+    lw: float = None,
+    add_label: bool = True,
+    markersize: float = 2.0,
+):
+    values = model_values[key]
+    x_range = x_max-x_min
+    n_bins = 1+int(x_range/bin_size)
+    vals = np.array(vals).reshape(len(vals))
+    counts,bins = np.histogram(vals, bins=n_bins, range=(x_min,x_min+n_bins*bin_size))
+    #print("counts=",counts,"key=",key)
+    plt.plot(
+        list(range(len(counts))),
+        counts,
+        color=values["colour"],
+        label=values["label"] if add_label else None,
+        lw=values["lw"] if lw is None else lw,
+        linestyle=values["linestyle"],
+        marker="o",
+        markersize=markersize,
+    )
+
+def gncs_draw_histogram_vline(
+    plt,
+    x_min:float,
+    x_max:float,
+    bin_size:float,
+    x: float,
+    key,
+    *,
+    use_label: bool = True,
+    use_line_style: bool = True,
+    lw: float = None,
+):
+    gncs_draw_vline(plt, (x - x_min)/bin_size-0.5, key, use_label, use_line_style, lw)

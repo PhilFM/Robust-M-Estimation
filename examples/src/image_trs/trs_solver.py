@@ -58,8 +58,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         if not test_run:
             print("data=",data)
 
-        p = 0.66667
-        sigma_base = sigma_pop/p
+        q = 0.66667
+        sigma_base = sigma_pop/q
         sigma_limit = image_width
         num_sigma_steps = 30
         trs_instance = TRSWelsch(sigma_base, sigma_limit, num_sigma_steps, max_niterations=100, debug=True)

@@ -1,6 +1,5 @@
 import numpy as np
 import os
-import open3d as o3d
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
@@ -50,15 +49,13 @@ def main(test_run:bool, output_folder:str="../../../output"):
         data[n_good_points+i][0][0] = np.random.rand()*xy_range
         data[n_good_points+i][1][0] = np.random.rand()*xy_range
     
-    p = 0.6667
-    sigma = sigma_pop/p
+    q = 0.6667
+    sigma = sigma_pop/q
     sigma_limit = xy_range
     linear_regressor = LinearRegressorWelsch(sigma, sigma_limit, 20, use_slow_version=False, debug=True)
     if linear_regressor.run(data):
-        coeff = linear_regressor.final_coeff
         intercept = linear_regressor.final_intercept
         final_mean_2d = np.array([intercept[0], intercept[1]])
-        final_weight = linear_regressor.final_weight
         debug_model_list = linear_regressor.debug_model_list
 
     if not test_run:

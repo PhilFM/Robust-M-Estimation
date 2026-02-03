@@ -1,13 +1,13 @@
 import numpy as np
 import numpy.typing as npt
-import math
+from typing import TextIO
 import sys
 
 try:
     from ..gnc_null_params import GNC_NullParams
     from ..pseudo_huber_influence_func import PseudoHuberInfluenceFunc
     from ..cython_files.linear_regressor_pseudo_huber_evaluator import LinearRegressorPseudoHuberEvaluator
-except:
+except ImportError:
     sys.path.append("..")
     from gnc_null_params import GNC_NullParams
     from pseudo_huber_influence_func import PseudoHuberInfluenceFunc
@@ -15,13 +15,14 @@ except:
 
 try:
     from .linear_regressor_base import LinearRegressorBase
-except:
+except ImportError:
     from linear_regressor_base import LinearRegressorBase
 
 class LinearRegressorPseudoHuber(LinearRegressorBase):
     def __init__(
             self,
             sigma: float,
+            *,
             max_niterations: int = 50,
             lambda_start: float = 1.0,
             lambda_max: float = 1.0,
@@ -29,7 +30,7 @@ class LinearRegressorPseudoHuber(LinearRegressorBase):
             lambda_thres: float = 0.0,
             diff_thres: float = 1.e-10,
             use_slow_version: bool = False,
-            print_warnings: bool = False,
+            messages_file: TextIO = None,
             debug: bool = False
             ):
         LinearRegressorBase.__init__(
@@ -41,13 +42,14 @@ class LinearRegressorPseudoHuber(LinearRegressorBase):
             lambda_thres=lambda_thres,
             diff_thres=diff_thres,
             use_slow_version=use_slow_version,
-            print_warnings=print_warnings,
+            messages_file=messages_file,
             debug=debug
         )
         self.__param_instance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma))
 
     def run(self,
             data,
+            *,
             weight: np.array = None,
             scale: np.array = None,
             model_start: npt.ArrayLike = None):

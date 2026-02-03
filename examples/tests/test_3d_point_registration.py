@@ -44,7 +44,7 @@ def test_answer():
             data[n_good_3d_point_pairs+i][1][1] = 3*(np.random.rand() - 0.5)
             data[n_good_3d_point_pairs+i][1][2] = 3*(np.random.rand() - 0.5)
 
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(), 0.01, 50.0, 20) # sigma_base, sigma_limit, num_sigma_steps
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), 0.01, sigma_limit=50.0, num_sigma_steps=20)
         optimiser_instance = SupGaussNewton(param_instance, data, model_instance=PointRegistration())
         assert(optimiser_instance.run())
         model = optimiser_instance.final_model

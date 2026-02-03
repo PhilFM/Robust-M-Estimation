@@ -81,7 +81,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         sigma_limit = 10.0 if with_gnc else sigma_base
         num_sigma_steps = 10
         max_niterations = 500
-        print_warnings = False
+        messages_file = None
 
         model_start = [0.0,0.0,0.0]
         for i in range(3):
@@ -89,17 +89,18 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
         plane_fitter = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
                                              max_niterations=max_niterations, diff_thres=diff_thres,
-                                             print_warnings=print_warnings,
+                                             messages_file=messages_file,
                                              debug=True)
         if plane_fitter.run(data, model_start = None if with_gnc else model_start):
             diffs_welsch_sup_gn = plane_fitter.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(plane_fitter.debug_diff_alpha)
 
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
+                                          sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
         model_instance = LinearRegressor(data[0])
         irls_instance = IRLS(param_instance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=print_warnings,
+                             messages_file=messages_file,
                              debug=True)
         if irls_instance.run(model_start = None if with_gnc else model_start):
             diffs_welsch_irls = irls_instance.debug_diffs

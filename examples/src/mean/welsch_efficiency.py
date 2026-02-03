@@ -11,9 +11,8 @@ if __name__ == "__main__":
 from gnc_smoothie_philfm.irls import IRLS
 from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
+from gnc_smoothie_philfm.cython_files.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
 
 def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=False):
     sigma_base = 1.0
@@ -23,30 +22,29 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
     small_val = 1.e-10
 
     def small_mean(optimiser_instance):
-        a,AlB = optimiser_instance.weighted_derivs([0.0], 1.0) # model, lambda_b
+        a,AlB = optimiser_instance.weighted_derivs(np.array([0.0]), 1.0) # model, lambda_b
         return -a[0]/AlB[0][0]
 
-    def efficiency_est_func(p):
-        return math.pow(1.0 + 2.0*p*p, 1.5)*math.pow(1.0 + p*p, -3.0)
+    def efficiency_est_func(q):
+        return math.pow(1.0 + 2.0*q*q, 1.5)*math.pow(1.0 + q*q, -3.0)
 
-    def efficiency_est_func_n(p,n):
-        numerator = n*math.pow(1.0 + 2.0*p*p, -1.5)
-        denom1 = (1.0 + 3.0*p*p*p*p + 2.0*p*p)*math.pow(1.0 + 2.0*p*p, -2.5)
-        denom2 = (n-1.0)*math.pow(1.0 + p*p, -3.0)
+    def efficiency_est_func_n(q,n):
+        numerator = n*math.pow(1.0 + 2.0*q*q, -1.5)
+        denom1 = (1.0 + 3.0*q*q*q*q + 2.0*q*q)*math.pow(1.0 + 2.0*q*q, -2.5)
+        denom2 = (n-1.0)*math.pow(1.0 + q*q, -3.0)
         return (denom1 + denom2)/numerator
 
     for test_idx in range(0):
         n = 100
         data = np.zeros((n,1))
-        weight = np.zeros(n)
+        weight = np.ones(n)
         sigma_pop = 0.4
         for i in range(n):
             data[i][0] = random.gauss(0.0, sigma_pop)
-            weight[i] = 1.0
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(),
-                                          sigma_base, sigma_limit, num_sigma_steps, max_niterations=max_niterations)
-        optimiser_instance = IRLS(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, max_niterations=max_niterations)
+                                          sigma_base, sigma_limit, num_sigma_steps, max_niterationsp=max_niterations)
+        optimiser_instance = IRLS(param_instance, data, evaluator_instance=LinearRegressorWelschEvaluator(data[0]), weight=weight, max_niterations=max_niterations)
         if optimiser_instance.run():
             m1 = optimiser_instance.final_model
 
@@ -58,11 +56,11 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
     plt.close("all")
     plt.figure(num=1, dpi=240)
     ax = plt.gca()
-    ax.set_xlabel(r'$p$')
+    ax.set_xlabel(r'$q$')
     ax.set_ylabel('Efficiency')
 
-    pmax = 1.0
-    splist = np.linspace(0, pmax, num=30)
+    qmax = 1.0
+    splist = np.linspace(0, qmax, num=30)
 
     n_samples = 30 if quick_run else 3000
 
@@ -85,14 +83,14 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             small_mean_var_den_est = 0.0
             for test_idx in range(n_samples):
                 data = np.zeros((n,1))
-                weight = np.zeros(n)
+                weight = np.ones(n)
                 for i in range(n):
                     data[i] = [random.gauss(0.0, sigma_pop)]
-                    weight[i] = 1.0
 
-                influence_func_instance = WelschInfluenceFunc(sigma=sigma_base)
-                param_instance = GNC_NullParams(influence_func_instance)
-                optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, max_niterations=200)
+                param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base)
+                optimiser_instance = SupGaussNewton(param_instance, data,
+                                                    evaluator_instance=LinearRegressorWelschEvaluator(data[0]),
+                                                    weight=weight, max_niterations=200)
 
                 m = small_mean(optimiser_instance)
                 mstot += m*m
@@ -130,19 +128,19 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             small_mean_var_num_est /= n_samples
             small_mean_var_den_est /= n_samples
 
-            p = sigma_pop/sigma_base
+            q = sigma_pop/sigma_base
             var = n*mstot/n_samples
             lsvar = n*lsstot/n_samples
             if not test_run:
-                print("sigma_pop=",sigma_pop," var=",var, " est=",sigma_base*sigma_base*p*p*math.sqrt(1.0+p*p)," lsvar",lsvar," est=",sigma_base*sigma_base*p*p)
+                print("sigma_pop=",sigma_pop," var=",var, " est=",sigma_base*sigma_base*q*q*math.sqrt(1.0+q*q)," lsvar",lsvar," est=",sigma_base*sigma_base*q*q)
 
             effData.append((lsvar+small_val)/(var+small_val))
 
-            semx2s2_est = math.pow(1.0+2.*p*p, -0.5)
-            sx2emx2s2_est = p*p*math.pow(1.0+2.*p*p, -1.5)*sigma_base*sigma_base
-            sx4emx2s2_est = 3.0*p*p*p*p*math.pow(1.0+2.*p*p, -2.5)*sigma_base*sigma_base*sigma_base*sigma_base
-            semx22s2_est = math.pow(1.0+p*p, -0.5)
-            sx2emx22s2_est = p*p*math.pow(1.0+p*p, -1.5)*sigma_base*sigma_base
+            semx2s2_est = math.pow(1.0+2.*q*q, -0.5)
+            sx2emx2s2_est = q*q*math.pow(1.0+2.*q*q, -1.5)*sigma_base*sigma_base
+            sx4emx2s2_est = 3.0*q*q*q*q*math.pow(1.0+2.*q*q, -2.5)*sigma_base*sigma_base*sigma_base*sigma_base
+            semx22s2_est = math.pow(1.0+q*q, -0.5)
+            sx2emx22s2_est = q*q*math.pow(1.0+q*q, -1.5)*sigma_base*sigma_base
             if not test_run:
                 print("E(e^(-x^2/s^2)) = ", semx2s2_est, " est = ", semx2s2, " ratio = ", semx2s2_est/semx2s2)
                 print("E(x^2*e^(-x^2/s^2)) = ", sx2emx2s2_est, " est = ", sx2emx2s2, " ratio = ", sx2emx2s2_est/sx2emx2s2)
@@ -157,9 +155,9 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             if not test_run:
                 print("num=",numerator," den1=",denom1," den2=",denom2)
 
-            numeratorp = p*p*math.pow(1.0 + 2.0*p*p, -1.5)
-            denom1p = (1.0 + 3.0*p*p*p*p + 2.0*p*p)*math.pow(1.0 + 2.0*p*p, -2.5)
-            denom2p = (n-1.0)*math.pow(1.0 + p*p, -3.0)
+            numeratorp = q*q*math.pow(1.0 + 2.0*q*q, -1.5)
+            denom1p = (1.0 + 3.0*q*q*q*q + 2.0*q*q)*math.pow(1.0 + 2.0*q*q, -2.5)
+            denom2p = (n-1.0)*math.pow(1.0 + q*q, -3.0)
             if not test_run:
                 print("nump=",n*numeratorp," den1p=",n*denom1p," den2p=",n*denom2p)
 
@@ -169,15 +167,15 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             if not test_run:
                 print("Small mean variance = ", n*small_mean_var, " est = ", n*small_mean_var_est, " est2 = ", n*small_mean_var_est2, " est3 = ", n*small_mean_var_est3, " est4 = ", n*small_mean_var_est4)
                 print("Ratio: ", small_mean_var_est2/small_mean_var_est, " num_est=", small_mean_var_num_est," den_est=", small_mean_var_den_est)
-                print("p=",p, " asymptotic efficiency=", (small_val + sigma_pop*sigma_pop/n)/(small_val + small_mean_var_est2), " est=", efficiency_est_func(p), " estn=", efficiency_est_func_n(p,n))
+                print("q=",q, " asymptotic efficiency=", (small_val + sigma_pop*sigma_pop/n)/(small_val + small_mean_var_est2), " est=", efficiency_est_func(q), " estn=", efficiency_est_func_n(q,n))
 
         plt.plot(splist, effData, color = col, lw = 1.0, label = '$n=$' + str(n), marker = 'o', markersize = 2.0)
         #hmfv = np.vectorize(efficiency_est_func_n, excluded={"n"})
-        #mlist = np.linspace(0, pmax, num=300)
+        #mlist = np.linspace(0, qmax, num=300)
         #plt.plot(mlist, hmfv(mlist, n=n), color = col, lw = 1.0, linestyle = 'dashed', )
 
     hmfv = np.vectorize(efficiency_est_func)
-    mlist = np.linspace(0, pmax, num=300)
+    mlist = np.linspace(0, qmax, num=300)
     plt.plot(mlist, hmfv(mlist), color = 'b', lw = 1.0, linestyle = 'dashed', label = 'asymptotic')
 
     plt.legend()

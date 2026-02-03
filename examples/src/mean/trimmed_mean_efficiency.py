@@ -21,12 +21,11 @@ def main(test_run:bool, output_folder:str="../../../output"):
         trim_size = 2*(n//5)
         for test_idx in range(nSamples):
             data = np.zeros(n)
-            weight = np.zeros(n)
+            weight = np.ones(n)
             for i in range(n):
                 data[i] = random.gauss(0.0, sigma)
-                weight[i] = 1.0
 
-            mtrimmed = trimmed_mean(data, weight, trim_size=trim_size)
+            mtrimmed = trimmed_mean(data, trim_size=trim_size, weight=weight)
             tmstot += mtrimmed*mtrimmed
 
             lsm = weighted_mean(data, weight)
@@ -45,12 +44,11 @@ def main(test_run:bool, output_folder:str="../../../output"):
         trim_size = n-1
         for test_idx in range(nSamples):
             data = np.zeros(n)
-            weight = np.zeros(n)
+            weight = np.ones(n)
             for i in range(n):
                 data[i] = random.gauss(0.0, sigma)
-                weight[i] = 1.0
 
-            mtrimmed = trimmed_mean(data, weight, trim_size=trim_size)
+            mtrimmed = trimmed_mean(data, trim_size=trim_size, weight=weight)
             tmstot += mtrimmed*mtrimmed
 
             lsm = weighted_mean(data, weight)

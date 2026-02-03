@@ -50,8 +50,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
     data = np.sort(data, axis=0)
             
     # estimation parameters
-    p = 0.66667 # ratio of population standard deviation to base sigma value in estimation
-    sigma_base = sigma_pop/p
+    q = 0.66667 # ratio of population standard deviation to base sigma value in estimation
+    sigma_base = sigma_pop/q
     sigma_limit = data[n_points-1][0] - data[0][0]
     num_sigma_steps = 20
 

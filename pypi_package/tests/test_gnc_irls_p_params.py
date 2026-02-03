@@ -15,7 +15,8 @@ def test_answer():
         epsilon_limit = 1.0
         beta = 0.95
         influence_func_instance = GNC_IRLSpInfluenceFunc()
-        param_instance = GNC_IRLSpParams(influence_func_instance, p, rscale, epsilon_base, epsilon_limit, beta)
+        param_instance = GNC_IRLSpParams(influence_func_instance, p, rscale, epsilon_base,
+                                         epsilon_limit=epsilon_limit, beta=beta)
 
         # ensure smooth GNC transition
         param_instance.reset()

@@ -358,8 +358,8 @@ Now the optional parameters for the `IRLS` class constructor:
      from a provided `rho()` method or directly using a provided `rhop()` method.
 - `max_niterations: int` Maximum number of IRLS iterations to apply before aborting.
 - `diff_thres: float` Terminate when successful update changes the model model parameters by less than this value.
+- `messages_file: TextIO` File to print debugging information.
 - `model_start` Starting value for model model parameters.
-- `print_warnings: bool` Whether to print debugging information.
 - `model_ref_start` Starting reference parameters for model, e.g. if optimising rotation
 - `debug: bool` Whether to add extra debugging data to the `IRLS` class instance on exit:
    - `debug_n_iterations` The number of iterations actually applied.
@@ -538,18 +538,19 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
 - `max_niterations: int` Maximum number of Sup-GN iterations to apply before aborting
 - `residual_tolerance: float` An parameter that is used to terminate Sup-GN when the improvement to the
      objective function value is smaller than the provided threshold
-- `lambda_start: float` Starting value for the Sup-GN damping, similar to Levenberg-Marquart damping.
-     In Sup-GN the level of damping is high when lambda is small, so normally it is
+- `lambda_start: float` Starting value for the Sup-GN damping factor $\lambda$, similar to Levenberg-Marquart damping.
+     In Sup-GN the level of damping is high when $\lambda$ is small, so normally it is
      best to start with an optimistic small value.
-- `lambda_max: float` Maximum value for lambda in Sup-GN damping. This should be in the range [0,1].
-- `lambda_scale: float` Scale factor to multiply lambda by when an iteration successfully reduces/increases
+- `lambda_max: float` Maximum value for $\lambda$ in Sup-GN damping. This should be in the range [0,1].
+- `lambda_scale: float` Scale factor to multiply $\lambda$ by when an iteration successfully reduces/increases
      the objective function (depending on the +/- sign specified by
      `param_instance.influence_func_instance.influence_func_sign()`, see above).
      When the iteration is not successful, the model change is reverted and $ \lambda $ is divided
      by this factor to increase the damping at the next iteration.
+- `lambda_thres: float` Threshold for $\lambda$ below which the Sup-GN iteration switches to pure gradient-based updates.
 - `diff_thres: float` Terminate when successful update changes the model parameters by less than this value.
+- `messages_file: TextIO` File to print debugging information.
 - `model_start` Starting value for model parameters.
-- `print_warnings: bool` Whether to print debugging information.
 - `model_ref_start` Starting reference parameters for model, e.g. if optimising rotation.
 - `debug: bool` Whether to add extra debugging data to the `SupGaussNewton` class instance on exit:
    - `debug_n_iterations` The number of iterations actually applied.
@@ -665,10 +666,19 @@ Optional parameters are:
 - `sigma_limit: float` The initial high value of $\sigma$ in the [GNC Welsch influence function schedule](#gnc-welsch-schedule-class)
 - `num_sigma_steps: int` The number of steps of $\sigma$ in the [GNC Welsch influence function schedule](#gnc-welsch-schedule-class)
 - `max_niterations: int` Maximum number of Sup-GN iterations to apply before aborting.
+- `lambda_start: float` Starting value for the Sup-GN damping factor $\lambda$, similar to Levenberg-Marquart damping.
+     In Sup-GN the level of damping is high when $\lambda$ is small, so normally it is
+     best to start with an optimistic small value.
+- `lambda_max: float` Maximum value for $\lambda$ in Sup-GN damping. This should be in the range [0,1].
+- `lambda_scale: float` Scale factor to multiply $\lambda$ by when an iteration successfully reduces/increases
+     the objective function (depending on the +/- sign specified by
+     `param_instance.influence_func_instance.influence_func_sign()`, see above).
+     When the iteration is not successful, the model change is reverted and $ \lambda $ is divided
+     by this factor to increase the damping at the next iteration.
+- `lambda_thres: float` Threshold for $\lambda$ below which the Sup-GN iteration switches to pure gradient-based updates.
 - `diff_thres: float` Terminate when successful update changes the model model parameters by less than this value.
 - `use_slow_version: bool` Whether to use the slower pure Python [implementation](src/gnc_smoothie_philfm/linear_model/linear_regressor.py).
-- `model_start: npt.ArrayLike` Starting value for model model parameters.
-- `print_warnings: bool` Whether to print debugging information.
+- `messages_file: TextIO` File to print debugging information.
 - `debug: bool` Whether to add extra debugging data to the `LinearRegressorWelsch` class instance on exit:
    - `debug_n_iterations` The number of iterations actually applied.
    - `debug_model_list` A list of the model parameters at each iteration.
@@ -706,8 +716,22 @@ A three-dimensional `data` array has the following dimensions:
 
 ### Alternative API for Robust Linear regression
 
-To allow for interchange of 
-
+[scikit-learn](https://scikit-learn.org/stable/) packages
+such as [RANSACRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RANSACRegressor.html)
+separate data and output parameters into "training/target" and "coefficient/intercept" values.
+The `gnc_smoothie` API combines these so only one input `data` input array is provided and one `final_model`
+output array is generated. To allow for interchange between `gnc_smoothie` and `scikit-learn`,
+an alternative API for `linear_regressor` is available whereby the data is provided as a tuple.
+You prepare two arrays, such as `data_x` and `data_y`, as the "training" and
+as you would for [RANSACRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RANSACRegressor.html).
+Then you can call `linear_regressor` in a similar way:
+```
+    if linear_regressor.run((data_x, data_y)):
+        coeff = line_fitter.final_coeff
+        intercept = line_fitter.final_intercept
+```
+Essentially `data_y` is equivalent to the last column of the original `data` array,
+and `intercept` is the last column of the output `final_model` in the default API.
 
 ## Designing your own GNC Smoothie model classes
 

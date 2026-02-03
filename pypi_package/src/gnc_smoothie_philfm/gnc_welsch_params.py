@@ -5,8 +5,6 @@
 # size of the population distribution standard deviation (actually just above it).
 # The internal parameter beta is the factor to multiply sigma by at each step,
 # so beta <= 1.
-# Normally max_niterations should be set to a higher value than num_sigma_steps
-# so that a good number of iterations will be applied at the final sigma value.
 import math
 
 
@@ -15,8 +13,9 @@ class GNC_WelschParams:
         self,
         influence_func_instance,
         sigma_base: float,
+        *,
         sigma_limit: float = None,
-        num_sigma_steps: int = None,
+        num_sigma_steps: int = 1,
     ):
         self.influence_func_instance = influence_func_instance
         self.__sigma_base = sigma_base
@@ -28,9 +27,9 @@ class GNC_WelschParams:
         )
 
         # set parameters to final values
-        self.reset(False)
+        self.reset(init=False)
 
-    def reset(self, init: bool = True) -> None:
+    def reset(self, *, init: bool = True) -> None:
         self.influence_func_instance.sigma = (
             self.__sigma_limit if init else self.__sigma_base
         )

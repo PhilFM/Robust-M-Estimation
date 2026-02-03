@@ -17,8 +17,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
     all_good = True
     for test_idx in range(0,10):
         data = np.zeros((1,4))
-        weight = np.zeros(1)
-        weight[0] = 1.0
+        weight = np.ones(1)
         for i in range(4):
             data[0][i] = 2.0*(np.random.rand()-0.5)
 

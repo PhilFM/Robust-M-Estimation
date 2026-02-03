@@ -5,7 +5,7 @@ import numpy.typing as npt
 try:
     from .linear_regressor_welsch_fast import linear_regressor_welsch_objective_func, linear_regressor_welsch_weighted_derivs, linear_regressor_welsch_update_weights
     from .linear_regressor_evaluator_base import LinearRegressorEvaluatorBase
-except:
+except ImportError:
     from linear_regressor_welsch_fast import linear_regressor_welsch_objective_func, linear_regressor_welsch_weighted_derivs, linear_regressor_welsch_update_weights
     from linear_regressor_evaluator_base import LinearRegressorEvaluatorBase
 

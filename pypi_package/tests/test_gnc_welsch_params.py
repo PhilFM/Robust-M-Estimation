@@ -13,7 +13,8 @@ def test_answer():
         sigma_limit = sigma_base + 0.01 + np.random.rand()
         num_sigma_steps = np.random.randint(1, 20)
         influence_func_instance = WelschInfluenceFunc()
-        param_instance = GNC_WelschParams(influence_func_instance, sigma_base, sigma_limit, num_sigma_steps)
+        param_instance = GNC_WelschParams(influence_func_instance, sigma_base,
+                                          sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
 
         # ensure smooth GNC transition
         param_instance.reset()

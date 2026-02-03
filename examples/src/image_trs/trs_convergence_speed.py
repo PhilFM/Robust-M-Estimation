@@ -81,7 +81,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         sigma_limit = 10.0 if with_gnc else sigma_base
         num_sigma_steps = 10
         max_niterations = 100
-        print_warnings = False
+        messages_file = None
 
         model_start = [0,0,0,0]
         for i in range(4):
@@ -89,10 +89,11 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
         model_instance = TRS()
 
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
+                                          sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
         sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=model_instance,
                                          max_niterations=max_niterations, diff_thres=diff_thres,
-                                         print_warnings=print_warnings,
+                                         messages_file=messages_file,
                                          debug=True,
                                          lambda_start=1.0)
         if sup_gn_instance.run(model_start = None if with_gnc else model_start):
@@ -101,7 +102,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
         irls_instance = IRLS(param_instance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=print_warnings,
+                             messages_file=messages_file,
                              debug=True)
         irls_instance.run(model_start = None if with_gnc else model_start) # this can fail but we don't care in this context
         diffs_welsch_irls = irls_instance.debug_diffs

@@ -5,7 +5,7 @@ class GNC_NullParams:
     def __init__(self, influence_func_instance):
         self.influence_func_instance = influence_func_instance
 
-    def reset(self, init: bool = True) -> None:
+    def reset(self, *, init: bool = True) -> None:
         pass
 
     def n_steps(self) -> int:

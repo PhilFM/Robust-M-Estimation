@@ -79,10 +79,11 @@ def main(test_run:bool, output_folder:str="../../../output"):
         data[idx][2] = np.random.rand()
     
     # linear regression fitter z = a*x + b*y + c
-    p = 0.6667
-    sigma = sigma_pop/p
+    q = 0.6667
+    sigma = sigma_pop/q
     sigma_limit = np.max(data[:,2]) - np.min(data[:,2])
-    linear_regressor = LinearRegressorWelsch(sigma, sigma_limit, 20, use_slow_version=False, debug=True)
+    linear_regressor = LinearRegressorWelsch(sigma, sigma_limit=sigma_limit,
+                                             num_sigma_steps=20, use_slow_version=False, debug=True)
     if linear_regressor.run(data):
         final_plane = linear_regressor.final_model
         final_weight = linear_regressor.final_weight

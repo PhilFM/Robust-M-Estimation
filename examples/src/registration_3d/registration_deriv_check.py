@@ -29,7 +29,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
             print("R=",R,"t=",t)
 
         data = np.zeros((n,2,3))
-        weight = np.zeros(n)
+        weight = np.ones(n)
         for i in range(0,n):
             data[i][0][0] = np.random.normal(0.0, 1.0)
             data[i][0][1] = np.random.normal(0.0, 1.0)
@@ -40,7 +40,6 @@ def main(test_run:bool, output_folder:str="../../../output"):
             data[i][1][0] += noise_sigma*np.random.normal(0.0, 1.0)
             data[i][1][1] += noise_sigma*np.random.normal(0.0, 1.0)
             data[i][1][2] += noise_sigma*np.random.normal(0.0, 1.0)
-            weight[i] = 1.0
 
         all_good = True
         if check_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), data, model_instance=PointRegistration(), weight=weight),

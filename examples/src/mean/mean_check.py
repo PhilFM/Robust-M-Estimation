@@ -20,7 +20,7 @@ from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 from flat_welsch_mean import flat_welsch_mean
 
-N = 10
+n = 10
 xrange = 10.0
 sigma_base = 0.5
 sigma_limit = xrange
@@ -37,11 +37,8 @@ def plot_result(data, weight,
                gnc_irls_p_optimiser_instance, m_gncirlsp,
                output_folder:str,
                test_run:bool):
-    dmin = dmax = data[0][0]
-    for d in data:
-        dmin = min(dmin, d[0])
-        dmax = max(dmax, d[0])
-        #print("d=", d[1], " min/max=", dmin, dmax)
+    dmin = min(data)
+    dmax = max(data)
 
     # allow border
     drange = dmax-dmin
@@ -69,7 +66,7 @@ def plot_result(data, weight,
     gncs_draw_curve(plt, 0.02*rmfv(mlist, optimiser_instance=gnc_irls_p_optimiser_instance), key, xvalues=mlist, draw_markers=False, hlight_x_value=m_gncirlsp, ax=ax)
     gncs_draw_vline(plt, m_gncirlsp,   key, use_label=False)
 
-    gncs_draw_data_points(plt, data, weight, x_min, x_max, N)
+    gncs_draw_data_points(plt, data, x_min, x_max, n, weight=weight)
     plt.legend()
     plt.savefig(os.path.join(output_folder, "mean_check.png"), bbox_inches='tight')
     if not test_run:
@@ -79,62 +76,62 @@ def main(test_run:bool, output_folder:str="../../../output"):
     np.random.seed(0) # We want the numbers to be the same on each run
 
     for test_idx in range(0,10):
-        data = np.zeros((N,1))
-        weight = np.zeros(N)
+        data = np.zeros((n,1))
+        weight = np.ones(n)
         if test_idx == 0:
-            for j in range(N):
-                weight[j] = 1.0
+            for j in range(n):
                 if j == 0:
                     data[j] = [0.89]
                 elif j < 3:
                     data[j] = [0.9 + 0.01*j]
                 else:
-                    data[j] = [j*xrange/N]
+                    data[j] = [j*xrange/n]
         else:
-            for j in range(N):
+            for j in range(n):
                 d = np.random.rand()*xrange
-                weight[j] = 1.0
                 data[j] = [d]
 
-        print_warnings = False #True if test_idx == 0 else False
+        messages_file = None
 
         model_instance = LinearRegressor(data[0])
 
         #print("data(1)=",data)
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
+                                          sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
         irls_instance = IRLS(param_instance, data, model_instance=model_instance, weight=weight,
-                             max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                             max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
         irls_instance.run() # this can fail but let's use the result anyway
         m_gnc_welsch_irls = irls_instance.final_model
 
         gnc_welsch_optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, weight=weight,
-                                                       max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                                                       max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
         if gnc_welsch_optimiser_instance.run():
             m_gnc_welsch_supgn = gnc_welsch_optimiser_instance.final_model
 
         m_flat = flat_welsch_mean(data, sigma_base, weight,
-                                  max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                                  max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
 
         param_instance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma_base))
         pseudo_huber_optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, weight=weight,
-                                                         max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                                                         max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
         if pseudo_huber_optimiser_instance.run():
             m_pseudo_huber_supgn = pseudo_huber_optimiser_instance.final_model
 
         irls_instance = IRLS(param_instance, data, model_instance=model_instance, weight=weight,
-                             max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                             max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
         if irls_instance.run():
             m_pseudo_huber_irls = irls_instance.final_model
 
         # GNC IRLS-p params [p,epsilon_base,epsilon_limit,rscale,beta]
-        param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), 0.0, 0.01, 1.0, 1.0/xrange, 0.8)
+        param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), 0.0, 0.01, 1.0,
+                                         epsilon_limit=1.0/xrange, beta=0.8)
         irls_instance = IRLS(param_instance, data, model_instance=model_instance, weight=weight,
-                             max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                             max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
         if irls_instance.run():
             m_gncirlsp = irls_instance.final_model
 
         gnc_irls_p_optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, weight=weight,
-                                                       max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                                                       max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
 
         plot_result(data, weight,
                     gnc_welsch_optimiser_instance,   m_gnc_welsch_irls,    m_gnc_welsch_supgn, m_flat,

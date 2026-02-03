@@ -64,8 +64,8 @@ def test_answer():
         assert(line[1] == pytest.approx(lsgn*b_gt))
         assert(line[2] == pytest.approx(lsgn*c_gt))
 
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
-        optimiser_instance = IRLS(param_instance, data, evaluator_instance=LineFitOrthogWelschEvaluator())# print_warnings=True)
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
+        optimiser_instance = IRLS(param_instance, data, evaluator_instance=LineFitOrthogWelschEvaluator())
         assert(optimiser_instance.run())
         model = optimiser_instance.final_model
         #print("model=",model,a_gt,b_gt,c_gt)
@@ -105,8 +105,8 @@ def test_evaluator():
         # check individual evaluator functions
         evaluator_instance = LineFitOrthogWelschEvaluator()
         influence_func_instance = WelschInfluenceFunc()
-        param_instance = GNC_WelschParams(influence_func_instance, sigma_base, sigma_limit, num_sigma_steps)
-        param_instance.reset(False) # sets sigma to sigma_base
+        param_instance = GNC_WelschParams(influence_func_instance, sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
+        param_instance.reset(init=False) # sets sigma to sigma_base
         a,b = np.random.rand(), np.random.rand()
         norm = math.sqrt(a*a + b*b)
         a /= norm

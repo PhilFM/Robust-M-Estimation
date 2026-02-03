@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 import os
 import sys
@@ -102,13 +101,14 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
         #if not test_run:
         #    print("data=",data)
 
-        p = 0.66667
-        sigma_base = sigma_pop/p
+        q = 0.66667
+        sigma_base = sigma_pop/q
         sigma_limit = image_width
         num_sigma_steps = 20
 
         influence_func = WelschInfluenceFunc()
-        param_instance = GNC_WelschParams(influence_func, sigma_base, sigma_limit, num_sigma_steps)
+        param_instance = GNC_WelschParams(influence_func, sigma_base,
+                                          sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
         optimiser_instance = SupGaussNewton(param_instance, data, model_instance=TRS())
 
         trs_bad = [s_bad, 0.0, 0.0, 0.0] #150.0*randomM11(), 70.0*randomM11()]

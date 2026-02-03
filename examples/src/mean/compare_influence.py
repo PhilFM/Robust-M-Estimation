@@ -41,22 +41,19 @@ def plot_result(data, weight,
                 m_gt,
                 test_run:bool,
                 output_folder:str):
-    dmin = dmax = data[0]
-    for d in data:
-        dmin = min(dmin, d)
-        dmax = max(dmax, d)
-        #print("d=", d, " min/max=", dmin, dmax)
+    dmin = min(data)
+    dmax = max(data)
 
-        # allow border
-        drange = dmax-dmin
-        x_min = dmin - 0.05*drange
-        x_max = dmax + 0.05*drange
+    # allow border
+    drange = dmax-dmin
+    x_min = dmin - 0.05*drange
+    x_max = dmax + 0.05*drange
 
     mlist = np.linspace(x_min, x_max, num=300)
 
     plt.close("all")
     plt.figure(num=1, dpi=240)
-    gncs_draw_data_points(plt, data, weight, x_min, x_max, len(data), scale=0.05)
+    gncs_draw_data_points(plt, data, x_min, x_max, len(data), weight=weight, scale=0.05)
     if m_gt is not None:
         gncs_draw_vline(plt, m_gt, ("GroundTruth","",""))
 
@@ -91,16 +88,14 @@ def main(test_run:bool, output_folder:str="../../output"):
         xgtborder = 3.0*sigma_pop
         m_gt = np.random.rand()*xgtrange + xgtborder
         data = np.zeros((n,1))
-        weight = np.zeros(n)
+        weight = np.ones(n)
         for j in range(n0):
-            weight[j] = 1.0
             data[j] = [np.random.normal(loc=m_gt, scale=sigma_pop)]
 
         for j in range(n-n0):
-            weight[n0+j] = 1.0
             data[n0+j] = [np.random.rand()*(xgtrange + 2.0*xgtborder)]
 
-        print_warnings = False
+        messages_file = None
 
         if not test_run:
             print("test_idx=",test_idx,"m_gt=",m_gt)
@@ -110,11 +105,12 @@ def main(test_run:bool, output_folder:str="../../output"):
 
         model_instance = LinearRegressor(data[0])
 
-        welsch_optimiser_instance = SupGaussNewton(GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps),
+        welsch_optimiser_instance = SupGaussNewton(GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
+                                                                    sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps),
                                                    data, model_instance=model_instance, weight=weight,
                                                    max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                                    lambda_start=lambda_start, lambda_scale=lambda_scale, diff_thres=diff_thres,
-                                                   print_warnings=print_warnings)
+                                                   messages_file=messages_file)
         if welsch_optimiser_instance.run():
             m_welsch = welsch_optimiser_instance.final_model
             if not test_run:
@@ -122,7 +118,7 @@ def main(test_run:bool, output_folder:str="../../output"):
 
         pseudo_huber_supgn_optimiser_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)), data,
                                                      model_instance=model_instance, weight=weight,
-                                                     max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                                                     max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
         if pseudo_huber_supgn_optimiser_instance.run():
             m_pseudo_huber = pseudo_huber_supgn_optimiser_instance.final_model
             if not test_run:
@@ -130,7 +126,7 @@ def main(test_run:bool, output_folder:str="../../output"):
 
         pseudo_huber_supgn_optimiser_instance = SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)),
                                                                data, model_instance=model_instance, weight=weight,
-                                                               max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                                                               max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
     
         gnc_irls_p_p = 0.0
         gnc_irls_p_rscale = 1.0/xgtrange
@@ -138,9 +134,10 @@ def main(test_run:bool, output_folder:str="../../output"):
         gnc_irls_p_epsilon_limit = gnc_irls_p_rscale*sigma_limit
         gnc_irls_p_beta = math.exp((math.log(sigma_base) - math.log(sigma_limit))/(num_sigma_steps - 1.0))
         gnc_irls_p_param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
-                                                    gnc_irls_p_p, gnc_irls_p_rscale, gnc_irls_p_epsilon_base, gnc_irls_p_epsilon_limit, gnc_irls_p_beta)
+                                                    gnc_irls_p_p, gnc_irls_p_rscale, gnc_irls_p_epsilon_base,
+                                                    epsilon_limit=gnc_irls_p_epsilon_limit, beta=gnc_irls_p_beta)
         gnc_irls_p_optimiser_instance = IRLS(gnc_irls_p_param_instance, data, model_instance=model_instance, weight=weight,
-                                             max_niterations=max_niterations, diff_thres=diff_thres, print_warnings=print_warnings)
+                                             max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
         if gnc_irls_p_optimiser_instance.run():
             m_gnc_irls_p = gnc_irls_p_optimiser_instance.final_model
             if not test_run:
@@ -149,7 +146,7 @@ def main(test_run:bool, output_folder:str="../../output"):
         gnc_irls_p_supgn_optimiser_instance = SupGaussNewton(gnc_irls_p_param_instance, data, model_instance=model_instance, weight=weight,
                                                              max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                                              lambda_start=lambda_start, lambda_scale=lambda_scale, diff_thres=diff_thres,
-                                                             print_warnings=print_warnings)
+                                                             messages_file=messages_file)
         if gnc_irls_p_supgn_optimiser_instance.run():
             m_gnc_irls_popt = gnc_irls_p_supgn_optimiser_instance.final_model
             if not test_run:

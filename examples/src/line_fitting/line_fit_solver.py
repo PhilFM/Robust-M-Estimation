@@ -25,7 +25,7 @@ def randomM11() -> float:
 def test_with_sigma(line_gt, data_x, data_y, sigma: float, output_folder: str, test_run: bool):
     # linear regression fitter y = a*x + b
     y_range = max(data_y) - min(data_y)
-    line_fitter = LinearRegressorWelsch(sigma, y_range, 20, debug=True, max_niterations=200)
+    line_fitter = LinearRegressorWelsch(sigma, sigma_limit=y_range, num_sigma_steps=20, debug=True, max_niterations=200)
     if line_fitter.run((data_x, data_y)):
         coeff = line_fitter.final_coeff
         intercept = line_fitter.final_intercept

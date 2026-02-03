@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import json
 import os
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -13,7 +13,10 @@ from mean_compare_apply import mean_compare_apply
 
 def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=False):
     sigma_pop = 1.0
-    p = 0.66666667
+    welsch_q = 0.62
+    pseudo_huber_sigma_scale = 0.6
+    gnc_irls_p_epsilon_scale = 1.4
+    rme_beta_scale = 0.95
 
     # number of samples used for statistics
     n_samples_base = 1000 if quick_run else 50000
@@ -28,45 +31,50 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             eff_gncwelsch_list = []
             eff_trimmed_list = []
             eff_median_list = []
-            data_dict = {}
+            eff_trimean_list = []
             for outlier_fraction in outlier_fraction_list:
-                output_file = '' # '../../../output/solver-' + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlier_fraction)) + ".png"
-                data_array,mgt,sdgncwelsch,sdtrimmed,sdmedian,n_samples = mean_compare_apply(sigma_pop, p, xgtrange, n, n_samples_base, min_n_samples, outlier_fraction, output_file=output_file, test_run=test_run, smoothie=True)
+                output_file_1 = None # Path("../../../output/efficiency1-" + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlier_fraction)) + ".png")
+                output_file_2 = None # Path("../../../output/efficiency2-" + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlier_fraction)) + ".png")
+                alg_result = mean_compare_apply(
+                    sigma_pop,
+                    xgtrange,
+                    n,
+                    n_samples_base,
+                    min_n_samples,
+                    outlier_fraction,
+                    welsch_q,
+                    pseudo_huber_sigma_scale,
+                    gnc_irls_p_epsilon_scale,
+                    rme_beta_scale,
+                    output_file_1=output_file_1,
+                    output_file_2=output_file_2,
+                    test_run=test_run,
+                    output_folder=output_folder,
+                    smoothie=True)
 
-                outlier_dict = {}
-                outlier_dict['data'] = data_array
-                outlier_dict['popmean'] = mgt
-                efficiency_dict = {}
-
-                eff = sigma_pop*sigma_pop/(n*sdgncwelsch*sdgncwelsch)
+                eff = sigma_pop*sigma_pop/(n*alg_result.sd_gnc_welsch*alg_result.sd_gnc_welsch)
                 if not test_run:
                     print("GNC Welsch estimator efficiency: ", eff)
 
                 eff_gncwelsch_list.append(eff)
-                efficiency_dict['GNC Welsch'] = eff
 
-                eff = sigma_pop*sigma_pop/(n*sdtrimmed*sdtrimmed)
+                eff = sigma_pop*sigma_pop/(n*alg_result.sd_trimmed*alg_result.sd_trimmed)
                 if not test_run:
                     print("Trimmed mean 50% efficiency: ", eff)
 
                 eff_trimmed_list.append(eff)
-                efficiency_dict['trimmed mean 50%'] = eff
 
-                eff = sigma_pop*sigma_pop/(n*sdmedian*sdmedian)
+                eff = sigma_pop*sigma_pop/(n*alg_result.sd_median*alg_result.sd_median)
                 if not test_run:
                     print("Median efficiency: ", eff)
 
                 eff_median_list.append(eff)
-                efficiency_dict['median'] = eff
 
-                outlier_dict['efficiency'] = efficiency_dict
-                data_dict['outlier_fraction-'+str(outlier_fraction)] = outlier_dict
+                eff = sigma_pop*sigma_pop/(n*alg_result.sd_trimean*alg_result.sd_trimean)
+                if not test_run:
+                    print("Tukey trimean efficiency: ", eff)
 
-            data_dict['n_samples'] = n_samples
-            jstr = json.dumps(data_dict)
-            js = json.loads(jstr)
-            with open(os.path.join(output_folder, "mean_efficiency_n" + str(n) + "_range" + str(int(xgtrange)) + ".json"), 'w', encoding='utf-8') as f:
-                json.dump(js, f, ensure_ascii=False, indent=4)
+                eff_trimean_list.append(eff)
 
             plt.close("all")
             plt.figure(num=1, dpi=240)
@@ -75,6 +83,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             gncs_draw_curve(plt, eff_gncwelsch_list,    ("SupGN",  "Welsch",      "GNC_Welsch"), xvalues=outlier_fraction_list)
             gncs_draw_curve(plt, eff_trimmed_list,      ("Mean",   "Trimmed",     ""          ), xvalues=outlier_fraction_list)
             gncs_draw_curve(plt, eff_median_list,       ("Median", "Basic",       ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_trimean_list,      ("Trimean","Basic",       ""          ), xvalues=outlier_fraction_list)
 
             ax.set_xlabel(r'Outlier fraction' )
             ax.set_ylabel('Relative efficiency')

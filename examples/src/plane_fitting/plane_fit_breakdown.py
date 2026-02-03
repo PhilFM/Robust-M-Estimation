@@ -108,7 +108,8 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
 
             influence_func = WelschInfluenceFunc()
             model_instance = LinearRegressor(data[0])
-            param_instance = GNC_WelschParams(influence_func, sigma_base, sigma_limit, num_sigma_steps)
+            param_instance = GNC_WelschParams(influence_func, sigma_base,
+                                              sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
             optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance)
 
             def plane_a(a, data):

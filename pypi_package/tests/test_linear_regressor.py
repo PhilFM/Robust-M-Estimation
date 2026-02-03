@@ -104,7 +104,7 @@ def test_answer():
         sigma_limit = 1.0
         num_sigma_steps = 20
 
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit, num_sigma_steps)
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
         optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]))
         assert(optimiser_instance.run())
         model = optimiser_instance.final_model
@@ -114,7 +114,7 @@ def test_answer():
             assert(model[j] == pytest.approx(model_gt[j]))
 
         #print("model_start=",model_start)
-        linear_regressor = LinearRegressorWelsch(sigma_base, sigma_limit, num_sigma_steps)
+        linear_regressor = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
         assert(linear_regressor.run(data))
         model = linear_regressor.final_model
         for j in range(n_models*dim):
@@ -181,15 +181,15 @@ def test_evaluator_welsch():
         # check individual evaluator functions
         evaluator_instance = LinearRegressorWelschEvaluator(data[0])
         influence_func_instance = WelschInfluenceFunc()
-        param_instance = GNC_WelschParams(influence_func_instance, sigma_base, sigma_limit, num_sigma_steps)
-        param_instance.reset(False) # sets sigma to sigma_base
+        param_instance = GNC_WelschParams(influence_func_instance, sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
+        param_instance.reset(init=False) # sets sigma to sigma_base
 
         assert(evaluator_check(evaluator_instance, param_instance, LinearRegressor(data[0]), model, data, weight, scale))
 
         max_niterations = 500
 
         # fast Sup-GN
-        linear_regressor = LinearRegressorWelsch(sigma_base, sigma_limit, num_sigma_steps, max_niterations=max_niterations)
+        linear_regressor = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps, max_niterations=max_niterations)
         assert(linear_regressor.run(data))
         fast_model = linear_regressor.final_model
 
@@ -245,8 +245,8 @@ def test_evaluator_gnc_irls_p():
         # check individual evaluator functions
         evaluator_instance = LinearRegressorGNC_IRLSpEvaluator(data[0])
         influence_func_instance = GNC_IRLSpInfluenceFunc()
-        param_instance = GNC_IRLSpParams(influence_func_instance, p, rscale, epsilon_base, epsilon_limit, beta)
-        param_instance.reset(False) # sets sigma to sigma_base
+        param_instance = GNC_IRLSpParams(influence_func_instance, p, rscale, epsilon_base, epsilon_limit=epsilon_limit, beta=beta)
+        param_instance.reset(init=False) # sets sigma to sigma_base
 
         assert(evaluator_check(evaluator_instance, param_instance, LinearRegressor(data[0]), model, data, weight, scale))
 

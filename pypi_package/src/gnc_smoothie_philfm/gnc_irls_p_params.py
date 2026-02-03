@@ -8,6 +8,7 @@ class GNC_IRLSpParams:
         p,
         rscale,
         epsilon_base,
+        *,
         epsilon_limit=None,
         beta=None,
     ):
@@ -19,7 +20,7 @@ class GNC_IRLSpParams:
         self.__beta = 0.8 if beta is None else beta
 
         # work out how many epsilon steps there are
-        self.reset(True)
+        self.reset(init=True)
         self.__n_steps = 100000  # something big
         n_steps = 0
         while self.influence_func_instance.epsilon > self.__epsilon_base:
@@ -29,9 +30,9 @@ class GNC_IRLSpParams:
         self.__n_steps = n_steps
 
         # set parameters to final values
-        self.reset(False)
+        self.reset(init=False)
 
-    def reset(self, init=True) -> None:
+    def reset(self, *, init=True) -> None:
         self.influence_func_instance.epsilon = (
             self.__epsilon_limit if init else self.__epsilon_base
         )

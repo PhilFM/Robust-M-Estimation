@@ -4,7 +4,7 @@ import numpy.typing as npt
 # Import cython helper.
 try:
     from .linear_regressor_weighted_fit import linear_regressor_weighted_fit
-except:
+except ImportError:
     from linear_regressor_weighted_fit import linear_regressor_weighted_fit
 
 class LinearRegressorEvaluatorBase:

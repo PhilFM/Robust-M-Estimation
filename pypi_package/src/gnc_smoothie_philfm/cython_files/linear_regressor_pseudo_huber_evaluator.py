@@ -5,7 +5,7 @@ import numpy.typing as npt
 try:
     from .linear_regressor_pseudo_huber_fast import linear_regressor_pseudo_huber_objective_func, linear_regressor_pseudo_huber_weighted_derivs, linear_regressor_pseudo_huber_update_weights
     from .linear_regressor_evaluator_base import LinearRegressorEvaluatorBase
-except:
+except ImportError:
     from linear_regressor_pseudo_huber_fast import linear_regressor_pseudo_huber_objective_func, linear_regressor_pseudo_huber_weighted_derivs, linear_regressor_pseudo_huber_update_weights
     from linear_regressor_evaluator_base import LinearRegressorEvaluatorBase
 

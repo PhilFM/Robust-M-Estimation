@@ -39,7 +39,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         weight = np.array([5.0, # good data
                            4.9]) # bad data
 
-    m = flat_welsch_mean(data, sigma, weight=weight, print_warnings=False, test_run=test_run)
+    m = flat_welsch_mean(data, sigma, weight=weight, messages_file=None, test_run=test_run)
     if not test_run:
         print("Flat Welsch mean result: m=", m)
 
@@ -58,12 +58,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
             x_min = -2.0*sigma
             x_max =  2.0*sigma
         else:
-            dmin = dmax = data[0]
-            for d in data:
-                dmin = min(dmin, d)
-                dmax = max(dmax, d)
-                if not test_run:
-                    print("d=", d, " min/max=", dmin, dmax)
+            dmin = min(data)
+            dmax = max(data)
 
             # allow border
             drange = dmax-dmin

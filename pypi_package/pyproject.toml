@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gnc_smoothie_philfm"
-version = "0.0.56"
+version = "0.0.60"
 authors = [
   { name="Philip McLauchlan", email="philipmclauchlan6@gmail.com" },
 ]
@@ -22,7 +22,7 @@ maintainers = [
   { name="Philip McLauchlan", email="philipmclauchlan6@gmail.com" },
 ]
 requires-python = ">=3.10"
-dependencies = ["numpy", "matplotlib"]
+dependencies = ["numpy"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",

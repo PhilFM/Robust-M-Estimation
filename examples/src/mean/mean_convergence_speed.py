@@ -100,11 +100,12 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
         model_instance = LinearRegressor(data[0])
     
-        welschParamInstance = GNC_WelschParams(WelschInfluenceFunc(), welsch_sigma, welsch_sigma_limit, num_sigma_steps)
+        welschParamInstance = GNC_WelschParams(WelschInfluenceFunc(), welsch_sigma,
+                                               sigma_limit=welsch_sigma_limit, num_sigma_steps=num_sigma_steps)
         sup_gn_instance = SupGaussNewton(welschParamInstance, data, model_instance=model_instance,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
-                                         print_warnings=False, debug=True)
+                                         messages_file=None, debug=True)
         if sup_gn_instance.run(model_start = None if with_gnc else model_start):
             m = sup_gn_instance.final_model
             n_iterations = sup_gn_instance.debug_n_iterations
@@ -119,7 +120,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
         irls_instance = IRLS(welschParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=False,
+                             messages_file=None,
                              model_start = None if with_gnc else model_start,
                              debug=True)
         if irls_instance.run():
@@ -138,7 +139,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         sup_gn_instance = SupGaussNewton(pseudoHuberParamInstance, data, model_instance=model_instance,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
-                                         print_warnings=False, debug=True)
+                                         messages_file=None, debug=True)
         if sup_gn_instance.run(model_start = None if with_gnc else model_start):
             m = sup_gn_instance.final_model
             n_iterations = sup_gn_instance.debug_n_iterations
@@ -153,7 +154,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
         irls_instance = IRLS(pseudoHuberParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=False, debug=True)
+                             messages_file=None, debug=True)
         if irls_instance.run(model_start = None if with_gnc else model_start):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
@@ -172,10 +173,11 @@ def main(test_run:bool, output_folder:str="../../../output"):
         gncIrlsp_epsilon_limit = gncIrlsp_epsilon_base #gncIrlsp_rscale*gnsIrlsp_sigma_limit
         gncIrlsp_beta = 0.8 #math.exp((math.log(gncIrlsp_sigma_base) - math.log(gncIrlsp_sigma_limit))/(num_sigma_steps - 1.0))
         gncIrlspParamInstance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
-                                                0.0, gncIrlsp_rscale, gncIrlsp_epsilon_base, gncIrlsp_epsilon_limit, gncIrlsp_beta)
+                                                0.0, gncIrlsp_rscale, gncIrlsp_epsilon_base,
+                                                epsilon_limit=gncIrlsp_epsilon_limit, beta=gncIrlsp_beta)
         irls_instance = IRLS(gncIrlspParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=False, debug=True)
+                             messages_file=None, debug=True)
         if irls_instance.run(model_start = None if with_gnc else model_start):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
@@ -191,7 +193,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         gncIrlspParamInstance.influence_func_instance.p = 1.0
         irls_instance = IRLS(gncIrlspParamInstance, data, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             print_warnings=False, debug=True)
+                             messages_file=None, debug=True)
         if irls_instance.run(model_start = None if with_gnc else model_start):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations

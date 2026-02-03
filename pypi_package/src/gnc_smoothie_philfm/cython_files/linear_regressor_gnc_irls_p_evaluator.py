@@ -5,7 +5,7 @@ import numpy.typing as npt
 try:
     from .linear_regressor_gnc_irls_p_fast import linear_regressor_gnc_irls_p_objective_func, linear_regressor_gnc_irls_p_weighted_derivs, linear_regressor_gnc_irls_p_update_weights
     from .linear_regressor_evaluator_base import LinearRegressorEvaluatorBase
-except:
+except ImportError:
     from linear_regressor_gnc_irls_p_fast import linear_regressor_gnc_irls_p_objective_func, linear_regressor_gnc_irls_p_weighted_derivs, linear_regressor_gnc_irls_p_update_weights
     from linear_regressor_evaluator_base import LinearRegressorEvaluatorBase
 

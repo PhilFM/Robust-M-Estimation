@@ -23,8 +23,8 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
     n_bad_points = int(outlier_ratio*n_points)
     #print("n_bad_points=",n_bad_points)
     sigma_pop = 0.3
-    p = 0.666667
-    sigma_base = sigma_pop/p
+    q = 0.666667
+    sigma_base = sigma_pop/q
     sigma_limit = 5.0
     num_sigma_steps = 3 if quick_run else 20
 
@@ -51,7 +51,8 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
 
         influence_func = WelschInfluenceFunc()
         model_instance = LinearRegressor(data[0])
-        param_instance = GNC_WelschParams(influence_func, sigma_base, sigma_limit, num_sigma_steps)
+        param_instance = GNC_WelschParams(influence_func, sigma_base,
+                                          sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
         optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance)
 
         for a_idx in range(2 if quick_run else 10):

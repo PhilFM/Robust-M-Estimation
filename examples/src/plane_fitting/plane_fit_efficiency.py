@@ -97,7 +97,8 @@ def apply_to_data(sigma_pop:float, p:float, xy_range:float, n:int, n_samples_bas
             data[i] = (half_xy_range*randomM11(), half_xy_range*randomM11(), 10.0*randomM11())
 
         # GNC IRLS Welsch
-        plane_fitter = LinearRegressorWelsch(sigma_pop/p, max(xy_range,10.0*sigma_pop), 30, max_niterations=200)
+        plane_fitter = LinearRegressorWelsch(sigma_pop/p, sigma_limit=max(xy_range,10.0*sigma_pop),
+                                             num_sigma_steps=30, max_niterations=200)
         if plane_fitter.run(data):
             plane_gnc_welsch = plane_fitter.final_model
 

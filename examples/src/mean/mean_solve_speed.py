@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import os
 import time
 
 if __name__ == "__main__":
@@ -14,7 +12,6 @@ from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
 
 # Welsch
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
 
 # Pseudo-Huber
@@ -35,7 +32,7 @@ def mean_welsch_solver(data: np.array, x_range: float, use_slow_version: bool, t
     max_niterations = 50
 
     mean_finder = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
-                                        max_niterations=max_niterations, use_slow_version=use_slow_version, print_warnings=False, debug=True)
+                                        max_niterations=max_niterations, use_slow_version=use_slow_version, messages_file=None, debug=True)
     if mean_finder.run(data):
         m = mean_finder.final_model[0]
         final_weight = mean_finder.final_weight
@@ -51,7 +48,7 @@ def mean_pseudo_huber_solver(data: np.array, x_range: float, use_slow_version: b
     model_instance = LinearRegressor(data[0])
     influence_func_instance = PseudoHuberInfluenceFunc(sigma=1.0)
     param_instance = GNC_NullParams(influence_func_instance)
-    irls_instance = IRLS(param_instance, data, model_instance=model_instance, max_niterations=200, print_warnings=False, debug=True)
+    irls_instance = IRLS(param_instance, data, model_instance=model_instance, max_niterations=200, messages_file=None, debug=True)
     if irls_instance.run():
         m = irls_instance.final_model[0]
         final_weight = irls_instance.final_weight
@@ -68,19 +65,20 @@ def mean_pseudo_huber_solver(data: np.array, x_range: float, use_slow_version: b
 
 def mean_geman_mcclure_solver(data: np.array, x_range: float, test_run: bool, output_folder: str) -> None:
     model_instance = LinearRegressor(data[0])
-    p = 0.3
-    sigma_base = 1.0/p
+    q = 0.3
+    sigma_base = 1.0/q
     sigma_limit = x_range
     num_sigma_steps = 20
     influence_func_instance = GemanMcClureInfluenceFunc(sigma=sigma_base)
-    param_instance = GNC_WelschParams(influence_func_instance, sigma_base, sigma_limit, num_sigma_steps)
-    irls_instance = IRLS(param_instance, data, model_instance=model_instance, print_warnings=False)
+    param_instance = GNC_WelschParams(influence_func_instance, sigma_base,
+                                      sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
+    irls_instance = IRLS(param_instance, data, model_instance=model_instance, messages_file=None)
     if irls_instance.run():
         m = irls_instance.final_model[0]
         if not test_run:
             print("Geman-McClure IRLS result: m=", m)
 
-    sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, print_warnings=False, debug=True)
+    sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, messages_file=None, debug=True)
     if sup_gn_instance.run():
         m = sup_gn_instance.final_model[0]
         final_weight = irls_instance.final_weight
@@ -97,8 +95,9 @@ def mean_gnc_irls_p_solver(data: np.array, x_range: float, test_run: bool, outpu
 
     model_instance = LinearRegressor(data[0])
     influence_func_instance = GNC_IRLSpInfluenceFunc()
-    param_instance = GNC_IRLSpParams(influence_func_instance, p, rscale, epsilon_base, epsilon_limit, beta)
-    irls_instance = IRLS(param_instance, data, model_instance=model_instance, print_warnings=False, debug=True)
+    param_instance = GNC_IRLSpParams(influence_func_instance, p, rscale, epsilon_base,
+                                     epsilon_limit=epsilon_limit, beta=beta)
+    irls_instance = IRLS(param_instance, data, model_instance=model_instance, messages_file=None, debug=True)
     if irls_instance.run():
         m = irls_instance.final_model[0]
         final_weight = irls_instance.final_weight

@@ -13,20 +13,18 @@ def objective_func(m, optimiser_instance) -> float:
     return optimiser_instance.objective_func([m])
 
 def plot_result(optimiser_instance, data, weight, m, sigma, label, m_gt, output_folder:str, test_run:bool) -> None:
-    dmin = dmax = data[0]
-    for d in data:
-        dmin = min(dmin, d)
-        dmax = max(dmax, d)
+    dmin = min(data)
+    dmax = max(data)
 
-        # allow border
-        drange = dmax-dmin
-        x_min = dmin - 0.05*drange
-        x_max = dmax + 0.05*drange
+    # allow border
+    drange = dmax-dmin
+    x_min = dmin - 0.05*drange
+    x_max = dmax + 0.05*drange
 
     mlist = np.linspace(x_min, x_max, num=300)
 
     plt.figure(num=1, dpi=240)
-    gncs_draw_data_points(plt, data, weight, x_min, x_max, len(data), scale=0.05)
+    gncs_draw_data_points(plt, data, x_min, x_max, len(data), weight=weight, scale=0.05)
     if m_gt is not None:
         plt.axvline(x = m_gt, color = 'gray', label = 'Ground truth', lw = 1.0, linestyle = 'solid')
 
@@ -52,7 +50,7 @@ def merge(intervals) -> [[float,float]]:
     return merged
 
 def flat_welsch_mean(data, sigma, weight=None, scale=None,
-                     max_niterations=100, residual_tolerance=1.e-8, diff_thres=1.e-12, print_warnings=False, m_gt=None,
+                     max_niterations=100, residual_tolerance=1.e-8, diff_thres=1.e-12, messages_file=None, m_gt=None,
                      output_folder:str="../../../output", test_run:bool=False) -> float:
     # build +/- sigma intervals around data points
     intervals = [] #np.zeros((0,2))
@@ -93,22 +91,22 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
             if i == 0 or i == len(sample_x)-1 or (sample_val[i] > sample_val[i-1] and sample_val[i] > sample_val[i+1]):
                 test_vals_x.append(x)
 
-    if print_warnings:
-        print("test_vals_x=",test_vals_x)
+    if messages_file is not None:
+        print("test_vals_x=",test_vals_x, file=messages_file)
 
     # optimise each candidate
     for x in test_vals_x:
-        if print_warnings:
-            print("Init m=",x)
-            print("data=",data)
-            print("weight=",weight)
-            print("scale=",scale)
+        if messages_file is not None:
+            print("Init m=",x, file=messages_file)
+            print("data=",data, file=messages_file)
+            print("weight=",weight, file=messages_file)
+            print("scale=",scale, file=messages_file)
             plot_result(optimiser_instance, data, weight, x, sigma, "Init m", m_gt, output_folder, test_run)
 
         sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, scale=scale,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=0.99, lambda_max=0.99, diff_thres=diff_thres,
-                                         print_warnings=print_warnings)
+                                         messages_file=messages_file)
         if sup_gn_instance.run(model_start=[x]):
             m = sup_gn_instance.final_model
             testVal = optimiser_instance.objective_func([m])
@@ -116,12 +114,12 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
                 max_val = testVal
                 max_x = m
 
-            if print_warnings:
-                print("testVal=",testVal," max_val=",max_val," max_x=",max_x)
+            if messages_file is not None:
+                print("testVal=",testVal," max_val=",max_val," max_x=",max_x, file=messages_file)
                 plot_result(optimiser_instance, data, weight, m, sigma, "New m", m_gt, output_folder, test_run)
 
-    if print_warnings:
+    if messages_file is not None:
         o_val = optimiser_instance.objective_func([max_x])
-        print("flat Welsch mean=",max_x,"objective_func=",o_val)
+        print("flat Welsch mean=",max_x,"objective_func=",o_val, file=messages_file)
 
     return max_x

@@ -21,10 +21,9 @@ def main(test_run:bool, output_folder:str="../../../output"):
         trim_size = 2*(n//5)
         for test_idx in range(n_samples):
             data = np.zeros(n)
-            weight = np.zeros(n)
+            weight = np.ones(n)
             for i in range(n):
                 data[i] = random.gauss(0.0, sigma)
-                weight[i] = 1.0
 
             mwinsorised = winsorised_mean(data, weight, trim_size=trim_size)
             tmstot += mwinsorised*mwinsorised
@@ -45,10 +44,9 @@ def main(test_run:bool, output_folder:str="../../../output"):
         trim_size = n-1
         for test_idx in range(n_samples):
             data = np.zeros(n)
-            weight = np.zeros(n)
+            weight = np.ones(n)
             for i in range(n):
                 data[i] = random.gauss(0.0, sigma)
-                weight[i] = 1.0
 
             mwinsorised = winsorised_mean(data, weight, trim_size=trim_size)
             tmstot += mwinsorised*mwinsorised
