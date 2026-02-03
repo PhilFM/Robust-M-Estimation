@@ -1,6 +1,6 @@
 import os
 import numpy
-from setuptools import setup, find_packages, Extension
+from setuptools import setup, Extension
 
 
 try:

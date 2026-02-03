@@ -92,8 +92,6 @@ def test_answer():
                 ylist = rmfv(xlist, optimiser_instance=optimiser_instance)
                 idx_max = np.argmax(ylist)
                 x_max = xlist[idx_max]
-
-                y_max = optimiser_instance.objective_func([x_max])
                 break
 
         m = flat_welsch_mean(data, sigma, weight=weight, scale=scale, messages_file=None, output_folder="../../output")

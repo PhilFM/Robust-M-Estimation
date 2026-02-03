@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-import sys
 from pathlib import Path
 
 from robust_mean import M_estimator
@@ -86,7 +85,6 @@ def calculate_stats(
                                         evaluator_instance=evaluator_instance,
                                         max_niterations=5000,
                                         diff_thres=1.e-12*sigma_pop)
-    #                                    messages_file=sys.stdout)
     if stats_result.welsch_instance.run():
         stats_result.m_gnc_welsch = stats_result.welsch_instance.final_model[0]
         if False: #not test_run:
@@ -346,7 +344,7 @@ def mean_leave_out_apply(data_full: np.array,
         mlist = np.linspace(x_min, x_max, num=300)
 
         for mx in mlist:
-            y_max = max(objective_func(mx, welsch_instance) for mx in mlist)
+            y_max = max(objective_func(mx, stats_result_ref.welsch_instance) for mx in mlist)
 
         y_min *= 1.1 # allow for a small border
         y_max *= 1.1 # allow for a small border            
@@ -359,21 +357,21 @@ def mean_leave_out_apply(data_full: np.array,
         ax.set_ylim((y_min, y_max))
 
         rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
-        gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=welsch_instance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, draw_markers=False, hlight_x_value=m_gnc_welsch, ax=ax)
+        gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=stats_result_ref.welsch_instance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, draw_markers=False, hlight_x_value=stats_result_ref.m_gnc_welsch, ax=ax)
 
         gncs_draw_vline(plt, m_gt, ("GroundTruth", "", ""))
         if smoothie:
-            gncs_draw_vline(plt, m_gnc_welsch, ("SupGN", "Welsch", "GNC_Welsch"), use_label=False)
+            gncs_draw_vline(plt, stats_result_ref.m_gnc_welsch, ("SupGN", "Welsch", "GNC_Welsch"), use_label=False)
         else:
-            gncs_draw_vline(plt, m_gnc_welsch, ("IRLS", "Welsch", "GNC_Welsch"), use_label=False)
+            gncs_draw_vline(plt, stats_result_ref.m_gnc_welsch, ("IRLS", "Welsch", "GNC_Welsch"), use_label=False)
 
         if show_others:
             if not smoothie:
-                gncs_draw_vline(plt, mean,           ("Mean",   "Basic",       ""          ))
+                gncs_draw_vline(plt, stats_result_ref.mean,           ("Mean",   "Basic",       ""          ))
                 
-            gncs_draw_vline(plt, m_trimmed,      ("Mean",   "Trimmed",     ""          ))
-            gncs_draw_vline(plt, median,         ("Median", "Basic",       ""          ))
-            gncs_draw_vline(plt, trimean,         ("Trimean", "Basic",       ""          ))
+            gncs_draw_vline(plt, stats_result_ref.m_trimmed,      ("Mean",   "Trimmed",     ""          ))
+            gncs_draw_vline(plt, stats_result_ref.median,         ("Median", "Basic",       ""          ))
+            gncs_draw_vline(plt, stats_result_ref.trimean,         ("Trimean", "Basic",       ""          ))
 
         gncs_draw_data_points(plt, data, x_min, x_max, alg_result.n0)
 
@@ -390,29 +388,29 @@ def mean_leave_out_apply(data_full: np.array,
             ax.set_ylim((y_min, y_max))
 
             rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
-            gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=welsch_instance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, draw_markers=False, hlight_x_value=m_gnc_welsch, ax=ax)
+            gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=stats_result_ref.welsch_instance), ("IRLS", "Welsch", "GNC_Welsch"), xvalues=mlist, draw_markers=False, hlight_x_value=stats_result_ref.m_gnc_welsch, ax=ax)
 
             hmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
-            hmfv_scaled = hmfv(mlist, optimiser_instance=pseudo_huber_instance)
+            hmfv_scaled = hmfv(mlist, optimiser_instance=stats_result_ref.pseudo_huber_instance)
             hmfv_scaled *= 0.5
-            gncs_draw_curve(plt, hmfv_scaled, ("IRLS", "PseudoHuber", "Welsch"), xvalues=mlist, draw_markers=False, hlight_x_value=m_pseudo_huber, ax=ax)
+            gncs_draw_curve(plt, hmfv_scaled, ("IRLS", "PseudoHuber", "Welsch"), xvalues=mlist, draw_markers=False, hlight_x_value=stats_result_ref.m_pseudo_huber, ax=ax)
 
             gmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
-            gmfv_scaled = gmfv(mlist, optimiser_instance=gnc_irls_p_instance)
+            gmfv_scaled = gmfv(mlist, optimiser_instance=stats_result_ref.gnc_irls_p_instance)
             gmfv_scaled *= 0.1
-            gncs_draw_curve(plt, gmfv_scaled, ("IRLS", "GNC_IRLSp", "GNC_IRLSp0"), xvalues=mlist, draw_markers=False, hlight_x_value=m_gnc_irls_p, ax=ax)
+            gncs_draw_curve(plt, gmfv_scaled, ("IRLS", "GNC_IRLSp", "GNC_IRLSp0"), xvalues=mlist, draw_markers=False, hlight_x_value=stats_result_ref.m_gnc_irls_p, ax=ax)
 
             gncs_draw_vline(plt, m_gt, ("GroundTruth", "", ""))
             if smoothie:
-                gncs_draw_vline(plt, m_gnc_welsch, ("SupGN", "Welsch", "GNC_Welsch"), use_label=False)
+                gncs_draw_vline(plt, stats_result_ref.m_gnc_welsch, ("SupGN", "Welsch", "GNC_Welsch"), use_label=False)
             else:
-                gncs_draw_vline(plt, m_gnc_welsch, ("IRLS", "Welsch", "GNC_Welsch"), use_label=False)
+                gncs_draw_vline(plt, stats_result_ref.m_gnc_welsch, ("IRLS", "Welsch", "GNC_Welsch"), use_label=False)
 
             if show_others:
                 if not smoothie:
-                    gncs_draw_vline(plt, m_pseudo_huber, ("IRLS",   "PseudoHuber", "Welsch"    ), use_label=False)
-                    gncs_draw_vline(plt, m_gnc_irls_p,   ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), use_label=False)
-                    gncs_draw_vline(plt, m_rme,          ("RME",    "",            ""          ))
+                    gncs_draw_vline(plt, stats_result_ref.m_pseudo_huber, ("IRLS",   "PseudoHuber", "Welsch"    ), use_label=False)
+                    gncs_draw_vline(plt, stats_result_ref.m_gnc_irls_p,   ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), use_label=False)
+                    gncs_draw_vline(plt, stats_result_ref.m_rme,          ("RME",    "",            ""          ))
 
             gncs_draw_data_points(plt, data, x_min, x_max, alg_result.n0)
 

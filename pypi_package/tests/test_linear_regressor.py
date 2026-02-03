@@ -7,11 +7,9 @@ from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
 from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
 from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
 from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
-from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
 from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie_philfm.check_derivs import check_derivs
@@ -30,7 +28,6 @@ def randomM11() -> float:
 
 def test_derivs():
     np.random.seed(0) # We want the numbers to be the same on each run
-    all_good = True
     for test_idx in range(10):
         n_models = np.random.randint(2, 5)
         dim = np.random.randint(3, 8)

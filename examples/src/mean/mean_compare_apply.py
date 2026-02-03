@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import time
-import os
-import sys
 from pathlib import Path
 
 from robust_mean import M_estimator

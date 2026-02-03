@@ -1,6 +1,5 @@
 import numpy as np
 import numpy.typing as npt
-import matplotlib.pyplot as plt
 
 def weighted_histogram(data:npt.ArrayLike, bin_size:float, weight:npt.ArrayLike=None, scale:npt.ArrayLike=None) -> tuple[float,np.array]:
     if scale is not None:

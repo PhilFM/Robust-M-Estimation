@@ -9,9 +9,6 @@ sys.path.append("misc")
 import misc.erf_check
 import misc.welsch_majorize_check
 
-misc.erf_check.main(test_run=True, output_folder="../../test_output")
-misc.welsch_majorize_check.main(test_run=True, output_folder="../../test_output")
-
 # robust mean estimation examples
 sys.path.append("mean")
 import mean.mean_convergence_speed
@@ -29,6 +26,40 @@ import mean.mean_compare_student_t
 import mean.mean_compare
 import mean.mean_leave_out
 
+# line fitting examples
+sys.path.append("line_fitting")
+import line_fitting.line_fit_solver
+import line_fitting.line_fit_convergence_speed
+import line_fitting.line_fit_param_plot
+import line_fitting.line_fit_breakdown
+import line_fitting.line_fit_efficiency
+
+# plane fitting examples
+sys.path.append("plane_fitting")
+import plane_fitting.plane_fit_solver
+import plane_fitting.plane_fit_convergence_speed
+import plane_fitting.plane_fit_breakdown
+import plane_fitting.plane_fit_efficiency
+
+# image translation, rotation and scale examples
+sys.path.append("image_trs")
+import image_trs.trs_solver
+import image_trs.trs_convergence_speed
+import image_trs.trs_derivative_check
+import image_trs.trs_breakdown
+import image_trs.trs_efficiency
+
+# 3D point cloud registration examples
+sys.path.append("registration_3d")
+import registration_3d.registration_solver
+import registration_3d.registration_deriv_check
+
+
+# miscellaneous tests
+misc.erf_check.main(test_run=True, output_folder="../../test_output")
+misc.welsch_majorize_check.main(test_run=True, output_folder="../../test_output")
+
+# robust mean estimation examples
 mean.mean_convergence_speed.main(test_run=True, output_folder="../../test_output")
 mean.majorize_examples.main(test_run=True, output_folder="../../test_output")
 mean.compare_influence.main(test_run=True, output_folder="../../test_output")
@@ -45,13 +76,6 @@ mean.mean_compare.main(test_run=True, output_folder="../../test_output", quick_r
 mean.mean_leave_out.main(test_run=True, output_folder="../../test_output", quick_run=True)
 
 # line fitting examples
-sys.path.append("line_fitting")
-import line_fitting.line_fit_solver
-import line_fitting.line_fit_convergence_speed
-import line_fitting.line_fit_param_plot
-import line_fitting.line_fit_breakdown
-import line_fitting.line_fit_efficiency
-
 line_fitting.line_fit_solver.main(test_run=True, output_folder="../../test_output")
 line_fitting.line_fit_convergence_speed.main(test_run=True, output_folder="../../test_output")
 line_fitting.line_fit_param_plot.main(test_run=True, output_folder="../../test_output")
@@ -59,25 +83,12 @@ line_fitting.line_fit_breakdown.main(test_run=True, output_folder="../../test_ou
 line_fitting.line_fit_efficiency.main(test_run=True, output_folder="../../test_output", quick_run=True)
 
 # plane fitting examples
-sys.path.append("plane_fitting")
-import plane_fitting.plane_fit_solver
-import plane_fitting.plane_fit_convergence_speed
-import plane_fitting.plane_fit_breakdown
-import plane_fitting.plane_fit_efficiency
-
 plane_fitting.plane_fit_solver.main(test_run=True, output_folder="../../test_output")
 plane_fitting.plane_fit_convergence_speed.main(test_run=True, output_folder="../../test_output")
 plane_fitting.plane_fit_breakdown.main(test_run=True, output_folder="../../test_output", quick_run=True)
 plane_fitting.plane_fit_efficiency.main(test_run=True, output_folder="../../test_output", quick_run=True)
 
 # image translation, rotation and scale examples
-sys.path.append("image_trs")
-import image_trs.trs_solver
-import image_trs.trs_convergence_speed
-import image_trs.trs_derivative_check
-import image_trs.trs_breakdown
-import image_trs.trs_efficiency
-
 image_trs.trs_solver.main(test_run=True, output_folder="../../test_output")
 image_trs.trs_convergence_speed.main(test_run=True, output_folder="../../test_output")
 image_trs.trs_derivative_check.main(test_run=True, output_folder="../../test_output")
@@ -85,9 +96,5 @@ image_trs.trs_breakdown.main(test_run=True, output_folder="../../test_output", q
 image_trs.trs_efficiency.main(test_run=True, output_folder="../../test_output", quick_run=True)
 
 # 3D point cloud registration examples
-sys.path.append("registration_3d")
-import registration_3d.registration_solver
-import registration_3d.registration_deriv_check
-
 registration_3d.registration_solver.main(test_run=True, output_folder="../../test_output")
 registration_3d.registration_deriv_check.main(test_run=True, output_folder="../../test_output")
