@@ -64,9 +64,6 @@ class SupGaussNewton(BaseIRLS):
         self.__lambda_scale = lambda_scale
         self.__lambda_thres = lambda_thres
 
-    def model_instance(self):
-        return self._model_instance()
-
     def __calc_influence_func_derivatives(
         self, residual: np.ndarray,
         s: float,

@@ -10,7 +10,7 @@ def test_answer():
     for test_idx in range(10):
         p = np.random.rand()
         rscale = 0.5 + np.random.rand()
-        epsilon_base = 0.1 + 0.2
+        epsilon_base = 0.3
         epsilon_limit = 1.0
         beta = 0.95
         influence_func_instance = GNC_IRLSpInfluenceFunc()

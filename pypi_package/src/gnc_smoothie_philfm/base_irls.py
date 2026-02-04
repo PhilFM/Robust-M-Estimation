@@ -94,6 +94,15 @@ class BaseIRLS:
 
         self._residual_size = None
 
+    def param_instance(self):
+        return self._param_instance
+
+    def model_instance(self):
+        return self._model_instance
+
+    def evaluator_instance(self):
+        return self._evaluator_instance
+
     def objective_func_sign(self) -> float:
         return self._param_instance.influence_func_instance.objective_func_sign()
 

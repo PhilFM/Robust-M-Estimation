@@ -52,9 +52,6 @@ class IRLS(BaseIRLS):
             debug=debug,
         )
 
-    def model_instance(self):
-        return self._model_instance()
-
     def run(self,
             *,
             model_start: npt.ArrayLike = None,
