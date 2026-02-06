@@ -63,8 +63,6 @@ def solve_time(dim: int,
         intercept = linear_regressor.final_model
         final_mean = np.array(intercept)
         debug_model_list = linear_regressor.debug_model_list
-    else:
-        print("Failed")
 
     elapsed_time = time.time() - start_time
     if not test_run:
@@ -81,21 +79,17 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
     for dim in dim_list:
         dim_time.append(solve_time(dim, test_run))
 
-    print("dim_time=",dim_time)
-
     plt.close("all")
     plt.figure(num=1, dpi=240)
     ax = plt.gca()
-
-    plt.plot(dim_list, dim_time)
     ax.set_xlabel(r"Dimension")
     ax.set_ylabel(r"Time in seconds")
-    #plt.box(False)
-    #ax.set_xlim((x_min, x_max))
-    #ax.set_ylim((y_min, y_max))
-    #plt.legend()
-    plt.savefig(os.path.join(output_folder, "mean_nd_complexity.png"), bbox_inches='tight')
-    if not test_run:
+    plt.plot(dim_list, dim_time)
+
+    if test_run:
+        plt.savefig(os.path.join(output_folder, "mean_nd_complexity_test.png"), bbox_inches='tight')
+    else:
+        plt.savefig(os.path.join(output_folder, "mean_nd_complexity.png"), bbox_inches='tight')
         plt.show()
 
     if test_run:

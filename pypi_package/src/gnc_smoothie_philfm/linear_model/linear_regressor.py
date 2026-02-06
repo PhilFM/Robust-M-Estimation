@@ -31,7 +31,7 @@ class LinearRegressor:
             for k in range(dim):
                 resid[0] += self.__model[k]*data_item[k]
 
-            resid[0] += self.__model[dim] - data_item[dim]
+            resid[0] += self.__model[dim].item() - data_item[dim]
 
         return resid
 
