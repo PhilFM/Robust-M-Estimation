@@ -1,9 +1,9 @@
 import numpy as np
 import math
 
-from gnc_smoothie_philfm.irls import IRLS
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.irls import IRLS
+from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 
 from plane_fit_orthog import PlaneFitOrthog
 

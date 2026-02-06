@@ -4,9 +4,9 @@ import pytest
 import numpy as np
 
 sys.path.append("../../pypi_package/src")
-from gnc_smoothie_philfm.irls import IRLS
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.irls import IRLS
+from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 
 sys.path.append("../../pypi_package/tests")
 from evaluator_check import evaluator_check

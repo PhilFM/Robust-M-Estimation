@@ -5,16 +5,16 @@ build-backend = "setuptools.build_meta"
 
 #[tool.setuptools]
 #ext-modules = [
-#  {name = "gnc_smoothie_philfm.cython", sources = ["gnc_smoothie_philfm/cython/*.pyx"]}
+#  {name = "gnc_smoothie.cython", sources = ["gnc_smoothie/cython/*.pyx"]}
 #]
 #include-package-data = true
 
 #[tool.setuptools.package-data]
-#src = ['gnc_smoothie_philfm/cython/*.pyx']
+#src = ['gnc_smoothie/cython/*.pyx']
 
 [project]
-name = "gnc_smoothie_philfm"
-version = "0.0.64"
+name = "gnc_smoothie"
+version = "0.0.1"
 authors = [
   { name="Philip McLauchlan", email="philipmclauchlan6@gmail.com" },
 ]

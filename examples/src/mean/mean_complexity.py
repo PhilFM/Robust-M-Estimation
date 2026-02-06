@@ -8,7 +8,7 @@ if __name__ == "__main__":
     sys.path.append("../../../pypi_package/src")
 
 # Welsch
-from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWelsch
 
 def mean_welsch_solver(data: np.array, scale: np.array, x_min: float, x_max: float, sigma_pop: float,
                        test_run: bool, output_folder: str) -> None:

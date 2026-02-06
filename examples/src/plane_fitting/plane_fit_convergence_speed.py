@@ -5,15 +5,15 @@ import os
 if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
-    sys.path.append("../../../pypi_package/src/gnc_smoothie_philfm/linear_model")
-    sys.path.append("../../../pypi_package/src/gnc_smoothie_philfm/cython_files")
+    sys.path.append("../../../pypi_package/src/gnc_smoothie/linear_model")
+    sys.path.append("../../../pypi_package/src/gnc_smoothie/cython_files")
 
-from gnc_smoothie_philfm.irls import IRLS
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
-from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
-from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
+from gnc_smoothie.irls import IRLS
+from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.plt_alg_vis import gncs_draw_curve
+from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+from gnc_smoothie.linear_model.linear_regressor import LinearRegressor
 
 def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                      diffs_welsch_irls, diff_alpha_welsch_irls,

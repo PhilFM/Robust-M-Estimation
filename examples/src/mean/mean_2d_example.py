@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
-    sys.path.append("../../../pypi_package/src/gnc_smoothie_philfm/linear_model")
-    sys.path.append("../../../pypi_package/src/gnc_smoothie_philfm/cython_files")
+    sys.path.append("../../../pypi_package/src/gnc_smoothie/linear_model")
+    sys.path.append("../../../pypi_package/src/gnc_smoothie/cython_files")
 
-from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWelsch
 
 def plot_result(data, xy_range: float, final_mean_2d, test_run:bool, output_folder:str) -> None:
     plt.close("all")

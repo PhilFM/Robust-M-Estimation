@@ -5,10 +5,10 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
 
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
-from gnc_smoothie_philfm.quadratic_influence_func import QuadraticInfluenceFunc
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.check_derivs import check_derivs
+from gnc_smoothie.gnc_null_params import GNC_NullParams
+from gnc_smoothie.quadratic_influence_func import QuadraticInfluenceFunc
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.check_derivs import check_derivs
 
 from point_registration import PointRegistration
 

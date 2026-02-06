@@ -14,8 +14,8 @@ __pycache__
 build
 examples/src/cython_files/*.c
 examples/src/cython_files/*.so
-pypi_package/src/gnc_smoothie_philfm/cython_files/*.c
-pypi_package/src/gnc_smoothie_philfm/cython_files/*.so
+pypi_package/src/gnc_smoothie/cython_files/*.c
+pypi_package/src/gnc_smoothie/cython_files/*.so
 pypi_package/dist
-pypi_package/src/gnc_smoothie_philfm.egg-info
-pypi_package/gnc_smoothie_philfm.egg-info
+pypi_package/src/gnc_smoothie.egg-info
+pypi_package/gnc_smoothie.egg-info

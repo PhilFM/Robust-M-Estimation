@@ -7,7 +7,7 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
 
-from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
+from gnc_smoothie.plt_alg_vis import gncs_draw_curve
 
 from trs_welsch import TRSWelsch
 from trs import TRS

@@ -6,29 +6,29 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.irls import IRLS
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
-from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.irls import IRLS
+from gnc_smoothie.gnc_null_params import GNC_NullParams
+from gnc_smoothie.linear_model.linear_regressor import LinearRegressor
 
 # Welsch
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
-from gnc_smoothie_philfm.cython_files.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
+from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+from gnc_smoothie.cython_files.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
 
 # Pseudo-Huber
-from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
-from gnc_smoothie_philfm.linear_model.linear_regressor_pseudo_huber import LinearRegressorPseudoHuber
+from gnc_smoothie.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
+from gnc_smoothie.linear_model.linear_regressor_pseudo_huber import LinearRegressorPseudoHuber
 
 # Geman-McClure
-from gnc_smoothie_philfm.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
+from gnc_smoothie.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
 
 # GNC IRLS-p
-from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
-from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
-from gnc_smoothie_philfm.linear_model.linear_regressor_gnc_irls_p import LinearRegressorGNC_IRLSp
-from gnc_smoothie_philfm.cython_files.linear_regressor_gnc_irls_p_evaluator import LinearRegressorGNC_IRLSpEvaluator
+from gnc_smoothie.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
+from gnc_smoothie.gnc_irls_p_params import GNC_IRLSpParams
+from gnc_smoothie.linear_model.linear_regressor_gnc_irls_p import LinearRegressorGNC_IRLSp
+from gnc_smoothie.cython_files.linear_regressor_gnc_irls_p_evaluator import LinearRegressorGNC_IRLSpEvaluator
 
 # number of intermediate GNC curves to draw
 n_intermediate_gnc_curves = 10

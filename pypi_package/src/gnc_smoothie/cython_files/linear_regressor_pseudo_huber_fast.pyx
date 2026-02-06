@@ -1,7 +1,7 @@
 cimport cython
 
-from cython.cimports.src.gnc_smoothie_philfm.cython_files.pseudo_huber_influence_func import pseudo_huber_rho, pseudo_huber_rhop, pseudo_huber_Bterm
-from cython.cimports.src.gnc_smoothie_philfm.cython_files.linear_regressor_fast import linear_regressor_calc_residual, linear_regressor_calc_grad, increment_weighted_deriv_sums
+from cython.cimports.src.gnc_smoothie.cython_files.pseudo_huber_influence_func import pseudo_huber_rho, pseudo_huber_rhop, pseudo_huber_Bterm
+from cython.cimports.src.gnc_smoothie.cython_files.linear_regressor_fast import linear_regressor_calc_residual, linear_regressor_calc_grad, increment_weighted_deriv_sums
 
 @cython.boundscheck(False)  # Deactivate bounds checking
 

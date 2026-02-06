@@ -9,7 +9,7 @@ The first build command builds the source tar.gz successfully but then fails for
 You can ignore the error and proceed with the second build command that builds the wheel.
 ```
 cd pypi_package
-python -m build
+python -m build -s
 python -m build -w
 pip install .
 ```

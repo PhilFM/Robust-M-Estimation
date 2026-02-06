@@ -5,9 +5,9 @@ import pytest
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 
 sys.path.append("../src/registration_3d")
 from point_registration import PointRegistration

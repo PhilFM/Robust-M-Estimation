@@ -2,8 +2,8 @@ import sys
 import numpy as np
 
 sys.path.append("../src")
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 
 def test_answer():
     np.random.seed(0) # We want the numbers to be the same on each run

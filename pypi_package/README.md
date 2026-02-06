@@ -259,7 +259,7 @@ The Python library is based on `numpy` and contains the following top-level modu
 
 ### IRLS class
 
-Implementation in [irls.py](src/gnc_smoothie_philfm/irls.py)
+Implementation in [irls.py](src/gnc_smoothie/irls.py)
 
 Top-level 'IRLS' class. Once you have constructed an instance of this class, call the `run()`
 method to run it. This returns `True` on successful convergence, `False` on failure.
@@ -268,7 +268,7 @@ whether the `run()` method succeeds or not.
 
 Here are the parameters that need to be passed to the `IRLS` class constructor. Optional parameters follow.
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
-   this can be a `GNC_NullParams` instance imported from [gnc_null_params.py](src/gnc_smoothie_philfm/gnc_null_params.py).
+   this can be a `GNC_NullParams` instance imported from [gnc_null_params.py](src/gnc_smoothie/gnc_null_params.py).
    Should have an internal `influence_func_instance`
    that specifies the IRLS influence function to be used. The influence_func_instance
    should provide the following method:
@@ -376,7 +376,7 @@ Now the optional parameters for the `IRLS` class constructor:
 
 ### Supervised Gauss-Newton class
 
-Implementation at [sup_gauss_newton.py](src/gnc_smoothie_philfm/sup_gauss_newton.py)
+Implementation at [sup_gauss_newton.py](src/gnc_smoothie/sup_gauss_newton.py)
 
 Top-level `SupGaussNewton` class, an implementation of Supervised Gauss-Newton (Sup-GN).
 Sup-GN is an alternative to IRLS most suitable for the two cases:
@@ -401,7 +401,7 @@ The parameters to the `SupGaussNewton` constructor are very similar to the `IRLS
 but there are some twists due to Sup-GN requiring differentiation of the model residual.
 Here are the parameters you need to pass to the `SupGaussNewton` class:
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
-    this can be a `GNC_NullParams` instance imported from [gnc_null_params.py](src/gnc_smoothie_philfm/gnc_null_params.py).
+    this can be a `GNC_NullParams` instance imported from [gnc_null_params.py](src/gnc_smoothie/gnc_null_params.py).
     Should have an internal `influence_func_instance`
     that specifies the IRLS influence function to be used. This `influence_func_instance`
     should provide these methods:
@@ -410,7 +410,7 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
         increases for large residuals (one) or decreases (minus one). Typical IRLS
         objective functions such as Huber and Geman-McClure increase for large residuals,
         so most functions will return one. The version of Welsch we have implemented in
-        [gnc_welsch_params.py](src/gnc_smoothie_philfm/gnc_welsch_params.py)
+        [gnc_welsch_params.py](src/gnc_smoothie/gnc_welsch_params.py)
         uses a nagative sense, which slightly simplifies the
         implementation, because otherwise we would have to add one to the objective
         function in order to keep it positive.
@@ -625,18 +625,18 @@ To use Supervised Gauss-Newton instead simply substitute `SupGaussNewton` for `I
 
 ### Base class for IRLS and Sup-GN algorithms
 
-Implementation in [base_irls.py](src/gnc_smoothie_philfm/base_irls.py)
+Implementation in [base_irls.py](src/gnc_smoothie/base_irls.py)
 
 Implements the many features in common between IRLS and Sup-GN. Should not be used directly in
 your code.
 
 ### Accelerated Robust Linear regression
 
-Implementation in [linear_regressor_welsch.py](src/gnc_smoothie_philfm/linear_model/linear_regressor_welsch.py).
+Implementation in [linear_regressor_welsch.py](src/gnc_smoothie/linear_model/linear_regressor_welsch.py).
 
 We have implemented a vectorised Cython-based version of robust linear regression.
 There is also a pure Python-based reference implementation at
-[linear_regressor.py](src/gnc_smoothie_philfm/linear_model/linear_regressor.py), used mainly for
+[linear_regressor.py](src/gnc_smoothie/linear_model/linear_regressor.py), used mainly for
 regression testing the Cython implementation. The residual model is
 $$
   {\bf r}_i({\bf x}) = \left( \begin{array}{c} {\bf x}_1.{\bf z}_{i1} + x_1 - z_{i1} \\ {\bf x}_2.{\bf z}_{i2} + x_2 - z_{i2} \\ ... \\ {\bf x}_m.{\bf z}_{im} + x_m - z_{im} \end{array} \right)
@@ -653,7 +653,7 @@ $$
 To use the vectorised linear regression,
 incorporating our recommended Welsch influence function [2], you will need the following line:
 ```
-    from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+    from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWelsch
 ```
 Then you will need to create an linear regression instance with a line like
 ```
@@ -677,7 +677,7 @@ Optional parameters are:
      by this factor to increase the damping at the next iteration.
 - `lambda_thres: float` Threshold for $\lambda$ below which the Sup-GN iteration switches to pure gradient-based updates.
 - `diff_thres: float` Terminate when successful update changes the model model parameters by less than this value.
-- `use_slow_version: bool` Whether to use the slower pure Python [implementation](src/gnc_smoothie_philfm/linear_model/linear_regressor.py).
+- `use_slow_version: bool` Whether to use the slower pure Python [implementation](src/gnc_smoothie/linear_model/linear_regressor.py).
 - `messages_file: TextIO` File to print debugging information.
 - `debug: bool` Whether to add extra debugging data to the `LinearRegressorWelsch` class instance on exit:
    - `debug_n_iterations` The number of iterations actually applied.
@@ -748,7 +748,7 @@ and `intercept` is the last column of the output `final_model` in the default AP
 
 ### Checking derivatives
 
-Implementation in [check_derivs.py](src/gnc_smoothie_philfm/check_derivs.py)
+Implementation in [check_derivs.py](src/gnc_smoothie/check_derivs.py)
 
 When you design a model class to be used for Sup-GN optimisation, and have written your `residual()`
 method defining how to calculate the model/data errors, you have a design choice:
@@ -794,7 +794,7 @@ the `SupGaussNewton` instance, although the derivative testing will work for oth
 
 ### Welsch influence function
 
-Implementation in [welsch_influence_func.py](src/gnc_smoothie_philfm/welsch_influence_func.py)
+Implementation in [welsch_influence_func.py](src/gnc_smoothie/welsch_influence_func.py)
 
 This provides the class `WelschInfluenceFunc`, that implements the Welsch influence function, defined as
 $$
@@ -809,7 +809,7 @@ Wrap it with a `GNC_WelschParams` class to provide it with a GNC schedule and ou
 
 ### GNC Welsch schedule class
 
-Implementation in [gnc_welsch_params.py](src/gnc_smoothie_philfm/gnc_welsch_params.py)
+Implementation in [gnc_welsch_params.py](src/gnc_smoothie/gnc_welsch_params.py)
 
 Build a parameter class instance by building a `GNC_WelschInfluenceFunc` instance and then
 wrapping it into this `GNC_WelschParams` class to provide the GNC schedule. The `sigma` value
@@ -818,7 +818,7 @@ values to a low value `sigma_base` that approximates the population error standa
 
 ### Pseudo-Huber influence function
 
-Implementation in [pseudo_huber_influence_func.py](src/gnc_smoothie_philfm/pseudo_huber_influence_func.py)
+Implementation in [pseudo_huber_influence_func.py](src/gnc_smoothie/pseudo_huber_influence_func.py)
 
 The class `PseudoHuberInfluenceFunc` implements the fully differentiable
 version [1] of the original Huber influence function [7].
@@ -833,7 +833,7 @@ very bad then it will fail to converge to the correct solution.
 
 ### Geman-McClure influence function
 
-Implementation in [geman_mcclure_influence_func.py](src/gnc_smoothie_philfm/geman_mcclure_influence_func.py)
+Implementation in [geman_mcclure_influence_func.py](src/gnc_smoothie/geman_mcclure_influence_func.py)
 
 This `GemanMcClureInfluenceFunc` class implements the Geman-McClure influence function [8], defined by
 $$
@@ -847,7 +847,7 @@ to try this, but we still recommend using the Welsch influence function over Gem
 
 ### GNC IRLS-p influence function
 
-Implementation in [gnc_irls_p_influence_func.py](src/gnc_smoothie_philfm/gnc_irls_p_influence_func.py)
+Implementation in [gnc_irls_p_influence_func.py](src/gnc_smoothie/gnc_irls_p_influence_func.py)
 
 This `GNC_IRLSpInfluenceFunc` class implements the GNC schedule recommended by Peng et al. in their
 excellent paper [3]. Peng et al. prove that for many IRLS problems, GNC IRLS-p provides guaranteed
@@ -857,14 +857,14 @@ provides an alternative to our recommended `GNC_WelschParams` + `GNC_WelschInflu
 
 ### GNC IRLS-p schedule class
 
-Implementation in [gnc_irls_p_params.py](src/gnc_smoothie_philfm/gnc_irls_p_params.py)
+Implementation in [gnc_irls_p_params.py](src/gnc_smoothie/gnc_irls_p_params.py)
 
 Build a parameter class instance by building a `GNC_IRLSpInfluenceFunc` instance and then
 wrapping it into this `GNC_IRLSpParams` class to provide the GNC schedule.
 
 ### Quadratic influence function
 
-Implementation in [quadratic_influence_func.py](src/gnc_smoothie_philfm/quadratic_influence_func.py)
+Implementation in [quadratic_influence_func.py](src/gnc_smoothie/quadratic_influence_func.py)
 
 This file provides the `QuadraticInfluenceFunc` class that implements the quadratic objective function that
 is used in non-robust least squares. The main use of this class is to provide a simple mechanism for
@@ -873,7 +873,7 @@ building an instance of `SupGaussNewton` for the purpose of checking derivative 
 
 ### Null GNC parameter class
 
-Implementation in [gnc_null_params.py](src/gnc_smoothie_philfm/gnc_null_params.py)
+Implementation in [gnc_null_params.py](src/gnc_smoothie/gnc_null_params.py)
 
 When you want to apply standard IRLS, or use Sup-GN optimisation without GNC, wrap your influence function
 in a `GNC_NullParams` instance. 

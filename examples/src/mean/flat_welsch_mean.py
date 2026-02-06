@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.draw_functions import gncs_draw_data_points
-from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.gnc_null_params import GNC_NullParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.draw_functions import gncs_draw_data_points
+from gnc_smoothie.linear_model.linear_regressor import LinearRegressor
 
 def objective_func(m, optimiser_instance) -> float:
     return optimiser_instance.objective_func([m])

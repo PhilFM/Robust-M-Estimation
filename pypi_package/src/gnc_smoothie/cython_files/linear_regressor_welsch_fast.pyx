@@ -1,7 +1,7 @@
 cimport cython
 
-from cython.cimports.src.gnc_smoothie_philfm.cython_files.welsch_influence_func import welsch_rho, welsch_rhop, welsch_Bterm
-from cython.cimports.src.gnc_smoothie_philfm.cython_files.linear_regressor_fast import linear_regressor_calc_residual, linear_regressor_calc_grad, increment_weighted_deriv_sums
+from cython.cimports.src.gnc_smoothie.cython_files.welsch_influence_func import welsch_rho, welsch_rhop, welsch_Bterm
+from cython.cimports.src.gnc_smoothie.cython_files.linear_regressor_fast import linear_regressor_calc_residual, linear_regressor_calc_grad, increment_weighted_deriv_sums
 
 @cython.boundscheck(False)  # Deactivate bounds checking
 

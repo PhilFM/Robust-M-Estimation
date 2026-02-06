@@ -8,8 +8,8 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
 
-from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
-from gnc_smoothie_philfm.linear_model.linear_regressor_welsch import LinearRegressorWelsch
+from gnc_smoothie.plt_alg_vis import gncs_draw_curve
+from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWelsch
 
 def fit_plane_ransac(data, sigma_pop: float):
     XYnp = np.array(data[:,0:2]).reshape((len(data),2))

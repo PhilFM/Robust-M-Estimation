@@ -5,8 +5,8 @@ import pytest
 import numpy as np
 import numpy.typing as npt
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.irls import IRLS
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.irls import IRLS
 
 def evaluator_check(evaluator_instance, param_instance, model_instance,
                     model: npt.ArrayLike, data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike,

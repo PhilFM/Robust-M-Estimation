@@ -8,7 +8,7 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
     
-from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve, gncs_draw_vline
+from gnc_smoothie.plt_alg_vis import gncs_draw_curve, gncs_draw_vline
 
 from mean_leave_out_apply import mean_leave_out_apply, StatsResult, calculate_stats
 from weighted_mode import weighted_histogram

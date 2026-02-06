@@ -6,10 +6,10 @@ import sys
 if __name__ == "__main__":
     sys.path.append("../../../pypi_package/src")
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.linear_model.linear_regressor import LinearRegressor
 
 sys.path.append("../misc")
 from check_for_breakdown import check_for_breakdown

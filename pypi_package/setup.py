@@ -26,10 +26,10 @@ def no_cythonize(extensions, **_ignore):
     return extensions
 
 extensions = [
-    Extension("gnc_smoothie_philfm.cython_files.linear_regressor_welsch_fast", ["src/gnc_smoothie_philfm/cython_files/linear_regressor_welsch_fast.pyx"]),
-    Extension("gnc_smoothie_philfm.cython_files.linear_regressor_pseudo_huber_fast", ["src/gnc_smoothie_philfm/cython_files/linear_regressor_pseudo_huber_fast.pyx"]),
-    Extension("gnc_smoothie_philfm.cython_files.linear_regressor_gnc_irls_p_fast", ["src/gnc_smoothie_philfm/cython_files/linear_regressor_gnc_irls_p_fast.pyx"]),
-    Extension("gnc_smoothie_philfm.cython_files.linear_regressor_weighted_fit", ["src/gnc_smoothie_philfm/cython_files/linear_regressor_weighted_fit.pyx"]),
+    Extension("gnc_smoothie.cython_files.linear_regressor_welsch_fast", ["src/gnc_smoothie/cython_files/linear_regressor_welsch_fast.pyx"]),
+    Extension("gnc_smoothie.cython_files.linear_regressor_pseudo_huber_fast", ["src/gnc_smoothie/cython_files/linear_regressor_pseudo_huber_fast.pyx"]),
+    Extension("gnc_smoothie.cython_files.linear_regressor_gnc_irls_p_fast", ["src/gnc_smoothie/cython_files/linear_regressor_gnc_irls_p_fast.pyx"]),
+    Extension("gnc_smoothie.cython_files.linear_regressor_weighted_fit", ["src/gnc_smoothie/cython_files/linear_regressor_weighted_fit.pyx"]),
 ]
 
 CYTHONIZE = cythonize is not None

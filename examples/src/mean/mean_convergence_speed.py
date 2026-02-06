@@ -7,16 +7,16 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.irls import IRLS
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.gnc_irls_p_params import GNC_IRLSpParams
-from gnc_smoothie_philfm.gnc_null_params import GNC_NullParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
-from gnc_smoothie_philfm.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
-from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
-from gnc_smoothie_philfm.linear_model.linear_regressor import LinearRegressor
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.irls import IRLS
+from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie.gnc_irls_p_params import GNC_IRLSpParams
+from gnc_smoothie.gnc_null_params import GNC_NullParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
+from gnc_smoothie.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
+from gnc_smoothie.plt_alg_vis import gncs_draw_curve
+from gnc_smoothie.linear_model.linear_regressor import LinearRegressor
 
 def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                      diffs_welsch_irls, diff_alpha_welsch_irls,

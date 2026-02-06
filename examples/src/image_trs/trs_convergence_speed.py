@@ -6,11 +6,11 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
 
-from gnc_smoothie_philfm.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie_philfm.irls import IRLS
-from gnc_smoothie_philfm.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie_philfm.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie_philfm.plt_alg_vis import gncs_draw_curve
+from gnc_smoothie.sup_gauss_newton import SupGaussNewton
+from gnc_smoothie.irls import IRLS
+from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
+from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
+from gnc_smoothie.plt_alg_vis import gncs_draw_curve
 
 from trs import TRS
 
