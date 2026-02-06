@@ -387,6 +387,7 @@ class BaseIRLS:
                  model,
                  *,
                  model_ref=None,
+                 AlB: np.ndarray = None,
                  weight=None,
                  itn:int=0,
                  total_time=0):
@@ -394,6 +395,7 @@ class BaseIRLS:
 
         self.final_model = model
         self.final_model_ref = model_ref
+        self.final_AlB = AlB
         if weight is None:
             weight = [None] * self._dsize
             for didx in range(self._dsize):

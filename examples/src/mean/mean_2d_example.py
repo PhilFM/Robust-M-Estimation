@@ -52,9 +52,9 @@ def main(test_run:bool, output_folder:str="../../../output"):
     q = 0.6667
     sigma = sigma_pop/q
     sigma_limit = xy_range
-    linear_regressor = LinearRegressorWelsch(sigma, sigma_limit, 20, use_slow_version=False, debug=True)
+    linear_regressor = LinearRegressorWelsch(sigma, sigma_limit=sigma_limit, num_sigma_steps=20, use_slow_version=False, debug=True)
     if linear_regressor.run(data):
-        intercept = linear_regressor.final_intercept
+        intercept = linear_regressor.final_model
         final_mean_2d = np.array([intercept[0], intercept[1]])
         debug_model_list = linear_regressor.debug_model_list
 

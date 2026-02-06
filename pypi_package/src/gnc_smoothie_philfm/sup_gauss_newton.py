@@ -135,9 +135,6 @@ class SupGaussNewton(BaseIRLS):
 
             return atot, AlBtot
         else:
-            if self._messages_file is not None:
-                print("Here sup 2", file=self._messages_file)
-
             return self._evaluator_instance.weighted_derivs(
                 model,
                 model_ref,
@@ -160,8 +157,6 @@ class SupGaussNewton(BaseIRLS):
         update_model_ref = getattr(self._model_instance, "update_model_ref", None)
 
         if self._messages_file is not None:
-            print("Here sup 1", file=self._messages_file)
-
             a, AlB = self.weighted_derivs(model, self.__lambda_start, model_ref=model_ref)
             print("Initial model=", model, file=self._messages_file)
             print("Initial model_ref=", model_ref, file=self._messages_file)
@@ -326,3 +321,23 @@ class SupGaussNewton(BaseIRLS):
 
         self.finalise(model, model_ref=model_ref, itn=itn, total_time = time.time() - start_time_total if self._debug else 0)
         return all_good
+
+    def finalise(self,
+                 model,
+                 *,
+                 model_ref=None,
+                 weight=None,
+                 itn:int=0,
+                 total_time=0):
+        a, AlB = self.weighted_derivs(model, 1.0, model_ref=model_ref)
+        BaseIRLS.finalise(
+            self,
+            model,
+            model_ref=model_ref,
+            AlB=AlB,
+            weight=weight,
+            itn=itn,
+            total_time=total_time,
+            )
+        
+    
