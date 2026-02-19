@@ -151,13 +151,15 @@ class BaseIRLS:
                 if self._data[didx] is not None:
                     model_residual_func = self._get_model_residual_func(didx)
                     rho = self._param_instance.influence_func_instance.rho
+                    residual:np.array = None
                     for d, w, s in zip(
                             self._data[didx], self._weight[didx], self._scale[didx], strict=True
                     ):
                         residual = model_residual_func(d)
                         tot += w * rho(residual @ residual, s)  # scale
 
-                    self._residual_size[didx] = len(residual)
+                    if residual is not None:
+                        self._residual_size[didx] = len(residual)
         else:
             tot = self._evaluator_instance.objective_func(
                 model,
@@ -227,7 +229,7 @@ class BaseIRLS:
         residual_arr = [None] * self._dsize
         residual_gradient_arr = [None] * self._dsize
         for didx in range(self._dsize):
-            if self._data[didx] is not None:
+            if self._data[didx] is not None and self._residual_size[didx] is not None:
                 model_residual_func = self._get_model_residual_func(didx)
 
                 residual_arr[didx] = np.zeros(
@@ -282,7 +284,7 @@ class BaseIRLS:
         if self._residual_size is None:
             self._residual_size = [None] * self._dsize
             for didx in range(self._dsize):
-                if self._data[didx] is not None:
+                if self._data[didx] is not None and len(self._data[didx]) > 0:
                     residual = self._model_instance.residual(self._data[didx][0])
                     self._residual_size[didx] = len(residual)
 

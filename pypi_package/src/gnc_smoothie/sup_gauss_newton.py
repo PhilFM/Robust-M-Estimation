@@ -248,6 +248,9 @@ class SupGaussNewton(BaseIRLS):
 
                     continue
 
+            tot = self.objective_func(model, model_ref=model_ref)
+            tot_diff = self._param_instance.influence_func_instance.objective_func_sign() * (tot - last_tot)
+
             # only check for termination if we have reached the end of any GNC schedule
             if self._diff_thres is not None and self._param_instance.alpha() == 1.0:
                 model_max_diff = np.linalg.norm(at, ord=np.inf)
@@ -255,14 +258,12 @@ class SupGaussNewton(BaseIRLS):
                     self.debug_diffs.append(math.log10(model_max_diff))
                     self.debug_diff_alpha.append(self._param_instance.alpha())
 
-                if model_max_diff < self._diff_thres:
+                if tot_diff <= 0.0 and model_max_diff < self._diff_thres:
                     if self._messages_file is not None:
                         print("Difference threshold reached", file=self._messages_file)
 
                     all_good = True
                     break
-
-            tot = self.objective_func(model, model_ref=model_ref)
 
             if self._messages_file:
                 print(
@@ -281,16 +282,14 @@ class SupGaussNewton(BaseIRLS):
 
             if (
                 lambda_val != 0.0
-                and self._param_instance.influence_func_instance.objective_func_sign()
-                * (tot - last_tot)
-                > self.__residual_tolerance
+                and tot_diff > self.__residual_tolerance
             ):
                 if self._messages_file is not None:
                     print(
                         "Reject lambda_val=",
                         lambda_val,
                         "diff=",
-                        last_tot - tot,
+                        tot_diff,
                         "reverting to model",
                         model_old,
                         file=self._messages_file

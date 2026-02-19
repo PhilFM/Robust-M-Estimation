@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gnc_smoothie"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Philip McLauchlan", email="philipmclauchlan6@gmail.com" },
 ]

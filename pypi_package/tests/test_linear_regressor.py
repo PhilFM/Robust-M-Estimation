@@ -102,7 +102,7 @@ def test_answer():
         num_sigma_steps = 20
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]))
+        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), messages_file=sys.stdout)
         assert(optimiser_instance.run())
         model = optimiser_instance.final_model
         #print("model_gt=",model_gt)
