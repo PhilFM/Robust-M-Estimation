@@ -5,7 +5,7 @@ Example code illustrating how to compute a line that fits to 2D points with outl
 Example code:
 
 - [line_fit_solver.py](line_fit_solver.py) Example code using line fitting and the `gnc_smoothie` package.
-- [line_fit_orthog_welsch.py](line_fit_orthog_welsch.py] Python API for GNC IRLS line fitting with orthogonal regression, to be used by external programs.
+- [line_fit_orthog_welsch.py](line_fit_orthog_welsch.py) Python API for GNC IRLS line fitting with orthogonal regression, to be used by external programs.
 
 Runnable code samples:
 

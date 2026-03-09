@@ -5,7 +5,7 @@ Robust estimation of translation, rotation and scale between points in two image
 Example code:
 
 - [trs_solver.py](trs_solver.py) Example code using image translation, rotation and scale estimation with the `gnc_smoothie` package.
-- [trs_welsch.py](trs_welsch.py] Python API for GNC Sup-GN image translation, rotation and scale estimation to be used by external programs.
+- [trs_welsch.py](trs_welsch.py) Python API for GNC Sup-GN image translation, rotation and scale estimation to be used by external programs.
 
 Runnable code samples:
 
