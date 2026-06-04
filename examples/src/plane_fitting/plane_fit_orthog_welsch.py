@@ -44,7 +44,7 @@ class PlaneFitOrthogWelsch:
             self.final_plane = self.__convert_model(optimiser_instance.final_model)
             self.final_weight = optimiser_instance.final_weight
             if self.__debug:
-                self.debug_plane_list = [(model[0], self.__convert_model(model[1])) for model in optimiser_instance.debug_model_list]
+                self.debug_plane_list = [(model[0], self.__convert_model(model[1]), model[2]) for model in optimiser_instance.debug_model_list]
                 self.debug_update_weights_time = optimiser_instance.debug_update_weights_time
                 self.debug_weighted_fit_time = optimiser_instance.debug_weighted_fit_time
                 self.debug_total_time = optimiser_instance.debug_total_time

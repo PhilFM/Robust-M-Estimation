@@ -34,5 +34,15 @@ class WelschInfluenceFunc:
         inv_var = 1.0 / (sigma * sigma)
         return inv_var * inv_var * math.exp(-0.5 * rsqr * inv_var)
 
+    # d(rho'(r))/d(s)/r used to calculate the GNC step size
+    def rhopiv(self, rsqr: float, s: float) -> float:
+        sigma = s * self.sigma
+        inv_var = 1.0 / (sigma * sigma)
+        fid = inv_var * 0.5 * rsqr
+        return -2.0 * inv_var * (fid - 1.0) * math.exp(-fid)
+
+    def variance(self) -> float:
+        return self.sigma*self.sigma
+
     def summary(self) -> str:
         return "sigma=" + str(self.sigma)

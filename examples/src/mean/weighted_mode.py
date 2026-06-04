@@ -30,9 +30,6 @@ def weighted_mode(data:npt.ArrayLike,
                   weight:npt.ArrayLike=None,
                   scale:npt.ArrayLike=None) -> float:
     x_min,counts = weighted_histogram(data, bin_size, weight, scale)
-    #print("counts1=",counts1)
-    #print("counts2=",counts2)
-    #print("counts=",counts)
     mode = np.argmax(counts)
 
     if mode == 0 or mode == counts.shape[0]-1:
@@ -53,5 +50,4 @@ def weighted_mode(data:npt.ArrayLike,
         y3 = counts[mode+1]
         assert(y2 >= y1 and y2 >= y3)
         quadratic_correction = -0.5*(y3 - y1)/(y3 + y1 - 2.0*y2)
-        #print("quadratic_correction=",quadratic_correction)
         return x_min + (mode + 0.5 + quadratic_correction)*0.5*bin_size

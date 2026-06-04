@@ -26,14 +26,9 @@ def evaluator_check(evaluator_instance, param_instance, model_instance,
     model_size = len(model)
     if not irls_only:
         for lambda_val in (0.0, 0.5, 1.0):
-            #print("lambda_val=",lambda_val)
             atot, AlBtot = evaluator_instance.weighted_derivs(model, None, param_instance.influence_func_instance,
                                                               lambda_val, [data], [weight], [scale])
             atotp, AlBtotp = optimiser_instance.weighted_derivs(model, lambda_val)
-            #print("atot=",atot)
-            #print("atotp=",atotp)
-            #print("AlBtot=",AlBtot)
-            #print("AlBtotp=",AlBtotp)
             for i in range(model_size):
                 assert(atot[i] == pytest.approx(atotp[i]))
                 for j in range(model_size):
@@ -56,8 +51,6 @@ def evaluator_check(evaluator_instance, param_instance, model_instance,
     else:
         model_fitp,model_refp = optimiser_instance.weighted_fit()
 
-    #print("model_fit=",model_fit)
-    #print("model_fitp=",model_fitp)
     for i in range(model_size):
         assert(model_fit[i] == pytest.approx(model_fitp[i]))
 

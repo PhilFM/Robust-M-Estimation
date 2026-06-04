@@ -48,6 +48,12 @@ class GNC_IRLSpParams:
             else 1.0
         )
 
+    def filter_size(self) -> float:
+        return self.influence_func_instance.epsilon/self.influence_func_instance.rscale
+
+    def supports_factor_argument(self) -> bool:
+        return False
+
     def increment(self) -> None:
         self.__step = min(1 + self.__step, self.__n_steps)
         self.influence_func_instance.epsilon = (

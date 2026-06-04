@@ -245,6 +245,8 @@ def gncs_draw_histogram(
     vals = np.array(vals).reshape(len(vals))
     counts,bins = np.histogram(vals, bins=n_bins, range=(x_min,x_min+n_bins*bin_size))
     #print("counts=",counts,"key=",key)
+    plt.close("all")
+    plt.figure(num=1, dpi=240)
     plt.plot(
         list(range(len(counts))),
         counts,
@@ -255,6 +257,8 @@ def gncs_draw_histogram(
         marker="o",
         markersize=markersize,
     )
+
+    plt.show()
 
 def gncs_draw_histogram_vline(
     plt,

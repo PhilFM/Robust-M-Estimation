@@ -20,6 +20,7 @@ from gnc_smoothie.cython_files.linear_regressor_welsch_evaluator import LinearRe
 # Pseudo-Huber
 from gnc_smoothie.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
 from gnc_smoothie.linear_model.linear_regressor_pseudo_huber import LinearRegressorPseudoHuber
+from gnc_smoothie.cython_files.linear_regressor_pseudo_huber_evaluator import LinearRegressorPseudoHuberEvaluator
 
 # Geman-McClure
 from gnc_smoothie.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
@@ -29,6 +30,9 @@ from gnc_smoothie.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie.gnc_irls_p_params import GNC_IRLSpParams
 from gnc_smoothie.linear_model.linear_regressor_gnc_irls_p import LinearRegressorGNC_IRLSp
 from gnc_smoothie.cython_files.linear_regressor_gnc_irls_p_evaluator import LinearRegressorGNC_IRLSpEvaluator
+
+import math
+from flat_welsch_mean import flat_welsch_mean
 
 # number of intermediate GNC curves to draw
 n_intermediate_gnc_curves = 10
@@ -51,7 +55,8 @@ def get_y_limits(mlist: list, optimiser_instance, offset: float=0.0) -> (float,f
     return y_min,y_max
 
 def plot_gnc_example(sup_gn_instance, mean_est: float, x_min: float, x_max: float, final_weight: np.array, offset: float,
-                     influence_func_name: str, test_run: bool, output_folder: str, output_file_name: str) -> None:
+                     influence_func_name: str, test_run: bool, output_folder: str, output_file_name: str, n_good_points: int,
+                     null_gnc: bool) -> None:
     mlist = np.linspace(x_min, x_max, num=300)
     fid_sign = (offset - 0.5)*sup_gn_instance.objective_func_sign()
     sup_gn_instance._param_instance.reset(init = True if fid_sign > 0.0 else False)
@@ -64,86 +69,121 @@ def plot_gnc_example(sup_gn_instance, mean_est: float, x_min: float, x_max: floa
     ax.set_xlim((x_min, x_max))
     ax.set_ylim((y_min, y_max))
 
-    hmfv = np.vectorize(objective_func, excluded={"optimiser_instance","offset"})
+    if mean_est is not None:
+        hmfv = np.vectorize(objective_func, excluded={"optimiser_instance","offset"})
 
-    # plot some GNC intermediate objective curves
-    last_xy = None
-    last_color = None
-    sup_gn_instance._param_instance.reset(init=True) # set to limit value
-    n_steps = sup_gn_instance._param_instance.n_steps()
-    for step in range(n_steps):
-        alpha = (n_steps-1-step)/(n_steps-1)
-        color = (0.8*alpha, 1.0, 0.0)
-        plt.plot(mlist, hmfv(mlist, optimiser_instance=sup_gn_instance, offset=offset), lw = 1.0, color=color)
+        # plot some GNC intermediate objective curves
+        last_xy = None
+        last_color = None
+        sup_gn_instance._param_instance.reset(init=True) # set to limit value
+        n_steps = sup_gn_instance._param_instance.n_steps()
+        for step in range(n_steps):
+            alpha = (n_steps-1-step)/(n_steps-1)
+            color = (0.8*alpha, 1.0, 0.0)
+            plt.plot(mlist, hmfv(mlist, optimiser_instance=sup_gn_instance, offset=offset), lw = 1.0, color=color)
+
+            # mark the maximum
+            idx = np.argmax([ objective_func(mx, sup_gn_instance) for mx in mlist])
+            mx = mlist[idx]
+            this_xy = (mx, objective_func(mx, sup_gn_instance, offset))
+            plt.plot(this_xy[0], this_xy[1], "o", color=color, markersize=2)
+            if last_xy is not None:
+                plt.plot((last_xy[0],this_xy[0]), (last_xy[1],this_xy[1]), color=last_color, linestyle="dotted", linewidth=0.5)
+
+            sup_gn_instance._param_instance.increment()
+            last_xy = this_xy
+            last_color = color
+
+        plt.plot(mlist, hmfv(mlist, optimiser_instance=sup_gn_instance, offset=offset), lw = 1.0, color="green", label=influence_func_name + " objective function")
 
         # mark the maximum
         idx = np.argmax([ objective_func(mx, sup_gn_instance) for mx in mlist])
         mx = mlist[idx]
         this_xy = (mx, objective_func(mx, sup_gn_instance, offset))
-        plt.plot(this_xy[0], this_xy[1], "o", color=color, markersize=2)
-        if last_xy is not None:
-            plt.plot((last_xy[0],this_xy[0]), (last_xy[1],this_xy[1]), color=last_color, linestyle="dotted", linewidth=0.5)
+        plt.plot(this_xy[0], this_xy[1], "o", color="green", markersize=2)
+        plt.plot((last_xy[0],this_xy[0]), (last_xy[1],this_xy[1]), color=last_color, linestyle="dotted", linewidth=0.5)
 
-        sup_gn_instance._param_instance.increment()
-        last_xy = this_xy
-        last_color = color
-
-    plt.plot(mlist, hmfv(mlist, optimiser_instance=sup_gn_instance, offset=offset), lw = 1.0, color="green", label=influence_func_name + " objective function")
-
-    # mark the maximum
-    idx = np.argmax([ objective_func(mx, sup_gn_instance) for mx in mlist])
-    mx = mlist[idx]
-    this_xy = (mx, objective_func(mx, sup_gn_instance, offset))
-    plt.plot(this_xy[0], this_xy[1], "o", color="green", markersize=2)
-    plt.plot((last_xy[0],this_xy[0]), (last_xy[1],this_xy[1]), color=last_color, linestyle="dotted", linewidth=0.5)
-
-    # add invisible line and marker just for legend
-    alpha = 0.5
-    color = (0.8*alpha, 1.0, 0.0)
-    plt.axvline(x = -1000, color = color, ymax = 0.1, lw = 1.0, label="GNC intermediates")
-    plt.plot(-1000,-1000, "o", color=color, markersize=2, label="Intermediate maxima" if offset == 0.0 else "Intermediate minima")
+        if not null_gnc:
+            # add invisible line and marker just for legend
+            alpha = 0.5
+            color = (0.8*alpha, 1.0, 0.0)
+            plt.axvline(x = -1000, color = color, ymax = 0.1, lw = 1.0, label="GNC intermediates")
+            plt.plot(-1000,-1000, "o", color=color, markersize=2, label="Intermediate maxima" if offset == 0.0 else "Intermediate minima")
 
     # draw data points as short vertical lines
     data = sup_gn_instance._data[0]
-    plt.axvline(x = data[0][0], color = (1,0,0), ymax = 0.1, lw = 1.0, label="Inlier data values") # will be overwritten with corrected colour
-    plt.axvline(x = data[0][0], color = (0,0,1), ymax = 0.1, lw = 1.0, label="Outlier data values") # will be overwritten with corrected colour
+    for i in range(n_good_points):
+        if i == 0:
+            plt.axvline(x = data[i][0], color = (1,0,0), ymax = 0.1, lw = 1.0, label="Inlier data values")
+        else:
+            plt.axvline(x = data[i][0], color = (1,0,0), ymax = 0.1, lw = 1.0)
+
+    for i in range(n_good_points, len(data)):
+        if i == n_good_points:
+            plt.axvline(x = data[i][0], color = (0,0,1), ymax = 0.1, lw = 1.0, label="Outlier data values")
+        else:
+            plt.axvline(x = data[i][0], color = (0,0,1), ymax = 0.1, lw = 1.0)
+
     #max_weight = max(final_weight)
     #for d,w in zip(data,final_weight, strict=True):
     #    alpha = w/max_weight
     #    color = [alpha, 0.0, 1.0-alpha]
     #    plt.axvline(x = d, color = color, ymax = 0.1, lw = 1.0)
 
-    plt.axvline(x = mean_est, color = 'limegreen', label = 'Estimated mean', lw = 1.0)
+    if mean_est is not None and not null_gnc:
+        plt.axvline(x = mean_est, color = 'limegreen', label = 'Estimated mean', lw = 1.0)
 
     plt.legend()
     plt.savefig(os.path.join(output_folder, output_file_name), bbox_inches='tight')
     if not test_run:
         plt.show()
 
+def check_gnc_variation(param_instance, data: np.array) -> None:
+    small_diff = 0.001
+    param_instance.reset()
+    while True:
+        sigma = math.sqrt(param_instance.influence_func_instance.variance())
+        m1 = flat_welsch_mean(data, sigma*(1.0 + small_diff))
+        m2 = flat_welsch_mean(data, sigma*(1.0 - small_diff))
+        deriv = 0.5*(m2 - m1)/small_diff
+        print("sigma=",sigma, "deriv=",2.0*deriv/(sigma*sigma))
+        if param_instance.alpha() == 1.0:
+            break;
+
+        param_instance.increment()
+    
 def mean_welsch_solver(data: np.array, scale: np.array, x_min: float, x_max: float, sigma_pop: float,
-                       test_run: bool, output_folder: str) -> None:
+                       test_run: bool, output_folder: str, n_good_points: int, null_gnc: bool=False) -> None:
     # estimation parameters
     q = 0.66667 # ratio of population standard deviation to base sigma value in estimation
     sigma_base = sigma_pop/q
     sigma_limit = x_max-x_min
     num_sigma_steps = 20
     max_niterations = 50
+    sigma_no_gnc = 0.1
 
     evaluator_instance = LinearRegressorWelschEvaluator(data[0])
-    param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit,
-                                      num_sigma_steps=num_sigma_steps)
-    irls_instance = IRLS(param_instance, data, evaluator_instance=evaluator_instance,
-                         max_niterations=max_niterations, messages_file=None)
-    if irls_instance.run():
-        m = irls_instance.final_model[0]
-        if not test_run:
-            print("Welsch IRLS result: m=", m)
+    if null_gnc:
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_no_gnc, sigma_limit=sigma_no_gnc,
+                                          num_sigma_steps=5)
+    else:
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit,
+                                          num_sigma_steps=num_sigma_steps)
 
-    mean_finder = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
-                                        max_niterations=max_niterations, messages_file=None, debug=True)
+    if not null_gnc:
+        irls_instance = IRLS(param_instance, data, evaluator_instance=evaluator_instance,
+                             max_niterations=max_niterations, messages_file=None)
+        if irls_instance.run():
+            m = irls_instance.final_model[0]
+            if not test_run:
+                print("Welsch IRLS result: m=", m)
+
+    mean_finder = LinearRegressorWelsch(sigma_no_gnc if null_gnc else sigma_base, sigma_limit=sigma_no_gnc if null_gnc else sigma_limit, num_sigma_steps=num_sigma_steps,
+                                        max_niterations=max_niterations, messages_file=sys.stdout, debug=True)
     if mean_finder.run(data):
         m = mean_finder.final_model[0]
         final_weight = mean_finder.final_weight
+        check_gnc_variation(param_instance, data)
         if not test_run:
             print("Welsch Sup-GN optimisation result: m=", m)
             print("  final weights:",final_weight)
@@ -156,21 +196,23 @@ def mean_welsch_solver(data: np.array, scale: np.array, x_min: float, x_max: flo
 
     if output_folder is not None:
         # create GNC instance for plotting
-        param_instance_plot = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit,
+        param_instance_plot = GNC_WelschParams(WelschInfluenceFunc(), sigma_no_gnc if null_gnc else sigma_base, sigma_limit=sigma_no_gnc if null_gnc else sigma_limit,
                                                num_sigma_steps=n_intermediate_gnc_curves)
         sup_gn_instance_plot = SupGaussNewton(param_instance_plot, data, evaluator_instance=evaluator_instance)
 
+        plot_gnc_example(sup_gn_instance_plot, None, x_min, x_max, None, 0.0, # RobustAverage paper
+                         "Welsch", test_run, output_folder, "mean_welsch_data_no_gnc.png" if null_gnc else "mean_welsch_data.png", n_good_points, null_gnc)
         plot_gnc_example(sup_gn_instance_plot, m, x_min, x_max, final_weight, 0.0, # RobustAverage paper
-                         "Welsch", test_run, output_folder, "mean_welsch.png")
+                         "Welsch", test_run, output_folder, "mean_welsch_no_gnc.png" if null_gnc else "mean_welsch.png", n_good_points, null_gnc)
         #plot_gnc_example(sup_gn_instance_plot, m, x_min, x_max, final_weight, len(data), # for Smoothie paper,
-        #                 "Welsch", test_run, output_folder, "mean_welsch_smoothie.png")
+        #                 "Welsch", test_run, output_folder, "mean_welsch_smoothie.png", n_good_points, null_gnc)
 
 def mean_pseudo_huber_solver(data: np.array, scale: np.array, x_min: float, x_max: float, sigma_pop: float,
                              test_run: bool, output_folder: str) -> None:
     sigma=1.4*sigma_pop
     influence_func_instance = PseudoHuberInfluenceFunc(sigma)
     param_instance = GNC_NullParams(influence_func_instance)
-    evaluator_instance = LinearRegressorWelschEvaluator(data[0])
+    evaluator_instance = LinearRegressorPseudoHuberEvaluator(data[0])
     irls_instance = IRLS(param_instance, data, evaluator_instance=evaluator_instance, max_niterations=200, messages_file=None, debug=True)
     if irls_instance.run():
         m = irls_instance.final_model[0]
@@ -187,7 +229,7 @@ def mean_pseudo_huber_solver(data: np.array, scale: np.array, x_min: float, x_ma
             print("Pseudo-Huber scale result difference=", mscale-m)
 
     mean_finder = LinearRegressorPseudoHuber(sigma, messages_file=None, debug=True)
-    if mean_finder.run(data):
+    if mean_finder.run(data, model_start=[5.0]):
         m = mean_finder.final_model[0]
         final_weight = mean_finder.final_weight
         if not test_run:
@@ -298,7 +340,7 @@ def mean_gnc_irls_p_solver(data: np.array, scale: np.array, x_min: float, x_max:
         m = mean_finder.final_model[0]
         final_weight = mean_finder.final_weight
         if not test_run:
-            print("Pseudo-Huber Linear Regression optimisation result: m=", m)
+            print("GNC IRLS-p Linear Regression optimisation result: m=", m)
             print("  final weights:",final_weight)
 
     # for checkout derivatives
@@ -328,7 +370,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
     # data generation
     sigma_pop = 0.2 # population distribution standard deviation
     n_good_points = 10
-    n_bad_points = 12
+    n_bad_points = 9 #12
     mean_gt = 3.0
     x_min = 0.0
     x_max = 10.0
@@ -345,10 +387,12 @@ def main(test_run:bool, output_folder:str="../../../output"):
     scale = np.zeros(len(data))
     scale[:] = 1.0
 
-    mean_welsch_solver(data, scale, x_min, x_max, sigma_pop, test_run, output_folder)
-    mean_pseudo_huber_solver(data, scale, x_min, x_max, sigma_pop, test_run, output_folder)
-    mean_geman_mcclure_solver(data, scale, x_min, x_max, sigma_pop, test_run, output_folder)
-    mean_gnc_irls_p_solver(data, scale, x_min, x_max, sigma_pop, test_run, output_folder)
+    sigma_pop = 0.01
+    mean_welsch_solver(data, scale, x_min, x_max, sigma_pop, test_run, output_folder, n_good_points, null_gnc=True)
+    mean_welsch_solver(data, scale, x_min, x_max, sigma_pop, test_run, output_folder, n_good_points)
+    #mean_pseudo_huber_solver(data, scale, x_min, x_max, sigma_pop, test_run, output_folder)
+    #mean_geman_mcclure_solver(data, scale, x_min, x_max, sigma_pop, test_run, output_folder)
+    #mean_gnc_irls_p_solver(data, scale, x_min, x_max, sigma_pop, test_run, output_folder)
 
     if test_run:
         print("mean_solver OK")

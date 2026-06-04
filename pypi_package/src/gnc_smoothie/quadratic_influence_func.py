@@ -21,5 +21,12 @@ class QuadraticInfluenceFunc:
     def Bterm(self, rsqr: float, s: float) -> float:
         return 0.0
 
+    # d(rho'(r))/d(sigma)/r used to calculate the GNC step size
+    def rhopiv(self, rsqr: float, s: float) -> float:
+        return -2.0
+
+    def variance(self) -> float:
+        return 1.0
+
     def summary(self) -> str:
         return ""

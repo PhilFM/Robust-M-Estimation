@@ -320,10 +320,6 @@ class BaseIRLS:
                             np.transpose(residual_gradient[i]), residual_gradient[i]
                         )
 
-            if self._messages_file is not None:
-                print("Here Atot",Atot, file=self._messages_file)
-                print("Here atot",atot, file=self._messages_file)
-
             return -np.linalg.solve(Atot, atot),None
         else:
             return self._evaluator_instance.weighted_fit(self._data,
@@ -393,11 +389,14 @@ class BaseIRLS:
                  weight=None,
                  itn:int=0,
                  total_time=0):
+        self._param_instance.influence_func_instance.objective_func_sign()
         self._param_instance.reset(init=False)
+        self._param_instance.influence_func_instance.objective_func_sign()
 
         self.final_model = model
         self.final_model_ref = model_ref
         self.final_AlB = AlB
+        
         if weight is None:
             weight = [None] * self._dsize
             for didx in range(self._dsize):
@@ -426,3 +425,21 @@ class BaseIRLS:
             self.debug_n_iterations = itn + 1
             self.debug_total_time = total_time
 
+    def variance(model: npt.ArrayLike) -> np.ndarray:
+        Atot = np.zeros((len(model), len(model)))
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                if weight_arr is None or weight_arr[didx] is None:
+                    weight = self._weight[didx]
+                else:
+                    weight = weight_arr[didx]
+
+                residual = residual_arr[didx]
+                residual_gradient = residual_gradient_arr[didx]
+                for i, (w, s) in enumerate(zip(weight, self._scale[didx], strict=True)):
+                    w /= s * s
+                    Atot += w * np.matmul(
+                        np.transpose(residual_gradient[i]), residual_gradient[i]
+                    )
+
+        return Atot

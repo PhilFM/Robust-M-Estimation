@@ -10,6 +10,9 @@ from gnc_smoothie.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 
+sys.path.append("../misc")
+from minimiser import minimiser
+
 from trs import TRS
 
 sys.path.append("../misc")
@@ -22,6 +25,52 @@ def apply_trs(trs, d, sigma=0.0):
     return (trs[1]*d[0] - trs[0]*d[1] + trs[2] + np.random.normal(0.0,sigma),
             trs[0]*d[0] + trs[1]*d[1] + trs[3] + np.random.normal(0.0,sigma))
             
+def check_breakpoint():
+    image_width = 20
+    image_height = 20
+    half_image_width = 0.5*image_width
+    half_image_height = 0.5*image_height
+    n_points_xy = 10
+    n_points = n_points_xy*n_points_xy
+    trs_gt = [0.0,1.0,0.0,0.0]
+    for n_bad_points in range(1,n_points//2):
+        sigma = 0.1
+
+        # model is s,c,tx,ty
+        data = np.zeros((n_points,4))
+        bad_xy_av = np.zeros(2)
+        for i in range(n_points_xy):
+            y = -half_image_height + i*image_height/(n_points_xy-1)
+            for j in range(n_points_xy):
+                x = -half_image_width + j*image_width/(n_points_xy-1)
+                idx = i*n_points_xy+j
+                data[idx][0] = x
+                data[idx][1] = y
+                if idx < n_bad_points:
+                    (data[idx][2],data[idx][3]) = apply_trs(trs_gt, data[idx], 0.0)
+                    data[idx][2] += 2.0*sigma
+                    bad_xy_av += [x,y]
+                else:
+                    (data[idx][2],data[idx][3]) = apply_trs(trs_gt, data[idx], 0.0)
+
+        bad_xy_av /= n_bad_points
+        bad_xy_av_p = np.array(apply_trs(trs_gt, bad_xy_av, 0.0))
+        bad_xy_av_p[0] += 2.0*sigma
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base=sigma)
+        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=TRS())
+
+        def objective_func(x: np.array) -> float: # x is [s,c]
+            # We have xp = c*x - s*y + tx, yp = s*x + c*y + ty
+            s = x[0]
+            c = x[1]
+            tx = bad_xy_av_p[0] - c*bad_xy_av[0] + s*bad_xy_av[1]
+            ty = bad_xy_av_p[1] - s*bad_xy_av[0] - c*bad_xy_av[1]
+            return -optimiser_instance.objective_func(np.array([s,c,tx,ty]))
+
+        best_sc,best_val = minimiser(objective_func, initial_centre=[0.0,0.0], initial_half_range=[1.0,1.0], n_samples=[11,11], scale_factor=1.4)
+        good_val = optimiser_instance.objective_func(np.array(trs_gt))
+        print("Compare (",n_bad_points/n_points,")",-best_val,good_val,-best_val-good_val)
+
 def next_bad_point(idx, n_points_xy):
     # check quadrant
     if idx[0] >= idx[1] and n_points_xy-idx[0]-1 > idx[1]: # lower quadrant
@@ -44,6 +93,8 @@ def next_bad_point(idx, n_points_xy):
 
 def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=False):
     np.random.seed(0) # We want the numbers to be the same on each run
+
+    check_breakpoint()
 
     image_width = 1000
     image_height = 1000

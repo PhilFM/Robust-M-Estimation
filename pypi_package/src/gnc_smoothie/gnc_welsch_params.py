@@ -16,6 +16,8 @@ class GNC_WelschParams:
         *,
         sigma_limit: float = None,
         num_sigma_steps: int = 1,
+        min_beta: float = 0.2,
+        beta_deriv_scale: float = 0.5,
     ):
         self.influence_func_instance = influence_func_instance
         self.__sigma_base = sigma_base
@@ -25,6 +27,8 @@ class GNC_WelschParams:
             (math.log(sigma_base) - math.log(self.__sigma_limit))
             / self.__num_sigma_steps
         )
+        self.__min_beta = min_beta
+        self.__beta_deriv_scale = beta_deriv_scale
 
         # set parameters to final values
         self.reset(init=False)
@@ -45,11 +49,25 @@ class GNC_WelschParams:
             else 1.0
         )
 
+    def filter_size(self) -> float:
+        return self.influence_func_instance.sigma
+
+    def supports_factor_argument(self) -> bool:
+        return True
+
     # update sigma to a lower value
-    def increment(self) -> None:
+    def increment(self, max_abs_normalised_deriv: float = None) -> None:
         self.__step = min(1 + self.__step, self.__num_sigma_steps)
         self.influence_func_instance.sigma = (
             self.__sigma_base
             if self.__step >= self.__num_sigma_steps
-            else self.__beta * self.influence_func_instance.sigma
+            else max(self.__sigma_base, (self.__beta if max_abs_normalised_deriv is None else min(self.__beta, max(self.__min_beta, 1.0 - self.__beta_deriv_scale/(0.001+max_abs_normalised_deriv)))) * self.influence_func_instance.sigma)
         )
+
+    # used to check results when debugging
+    #def set_alpha(self, alpha: float) -> None:
+    #    if alpha <= 0.0:
+    #        self.influence_func_instance.sigma = self.__sigma_limit
+    #    elif alpha >= 1.0:
+    #        self.influence_func_instance.sigma = self.__sigma_base
+    #    else:

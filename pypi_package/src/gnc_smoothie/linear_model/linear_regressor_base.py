@@ -23,6 +23,7 @@ class LinearRegressorBase:
             lambda_scale: float = 1.2,
             lambda_thres: float = 0.0,
             diff_thres: float = 1.e-10,
+            model_size_est: np.array = None,
             use_slow_version: bool = False,
             messages_file: TextIO = None,
             debug: bool = False
@@ -33,6 +34,7 @@ class LinearRegressorBase:
         self.__lambda_scale = lambda_scale
         self.__lambda_thres = lambda_thres
         self.__diff_thres = diff_thres
+        self.__model_size_est = model_size_est
         self._use_slow_version = use_slow_version
         self.__messages_file = messages_file
         self.__debug = debug
@@ -98,6 +100,7 @@ class LinearRegressorBase:
                                             lambda_scale=self.__lambda_scale,
                                             lambda_thres=self.__lambda_thres,
                                             diff_thres=self.__diff_thres,
+                                            model_size_est=self.__model_size_est,
                                             messages_file=self.__messages_file,
                                             debug=self.__debug)
         if optimiser_instance.run(model_start=model_start):
@@ -111,7 +114,7 @@ class LinearRegressorBase:
                 self.debug_diffs = optimiser_instance.debug_diffs
                 self.debug_diff_alpha = optimiser_instance.debug_diff_alpha
                 if self.__data_is_tuple:
-                    self.debug_model_list = [(self.__convert_model(model[1], data[0])) for model in optimiser_instance.debug_model_list]
+                    self.debug_model_list = [(model[0], self.__convert_model(model[1], data[0]), model[2]) for model in optimiser_instance.debug_model_list]
                 else:
                     self.debug_model_list = optimiser_instance.debug_model_list
 

@@ -81,8 +81,9 @@ class IRLS(BaseIRLS):
             self.debug_model_list = []
             self.debug_model_list.append(
                 (
-                    0.0,  # alpha
+                    0.0,  # iteration alpha
                     np.copy(model),
+                    self._param_instance.alpha(), # GNC alpha
                 )
             )
 
@@ -110,10 +111,11 @@ class IRLS(BaseIRLS):
             if self._messages_file is not None:
                 print("model=",model, file=self._messages_file)
 
+            gnc_alpha = self._param_instance.alpha()
             if self._debug:
                 self.debug_weighted_fit_time += time.time() - start_time
 
-            if self._param_instance.alpha() == 1.0:
+            if gnc_alpha == 1.0:
                 if self._diff_thres is not None:
                     model_max_diff = np.linalg.norm(model - model_old, ord=np.inf)
                     if self._messages_file is not None:
@@ -124,7 +126,7 @@ class IRLS(BaseIRLS):
                             print("Adding diff model_max_diff", model_max_diff, file=self._messages_file)
 
                         self.debug_diffs.append(math.log10(model_max_diff))
-                        self.debug_diff_alpha.append(self._param_instance.alpha())
+                        self.debug_diff_alpha.append(gnc_alpha)
 
                     if model_max_diff < self._diff_thres:
                         if self._messages_file is not None:
@@ -150,6 +152,7 @@ class IRLS(BaseIRLS):
                     (
                         (1 + itn) / (self._max_niterations - 1),  # alpha
                         np.copy(model),
+                        gnc_alpha,
                     )
                 )
 

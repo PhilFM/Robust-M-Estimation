@@ -7,7 +7,7 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
 
-def main(test_run:bool, output_folder:str="../../output"):
+def main(test_run:bool, output_folder:str="../../../output"):
     rlist = np.linspace(-3.0, 3.0, num=100)
     plt.close("all")
     plt.figure(num=1, dpi=240)

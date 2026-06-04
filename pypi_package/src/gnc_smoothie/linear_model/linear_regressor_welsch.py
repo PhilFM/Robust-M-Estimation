@@ -31,6 +31,7 @@ class LinearRegressorWelsch(LinearRegressorBase):
             lambda_scale: float = 1.2,
             lambda_thres: float = 0.0,
             diff_thres: float = 1.e-10,
+            model_size_est: npt.ArrayLike = None,
             use_slow_version: bool = False,
             messages_file: TextIO = None,
             debug: bool = False
@@ -43,11 +44,15 @@ class LinearRegressorWelsch(LinearRegressorBase):
             lambda_scale=lambda_scale,
             lambda_thres=lambda_thres,
             diff_thres=diff_thres,
+            model_size_est=model_size_est,
             use_slow_version=use_slow_version,
             messages_file=messages_file,
             debug=debug
         )
         self.__param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
+
+    def param_instance(self):
+        return self.__param_instance
 
     def run(self,
             data,

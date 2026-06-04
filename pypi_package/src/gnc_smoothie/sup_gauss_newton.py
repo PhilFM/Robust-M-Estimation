@@ -34,6 +34,7 @@ class SupGaussNewton(BaseIRLS):
         lambda_scale: float = 1.2,
         lambda_thres: float = 0.0,
         diff_thres: float = 1.0e-10,
+        model_size_est: npt.ArrayLike = None,
         messages_file: TextIO = None,
         debug: bool = False,
     ):
@@ -63,6 +64,7 @@ class SupGaussNewton(BaseIRLS):
         self.__lambda_max = lambda_max
         self.__lambda_scale = lambda_scale
         self.__lambda_thres = lambda_thres
+        self.__model_size_est = model_size_est
 
     def __calc_influence_func_derivatives(
         self, residual: np.ndarray,
@@ -91,6 +93,52 @@ class SupGaussNewton(BaseIRLS):
             )  # scale
 
         return rhop, Bterm
+
+    # additional calculation of derivatives for calculating GNC schedule
+    def __calc_influence_func_derivatives_iv(
+        self, residual: np.ndarray,
+        s: float,
+        *,
+        small_diff: float = 1.0e-5
+    ) -> (float, float):  # scale
+        rsqr = residual @ residual
+        r = math.sqrt(rsqr)
+        if self.numeric_derivs_influence:
+            rho_n = self._param_instance.influence_func_instance.rho(
+                (r - small_diff) ** 2.0, s
+            )  # scale
+            rho_p = self._param_instance.influence_func_instance.rho(
+                (r + small_diff) ** 2.0, s
+            )  # scale
+            rho_deriv = 0.5 * (rho_p - rho_n) / small_diff
+            rhop = rho_deriv / r
+            rho_c = self._param_instance.influence_func_instance.rho(r * r, s)  # scale
+            rho_2nd_deriv = (rho_n + rho_p - 2.0 * rho_c) / (small_diff * small_diff)
+            Bterm = (r * rho_2nd_deriv - rho_deriv) / (r * r * r)
+
+            # 2nd derivative w.r.t. x and inv_var
+            rho_nn = self._param_instance.influence_func_instance.rho(
+                (r - small_diff) ** 2.0, s*(1. - small_diff)
+            )
+            rho_pn = self._param_instance.influence_func_instance.rho(
+                (r + small_diff) ** 2.0, s*(1. - small_diff)
+            )
+            rho_np = self._param_instance.influence_func_instance.rho(
+                (r - small_diff) ** 2.0, s*(1. + small_diff)
+            )
+            rho_pp = self._param_instance.influence_func_instance.rho(
+                (r + small_diff) ** 2.0, s*(1. + small_diff)
+            )
+            rho_deriv_piv = 0.25*(rho_nn - rho_pn - rho_np + rho_pp) / (small_diff * small_diff)
+            rhopiv = rho_deriv_piv / r
+        else:
+            rhop = self._param_instance.influence_func_instance.rhop(rsqr, s)  # scale
+            Bterm = self._param_instance.influence_func_instance.Bterm(
+                rsqr, s
+            )  # scale
+            rhopiv = self._param_instance.influence_func_instance.rhopiv(rsqr, s) # scale
+
+        return rhop, Bterm, rhopiv
 
     # weighted_derivs is public to allow derivatives to be checked
     def weighted_derivs(
@@ -144,6 +192,73 @@ class SupGaussNewton(BaseIRLS):
                 self._weight,
                 self._scale)
 
+    # derivatives representing size of distribution
+    def weighted_gnc_derivs(
+            self,
+            model: npt.ArrayLike,
+            *,
+            model_ref=None
+    ) -> (np.array, np.array):
+        if self._evaluator_instance is None:
+            # initialize residual_size
+            self._model_instance.cache_model(model, model_ref=model_ref)
+            self._initialize_residual_size_if_necessary()
+
+            small_diff = 1.0e-5
+            residual_arr, residual_gradient_arr = self._calc_residual_derivatives(
+                model, model_ref=model_ref, small_diff=small_diff
+            )
+
+            aivtot = np.zeros(len(model))
+            Aivtot = np.zeros((len(model), len(model)))
+            for didx in range(self._dsize):
+                if self._data[didx] is not None:
+                    residual = residual_arr[didx]
+                    residual_gradient = residual_gradient_arr[didx]
+                    for i, (w, s) in enumerate(
+                            zip(self._weight[didx], self._scale[didx], strict=True)
+                    ):
+                        grad = np.matmul(np.transpose(residual_gradient[i]), residual[i])
+                        rhop, Bterm, rhopiv = self.__calc_influence_func_derivatives_iv(
+                            residual[i], s, small_diff=small_diff
+                        )
+
+                        aivtot += w * rhopiv * grad
+                        Aivtot += w * (
+                            rhop
+                            * np.matmul(
+                                np.transpose(residual_gradient[i]), residual_gradient[i]
+                            )
+                            + Bterm * np.outer(grad, grad)
+                        )
+
+            return aivtot, Aivtot
+        else:
+            return self._evaluator_instance.weighted_gnc_derivs(
+                model,
+                model_ref,
+                self._param_instance.influence_func_instance,
+                self._data,
+                self._weight,
+                self._scale)
+
+    # estimate of change in inverse variance representing size of distribution
+    def gnc_normalised_deriv(  self,
+                        model_size_est: npt.ArrayLike,
+                        model: npt.ArrayLike,
+                        *,
+                        model_ref=None
+    ) -> np.ndarray:
+        aivtot, Aivtot = self.weighted_gnc_derivs(model,
+                                                  model_ref=model_ref)
+        v = np.linalg.solve(Aivtot, aivtot)
+        vp = v / model_size_est
+        vpp = vp / math.sqrt(self._param_instance.influence_func_instance.variance())
+        if self._messages_file is not None:
+            print("size=",math.sqrt(self._param_instance.influence_func_instance.variance()),"vp=",vp,"vpp=",vpp,"model=",model)
+
+        return vpp
+
     def run(self,
             *,
             model_start: npt.ArrayLike = None,
@@ -183,8 +298,9 @@ class SupGaussNewton(BaseIRLS):
             self.debug_model_list = []
             self.debug_model_list.append(
                 (
-                    0.0,  # alpha
+                    0.0,  # iteration alpha
                     np.copy(model),
+                    self._param_instance.alpha(), # GNC alpha
                 )
             )
 
@@ -206,7 +322,6 @@ class SupGaussNewton(BaseIRLS):
                 lambda_a = lambda_val/self.__lambda_thres
 
             lambda_b = max(0.0, lambda_val - self.__lambda_thres)
-            #print("lambda_val=",lambda_val,"lambda_a=",lambda_a,"lambda_b=",lambda_b,"lambda_thres=",self.__lambda_thres)
             a, AlB = self.weighted_derivs(model_old, lambda_b, model_ref=model_ref_old)
 
             if self._debug:
@@ -226,6 +341,8 @@ class SupGaussNewton(BaseIRLS):
 
                 continue
 
+            gnc_alpha = self._param_instance.alpha()
+            gnc_filter_size = self._param_instance.filter_size()
             if self._debug:
                 self.debug_solve_time += time.time() - start_time
 
@@ -252,11 +369,11 @@ class SupGaussNewton(BaseIRLS):
             tot_diff = self._param_instance.influence_func_instance.objective_func_sign() * (tot - last_tot)
 
             # only check for termination if we have reached the end of any GNC schedule
-            if self._diff_thres is not None and self._param_instance.alpha() == 1.0:
+            if self._diff_thres is not None and gnc_alpha == 1.0:
                 model_max_diff = np.linalg.norm(at, ord=np.inf)
                 if self._debug is True and model_max_diff > 0.0:
                     self.debug_diffs.append(math.log10(model_max_diff))
-                    self.debug_diff_alpha.append(self._param_instance.alpha())
+                    self.debug_diff_alpha.append(gnc_alpha)
 
                 if tot_diff <= 0.0 and model_max_diff < self._diff_thres:
                     if self._messages_file is not None:
@@ -304,7 +421,14 @@ class SupGaussNewton(BaseIRLS):
                     print("Accept lambda_val=", lambda_val, "model=", model, file=self._messages_file)
 
                 lambda_val = min(self.__lambda_scale * lambda_val, self.__lambda_max)
-                self._param_instance.increment()
+
+                if self._param_instance.supports_factor_argument() and self.__model_size_est is not None:
+                    normalised_deriv = self.gnc_normalised_deriv(self.__model_size_est, model, model_ref=model_ref)
+                    abs_normalised_deriv = np.abs(normalised_deriv)
+                    self._param_instance.increment(max(abs_normalised_deriv))
+                else:
+                    self._param_instance.increment()
+
                 if self._param_instance.alpha() == 1.0:
                     last_tot = tot
                 else:
@@ -315,6 +439,7 @@ class SupGaussNewton(BaseIRLS):
                     (
                         (1 + itn) / (self._max_niterations - 1),  # alpha
                         np.copy(model),
+                        gnc_filter_size,
                     )
                 )
 

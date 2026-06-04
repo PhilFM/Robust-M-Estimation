@@ -60,3 +60,35 @@ cdef inline increment_weighted_deriv_sums(cython.double lambda_b, cython.double[
 
             AlBtot[offset+dim][offsetp+dim] += w * lambda_b * Bterm * grad[j][dim]*grad[m][dim]
 
+cdef inline increment_weighted_gnc_deriv_sums(cython.double[:,:] data_item, cython.double[:,:] grad,
+                                              cython.double rhop, cython.double rhopiv, cython.double Bterm, cython.double w,
+                                              cython.double[:] aivtot, cython.double[:,:] Aivtot):
+    j: cython.Py_ssize_t
+    k: cython.Py_ssize_t
+    l: cython.Py_ssize_t
+    m: cython.Py_ssize_t
+    dim: cython.Py_ssize_t = data_item.shape[1]-1
+    for j in range(data_item.shape[0]):
+        offset: cython.Py_ssize_t = j*data_item.shape[1]
+        for k in range(dim):
+            aivtot[offset+k] += w * rhopiv * grad[j][k]
+            for l in range(k,dim):
+                Aivtot[offset+k][offset+l] += w * (rhop*data_item[j][k]*data_item[j][l] + Bterm * grad[j][k]*grad[j][l])
+
+            Aivtot[offset+k][offset+dim] += w * (rhop*data_item[j][k] + Bterm * grad[j][k]*grad[j][dim])
+
+        aivtot[offset+dim] += w * rhopiv * grad[j][dim]
+        Aivtot[offset+dim][offset+dim] += w * (rhop + Bterm * grad[j][dim]*grad[j][dim])
+        for m in range(j+1,data_item.shape[0]):
+            offsetp: cython.Py_ssize_t = m*data_item.shape[1]
+            for k in range(dim):
+                for l in range(dim):
+                    Aivtot[offset+k][offsetp+l] += w * Bterm * grad[j][k]*grad[m][l]
+
+                Aivtot[offset+k][offsetp+dim] += w * Bterm * grad[j][k]*grad[m][dim]
+                        
+            for l in range(dim):
+                Aivtot[offset+dim][offsetp+l] += w * Bterm * grad[j][dim]*grad[m][l]
+
+            Aivtot[offset+dim][offsetp+dim] += w * Bterm * grad[j][dim]*grad[m][dim]
+

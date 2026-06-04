@@ -12,7 +12,6 @@ from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
 from gnc_smoothie.geman_mcclure_influence_func import GemanMcClureInfluenceFunc
 from gnc_smoothie.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
-from gnc_smoothie.check_derivs import check_derivs
 from gnc_smoothie.cython_files.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
 from gnc_smoothie.cython_files.linear_regressor_pseudo_huber_evaluator import LinearRegressorPseudoHuberEvaluator
 from gnc_smoothie.cython_files.linear_regressor_gnc_irls_p_evaluator import LinearRegressorGNC_IRLSpEvaluator
@@ -21,17 +20,81 @@ from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWel
 from gnc_smoothie.linear_model.linear_regressor_pseudo_huber import LinearRegressorPseudoHuber
 from gnc_smoothie.linear_model.linear_regressor_gnc_irls_p import LinearRegressorGNC_IRLSp
 
+from check_derivs import check_derivs, check_gnc_derivs
 from evaluator_check import evaluator_check
 
 def randomM11() -> float:
     return 2.0*(np.random.rand() - 0.5)
 
-def test_derivs():
-    np.random.seed(0) # We want the numbers to be the same on each run
+def fit_model(data, weight, sigma, dim):
+    # maximum sigma is calculated across all the models
+    last_axis = data[:,:,dim-1].flatten()
+    min_val = min(last_axis)
+    max_val = max(last_axis)
+    y_range = max_val - min_val
+    welsch_fitter = LinearRegressorWelsch(sigma, sigma_limit=max(sigma,y_range), num_sigma_steps=20, debug=True, max_niterations=200)
+    assert(welsch_fitter.run(data, weight=weight))
+    return welsch_fitter.final_model
+
+def test_gnc_normalised_deriv_welsch(diff_threshold_deriv: float = 1.0e-6):
+    small_diff = 0.001
     for test_idx in range(10):
         n_models = np.random.randint(2, 5)
         dim = np.random.randint(3, 8)
-        #print("dim=",dim,"n_models=",n_models)
+
+        # ground-truth model
+        model_gt = np.zeros(n_models*dim)
+        for i in range(n_models*dim):
+            model_gt[i] = randomM11()
+
+        # build good data
+        n_points = dim + np.random.randint(5, 10)
+        data = np.zeros((n_points,n_models,dim))
+        weight = np.zeros(n_points)
+        sigma = 0.1 + np.random.rand()
+        for i in range(n_points):
+            for j in range(n_models):
+                tot = 0.0
+                for k in range(dim-1):
+                    data[i][j][k] = randomM11()
+                    tot += model_gt[j*dim+k]*data[i][j][k]
+
+                data[i][j][dim-1] = tot + model_gt[j*dim+dim-1] + np.random.normal(0.0, 0.02*sigma)
+
+            weight[i] = 0.2+np.random.rand()
+
+        last_axis = data[:,:,dim-1].flatten()
+        y_range = max(last_axis) - min(last_axis)
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma, sigma_limit=max(sigma,y_range), num_sigma_steps=20)
+        optimiser_instance = SupGaussNewton(param_instance, data,
+                                            model_instance = LinearRegressor(data[0]),
+                                            weight=weight,
+                                            max_niterations=500,
+                                            diff_thres=1.e-14)
+        assert(optimiser_instance.run())
+        model_opt = optimiser_instance.final_model
+
+        # calculate normalised derivative of optimised model w.r.t. noise model scale
+        optimiser_instance = SupGaussNewton(param_instance, data,
+                                            evaluator_instance = LinearRegressorWelschEvaluator(data[0]),
+                                            weight=weight)
+        optimiser_instance._param_instance.reset(init=False)
+        normalised_deriv = optimiser_instance.gnc_normalised_deriv(np.ones(len(model_gt)), model_opt)
+
+        # calculate normalised derivative of optimised model w.r.t. noise model scale numerically
+        m1 = fit_model(data, weight, sigma*(1.0 + small_diff), dim)
+        m2 = fit_model(data, weight, sigma*(1.0 - small_diff), dim)
+        normalised_deriv_num = 0.5*(m2 - m1)/(small_diff*sigma)
+
+        for i in range(len(normalised_deriv)):
+            if abs(normalised_deriv_num[i] - normalised_deriv[i]) > diff_threshold_deriv:
+                print("Failure GNC normalised deriv i=", i)
+                return False
+            
+def test_derivs():
+    for test_idx in range(10):
+        n_models = np.random.randint(2, 5)
+        dim = np.random.randint(3, 8)
 
         # ground-truth model
         model = np.zeros(n_models*dim)
@@ -49,16 +112,39 @@ def test_derivs():
 
             weight[i] = 0.2+np.random.rand()
 
+        # check Python model
         assert(check_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), data, model_instance=LinearRegressor(data[0]), weight=weight),
-                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True):
+                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True))
         assert(check_derivs(SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=0.5)), data, model_instance=LinearRegressor(data[0]), weight=weight),
-                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True):
+                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True))
         assert(check_derivs(SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=0.5)), data, model_instance=LinearRegressor(data[0]), weight=weight),
-                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True):
+                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True))
         assert(check_derivs(SupGaussNewton(GNC_NullParams(GemanMcClureInfluenceFunc(sigma=0.5)), data, model_instance=LinearRegressor(data[0]), weight=weight),
-                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True):
+                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True))
         assert(check_derivs(SupGaussNewton(GNC_NullParams(GNC_IRLSpInfluenceFunc(p=0.9, rscale=0.8, epsilon=0.2)), data, model_instance=LinearRegressor(data[0]), weight=weight),
-                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True):
+                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True))
+
+        # check Cython evaluators
+        assert(check_derivs(SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=0.5)), data, evaluator_instance=LinearRegressorWelschEvaluator(data[0]),
+                                           weight=weight),
+                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True))
+        assert(check_derivs(SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=0.5)), data, evaluator_instance=LinearRegressorPseudoHuberEvaluator(data[0]), weight=weight),
+                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True))
+        assert(check_derivs(SupGaussNewton(GNC_NullParams(GNC_IRLSpInfluenceFunc(p=0.9, rscale=0.8, epsilon=0.2)), data, evaluator_instance=LinearRegressorGNC_IRLSpEvaluator(data[0]), weight=weight),
+                            model, diff_threshold_AlB=1.e-4)) #, print_diffs=True, print_derivs=True))
+
+        # check GNC derivatives using Python models
+        assert(check_gnc_derivs(SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=0.3)), data, model_instance=LinearRegressor(data[0]), weight=weight),
+                                model, diff_threshold_aiv=1.e-5, diff_threshold_Aiv=1.e-4)) #, print_diffs=True, print_derivs=True))
+        assert(check_gnc_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), data, model_instance=LinearRegressor(data[0]), weight=weight),
+                                model, diff_threshold_aiv=1.e-5, diff_threshold_Aiv=1.e-4)) # , print_diffs=True, print_derivs=True))
+
+
+        
+        # check GNC derivatives using Cython evaluators
+        assert(check_gnc_derivs(SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=0.3)), data, evaluator_instance=LinearRegressorWelschEvaluator(data[0]),
+                                               weight=weight),
+                                model, diff_threshold_aiv=1.e-5, diff_threshold_Aiv=1.e-4)) # , print_diffs=True, print_derivs=True))
 
 def test_answer():
     np.random.seed(0) # We want the numbers to be the same on each run
@@ -102,15 +188,12 @@ def test_answer():
         num_sigma_steps = 20
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), messages_file=sys.stdout)
+        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0])) #, messages_file=sys.stdout)
         assert(optimiser_instance.run())
         model = optimiser_instance.final_model
-        #print("model_gt=",model_gt)
-        #print("model=",model)
         for j in range(n_models*dim):
             assert(model[j] == pytest.approx(model_gt[j]))
 
-        #print("model_start=",model_start)
         linear_regressor = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
         assert(linear_regressor.run(data))
         model = linear_regressor.final_model
@@ -262,7 +345,9 @@ def test_evaluator_gnc_irls_p():
         assert(check_final_models(data[0], fast_model, slow_model))
 
 if __name__ == "__main__":
-    test_derivs()
+    np.random.seed(43289) # We want the random numbers to be the same on each run
+    #test_derivs()
+    test_gnc_normalised_deriv_welsch()
     test_answer()
     test_evaluator_welsch()
     test_evaluator_pseudo_huber()

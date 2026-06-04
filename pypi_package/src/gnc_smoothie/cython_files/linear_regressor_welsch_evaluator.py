@@ -3,10 +3,10 @@ import numpy.typing as npt
 
 # Import cython helper.
 try:
-    from .linear_regressor_welsch_fast import linear_regressor_welsch_objective_func, linear_regressor_welsch_weighted_derivs, linear_regressor_welsch_update_weights
+    from .linear_regressor_welsch_fast import linear_regressor_welsch_objective_func, linear_regressor_welsch_weighted_derivs, linear_regressor_welsch_update_weights, linear_regressor_welsch_weighted_gnc_derivs
     from .linear_regressor_evaluator_base import LinearRegressorEvaluatorBase
 except ImportError:
-    from linear_regressor_welsch_fast import linear_regressor_welsch_objective_func, linear_regressor_welsch_weighted_derivs, linear_regressor_welsch_update_weights
+    from linear_regressor_welsch_fast import linear_regressor_welsch_objective_func, linear_regressor_welsch_weighted_derivs, linear_regressor_welsch_update_weights, linear_regressor_welsch_weighted_gnc_derivs
     from linear_regressor_evaluator_base import LinearRegressorEvaluatorBase
 
 class LinearRegressorWelschEvaluator(LinearRegressorEvaluatorBase):
@@ -37,3 +37,17 @@ class LinearRegressorWelschEvaluator(LinearRegressorEvaluatorBase):
         return linear_regressor_welsch_update_weights(influence_func_instance.sigma, model,
                                                       np.reshape(data[0], (len(data[0]), self._rsize, self._msize)),
                                                       weight[0], scale[0], residual, new_weight[0])
+
+    # to support calculation of GNC schedule
+    def weighted_gnc_derivs(self, model: npt.ArrayLike, model_ref, influence_func_instance,
+                            data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike) -> (np.array, np.array):
+        residual = np.zeros(self._rsize)
+        grad = np.zeros((self._rsize,self._msize))
+        aiv = np.zeros(self._rsize*self._msize)
+        A = np.zeros((self._rsize*self._msize,self._rsize*self._msize))
+        linear_regressor_welsch_weighted_gnc_derivs(influence_func_instance.sigma, model,
+                                                    np.reshape(data[0], (len(data[0]), self._rsize, self._msize)),
+                                                    weight[0], scale[0], residual, grad, aiv, A)
+        return aiv, A
+
+    

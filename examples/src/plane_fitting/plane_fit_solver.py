@@ -82,8 +82,10 @@ def main(test_run:bool, output_folder:str="../../../output"):
     q = 0.6667
     sigma = sigma_pop/q
     sigma_limit = np.max(data[:,2]) - np.min(data[:,2])
+    model_size_est = np.array([1.0/xy_range, 1.0/xy_range, 1.0])
     linear_regressor = LinearRegressorWelsch(sigma, sigma_limit=sigma_limit,
-                                             num_sigma_steps=20, use_slow_version=False, debug=True)
+                                             num_sigma_steps=20, model_size_est=model_size_est, use_slow_version=False, debug=True,
+                                             messages_file=sys.stdout)
     if linear_regressor.run(data):
         final_plane = linear_regressor.final_model
         final_weight = linear_regressor.final_weight
@@ -101,7 +103,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         show_3d(data, final_weight, mesh_size, plane_vertices)
 
     # change to True if you want to see the progress of the algorithm
-    if False: #not test_run:
+    if True: #not test_run:
         print("Intermediate model values:")
         for plane in debug_plane_list:
             if not test_run:
