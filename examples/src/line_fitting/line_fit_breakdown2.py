@@ -267,8 +267,11 @@ def check_breakdown4():
                     param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base=sig)
                     evaluator_instance = LinearRegressorWelschEvaluator(data[0])
                     optimiser_instance = SupGaussNewton(param_instance, data, evaluator_instance=evaluator_instance)
-                    a, A = optimiser_instance.weighted_derivs(np.array([0.0,0.0]), 1.0) # lambda_b
+                    a, A = optimiser_instance.weighted_derivs(np.array([0.0,0.0]), 0.0) # lambda_b
                     detA = A[0,0]*A[1,1]-A[0,1]*A[1,0]
+                    if detA <= 0.0:
+                        print("Negative determinant!!!")
+
                     detA_list.append(float(detA))
                     optc_list = optimiser_instance.objective_func(np.array([0.0,0.0])) - optimiser_instance.objective_func(np.array([aout,bout]))
 
@@ -322,11 +325,11 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
     #check_erf_approx(2.0, -1.0)
     #check_line_segment_func(1.3, -0.3, 0.1)
     #check_line_segment_func(-3.0, 0.5, 1.5)
-    check_breakdown()
-    check_breakdown2()
-    check_breakdown3()
+    #check_breakdown()
+    #check_breakdown2()
+    #check_breakdown3()
     check_breakdown4()
-    check_breakdown5()
+    #check_breakdown5()
 
     outlier_ratio = 0.5-0.0001
     n_points = 20 if quick_run else 100

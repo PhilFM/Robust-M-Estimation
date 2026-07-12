@@ -36,8 +36,8 @@ def test_with_sigma(line_gt, data_x, data_y, sigma: float, output_folder: str, t
     # linear regression fitter y = a*x + b
     x_range = max(data_x) - min(data_x)
     y_range = max(data_y) - min(data_y)
-    line_fitter = LinearRegressorWelsch(sigma, sigma_limit=y_range, num_sigma_steps=10, debug=True, max_niterations=200)
-    #model_size_est=np.array([1.0/x_range, 1.0])) #, messages_file=sys.stdout)
+    line_fitter = LinearRegressorWelsch(sigma, sigma_limit=y_range, num_sigma_steps=10, debug=True, max_niterations=200, messages_file=sys.stdout)
+    #model_size_est=np.array([1.0/x_range, 1.0])) #, 
     if line_fitter.run((data_x, data_y)):
         coeff = line_fitter.final_coeff
         intercept = line_fitter.final_intercept
@@ -227,6 +227,14 @@ def main(test_run:bool, output_folder:str="../../../output"):
     # with small error estimate we will fit to the good data only
     p = 0.6667
     sigma_base = sigma_pop/p
+    test_with_sigma(line_gt, data_x, data_y, sigma_base, output_folder, test_run)
+
+    print("data_x=",data_x)
+    for i in range(0,n_good_points+n_bad_points):
+        data_x[i] = 0.2*data_x[i] + 40.0
+        data_y[i] += 25.0 # + 0.2*data_x[i]
+
+    print("data_x(B)=",data_x)
     test_with_sigma(line_gt, data_x, data_y, sigma_base, output_folder, test_run)
     #for test_idx in range(10):
     #    test_with_sigma_pseudo_huber(line_gt, data_x, data_y, sigma_pop/p, output_folder, test_run)

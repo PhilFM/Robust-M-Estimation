@@ -368,14 +368,14 @@ class SupGaussNewton(BaseIRLS):
             tot = self.objective_func(model, model_ref=model_ref)
             tot_diff = self._param_instance.influence_func_instance.objective_func_sign() * (tot - last_tot)
 
-            # only check for termination if we have reached the end of any GNC schedule
-            if self._diff_thres is not None and gnc_alpha == 1.0:
+            # check for termination if we have reached the end of any GNC schedule (gnc_alpha == 1)
+            if self._diff_thres is not None:
                 model_max_diff = np.linalg.norm(at, ord=np.inf)
                 if self._debug is True and model_max_diff > 0.0:
                     self.debug_diffs.append(math.log10(model_max_diff))
                     self.debug_diff_alpha.append(gnc_alpha)
 
-                if tot_diff <= 0.0 and model_max_diff < self._diff_thres:
+                if gnc_alpha == 1.0 and tot_diff <= 0.0 and model_max_diff < self._diff_thres:
                     if self._messages_file is not None:
                         print("Difference threshold reached", file=self._messages_file)
 

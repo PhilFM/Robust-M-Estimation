@@ -21,6 +21,8 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
     if not test_run:
         print("diffs_welsch_sup_gn:",diffs_welsch_sup_gn)
         print("diffs_welsch_irls:",diffs_welsch_irls)
+        print("diff_alpha_welsch_sup_gn:",diff_alpha_welsch_sup_gn)
+        print("diff_alpha_welsch_irls:",diff_alpha_welsch_irls)
 
     plt.close("all")
     plt.figure(num=1, dpi=240)
@@ -34,7 +36,7 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                         lw=0.2, xvalues = np.arange(0,idx+1), add_label=False, markersize=1.0)
 
     gncs_draw_curve(plt, diffs_welsch_sup_gn[idx:], ("SupGN", "Welsch", "GNC_Welsch"),
-                    xvalues = np.arange(idx,len(diffs_welsch_sup_gn)))
+                    lw=1.4, xvalues = np.arange(idx,len(diffs_welsch_sup_gn)), markersize=3.0)
 
     idx = np.argmax(diff_alpha_welsch_irls)
     if idx > 0:
@@ -42,7 +44,7 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                         lw=0.2, xvalues = np.arange(0,idx+1), add_label=False, markersize=1.0)
 
     gncs_draw_curve(plt, diffs_welsch_irls[idx:], ("IRLS",  "Welsch", "GNC_Welsch"),
-                    xvalues = np.arange(idx,len(diffs_welsch_irls)))
+                    lw=1.4, xvalues = np.arange(idx,len(diffs_welsch_irls)), markersize=3.0)
 
     ax.set_xlabel(r'Iteration count' )
     ax.set_ylabel(r'log(difference)')
@@ -81,7 +83,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         q = 0.66667
         sigma_base = sigma_pop/q
         sigma_limit = max(data[:,1]) - min(data[:,1]) if with_gnc else sigma_base
-        num_sigma_steps = 10
+        num_sigma_steps = 20
         max_niterations = 100
         messages_file = None
 
