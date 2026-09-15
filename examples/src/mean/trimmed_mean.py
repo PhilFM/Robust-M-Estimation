@@ -6,7 +6,7 @@ from weighted_mean import weighted_mean
 def trimmed_mean(data:npt.ArrayLike, trim_size: int, weight:npt.ArrayLike=None):
     # if array would be deleted by trim, return the median
     if 2*trim_size >= len(data):
-        return np.median(data)
+        return np.array([np.median(data)])
 
     # first sort the data
     rdata = data.reshape(len(data))

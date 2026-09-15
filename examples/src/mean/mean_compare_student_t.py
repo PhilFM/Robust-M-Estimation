@@ -15,7 +15,7 @@ from mean_compare_apply import mean_compare_apply
 def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=False):
     sigma_pop = 1.0
     welsch_q = 0.62
-    pseudo_huber_sigma_scale = 0.6
+    huber_sigma_scale = 0.6
     gnc_irls_p_epsilon_scale = 1.4
     rme_beta_scale = 0.95
 
@@ -50,58 +50,59 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
                 min_n_samples,
                 0.0,
                 welsch_q,
-                pseudo_huber_sigma_scale,
+                huber_sigma_scale,
                 gnc_irls_p_epsilon_scale,
                 rme_beta_scale,
                 student_t_dof=student_t_dof,
                 output_file_1=output_file_1,
                 output_file_2=output_file_2,
                 test_run=test_run,
-                output_folder=output_folder)
+                output_folder=output_folder,
+                just_simple_algorithms=False)
 
-            eff = sigma_pop*sigma_pop/(n*alg_result.sd_gnc_welsch*alg_result.sd_gnc_welsch)
+            eff = sigma_pop*sigma_pop/(n*alg_result.var_gnc_welsch)
             if not test_run:
                 print("SUP-GN GNC-Welsch estimator efficiency: ", eff)
 
             eff_gncwelsch_list.append(eff)
 
-            eff = sigma_pop*sigma_pop/(n*alg_result.sd_mean*alg_result.sd_mean)
+            eff = sigma_pop*sigma_pop/(n*alg_result.var_mean)
             if not test_run:
                 print("Mean efficiency: ", eff)
 
             eff_mean_list.append(eff)
 
-            eff = sigma_pop*sigma_pop/(n*alg_result.sd_huber*alg_result.sd_huber)
+            eff = sigma_pop*sigma_pop/(n*alg_result.var_huber)
             if not test_run:
                 print("Pseudo-Huber estimator efficiency: ", eff)
 
             eff_huber_list.append(eff)
 
-            eff = sigma_pop*sigma_pop/(n*alg_result.sd_trimmed*alg_result.sd_trimmed)
+            eff = sigma_pop*sigma_pop/(n*alg_result.var_trimmed)
             if not test_run:
                 print("Trimmed mean 50% efficiency: ", eff)
 
             eff_trimmed_list.append(eff)
 
-            eff = sigma_pop*sigma_pop/(n*alg_result.sd_median*alg_result.sd_median)
+            eff = sigma_pop*sigma_pop/(n*alg_result.var_median)
             if not test_run:
                 print("Median efficiency: ", eff)
 
             eff_median_list.append(eff)
 
-            eff = sigma_pop*sigma_pop/(n*alg_result.sd_trimean*alg_result.sd_trimean)
+            eff = sigma_pop*sigma_pop/(n*alg_result.var_trimean)
             if not test_run:
                 print("Trimean efficiency: ", eff)
 
             eff_trimean_list.append(eff)
 
-            eff = sigma_pop*sigma_pop/(n*alg_result.sd_gnc_irls_p*alg_result.sd_gnc_irls_p)
+            eff = sigma_pop*sigma_pop/(n*alg_result.var_gnc_irls_p)
             if not test_run:
                 print("GNC IRLS-p estimator efficiency: ", eff)
 
             eff_gncirlsp_list.append(eff)
 
-            eff = sigma_pop*sigma_pop/(n*alg_result.sd_rme*alg_result.sd_rme)
+            eff = sigma_pop*sigma_pop/(n*alg_result.var_rme)
             if not test_run:
                 print("Robust Mean Estimator efficiency: ", eff)
 
@@ -111,7 +112,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
         plt.figure(num=1, dpi=240)
         plt.clf()
         ax = plt.gca()
-        gncs_draw_curve(plt, eff_gncwelsch_list,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_gncwelsch_list,    ("SupGN",  "Welsch",      "GNC_Welsch"), xvalues=student_t_dof_list)
         gncs_draw_curve(plt, eff_mean_list,         ("Mean",   "Basic",       ""          ), xvalues=student_t_dof_list)
         gncs_draw_curve(plt, eff_trimmed_list,      ("Mean",   "Trimmed",     ""          ), xvalues=student_t_dof_list)
         gncs_draw_curve(plt, eff_median_list,       ("Median", "Basic",       ""          ), xvalues=student_t_dof_list)
@@ -125,7 +126,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
         ax.set_ylim(0.0,1.1)
 
         plt.legend()
-        plt.savefig(os.path.join(output_folder, "compare_student_t_n" + str(n) + "_lref.png"), bbox_inches='tight')
+        plt.savefig(os.path.join(output_folder, "mean_efficiency_student_t_n" + str(n) + "_lref.png"), bbox_inches='tight')
         if not test_run:
             plt.show()
 
@@ -133,10 +134,10 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
         plt.figure(num=1, dpi=240)
         plt.clf()
         ax = plt.gca()
-        gncs_draw_curve(plt, eff_gncwelsch_list,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=student_t_dof_list)
-        gncs_draw_curve(plt, eff_huber_list,        ("IRLS",   "PseudoHuber", "Welsch"    ), xvalues=student_t_dof_list)
-        gncs_draw_curve(plt, eff_gncirlsp_list,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), xvalues=student_t_dof_list)
-        gncs_draw_curve(plt, eff_rme_list,          ("RME",    "",            ""          ), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_gncwelsch_list,    ("SupGN",  "Welsch",      "GNC_Welsch" ), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_huber_list,        ("IRLS",   "PseudoHuber", "PseudoHuber"), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_gncirlsp_list,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0" ), xvalues=student_t_dof_list)
+        gncs_draw_curve(plt, eff_rme_list,          ("RME",    "",            ""           ), xvalues=student_t_dof_list)
 
         ax.set_xlabel(r'Degrees of freedom' )
         ax.set_ylabel('Relative efficiency')
@@ -146,7 +147,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
         ax.set_ylim(0.0,1.1)
 
         plt.legend()
-        plt.savefig(os.path.join(output_folder, "compare_student_t_n" + str(n) + "_mref.png"), bbox_inches='tight')
+        plt.savefig(os.path.join(output_folder, "mean_efficiency_student_t_n" + str(n) + "_mref.png"), bbox_inches='tight')
         if not test_run:
             plt.show()
 

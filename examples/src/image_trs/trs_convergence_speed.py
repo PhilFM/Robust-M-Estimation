@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -51,14 +52,17 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
         plt.show()
 
 def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/image_trs"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     np.random.seed(0) # We want the numbers to be the same on each run
     with_gnc = True
 
     for test_idx in range(0,4):
         model_gt = [2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5), 2.0*(np.random.rand()-0.5)]
-        n = 6
+        n = 20
         data = np.zeros((n*n,4))
-        outlier_fraction = 0.0
+        outlier_fraction = 0.2
         noise_level = 0.4
         for i in range(n):
             for j in range(n):
@@ -91,20 +95,22 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
                                           sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-        sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=model_instance,
+        sup_gn_instance = SupGaussNewton(param_instance, model_instance=model_instance,
                                          max_niterations=max_niterations, diff_thres=diff_thres,
+                                         model_start = None if with_gnc else model_start,
                                          messages_file=messages_file,
                                          debug=True,
                                          lambda_start=1.0)
-        if sup_gn_instance.run(model_start = None if with_gnc else model_start):
+        if sup_gn_instance.fit(data):
             diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(sup_gn_instance.debug_diff_alpha)
 
-        irls_instance = IRLS(param_instance, data, model_instance=model_instance,
+        irls_instance = IRLS(param_instance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
+                             model_start = None if with_gnc else model_start,
                              messages_file=messages_file,
                              debug=True)
-        irls_instance.run(model_start = None if with_gnc else model_start) # this can fail but we don't care in this context
+        irls_instance.fit(data) # this can fail but we don't care in this context
         diffs_welsch_irls = irls_instance.debug_diffs
         diff_alpha_welsch_irls = np.array(sup_gn_instance.debug_diff_alpha)
     

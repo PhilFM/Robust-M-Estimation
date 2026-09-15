@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 import sys
 from typing import TextIO
 
@@ -23,6 +24,7 @@ class LinearRegressorBase:
             lambda_scale: float = 1.2,
             lambda_thres: float = 0.0,
             diff_thres: float = 1.e-10,
+            model_start: npt.ArrayLike = None,
             model_size_est: np.array = None,
             use_slow_version: bool = False,
             messages_file: TextIO = None,
@@ -34,10 +36,11 @@ class LinearRegressorBase:
         self.__lambda_scale = lambda_scale
         self.__lambda_thres = lambda_thres
         self.__diff_thres = diff_thres
+        self._set_model_start(model_start)
         self.__model_size_est = model_size_est
         self._use_slow_version = use_slow_version
-        self.__messages_file = messages_file
-        self.__debug = debug
+        self._messages_file = messages_file
+        self._debug = debug
 
     # check for scipy style X/y "training data/target" arguments, and convert to single data array
     def convert_data(self, data):
@@ -83,46 +86,49 @@ class LinearRegressorBase:
         modelp = model.reshape((rsize,msize))
         return (modelp[:,:msize-1], modelp[:,msize-1:].reshape(rsize))
 
+    def _set_model_start(
+            self,
+            model_start: npt.ArrayLike = None):
+        self.__model_start = model_start
+
     def run_base(self,
                  data,
                  param_instance,
                  evaluator_instance, # only set if use_slow_version is False
                  weight: np.array,
-                 scale: np.array,
-                 model_start):
-        optimiser_instance = SupGaussNewton(param_instance, data,
+                 scale: np.array):
+        optimiser_instance = SupGaussNewton(param_instance,
                                             model_instance = LinearRegressor(data[0]) if self._use_slow_version else None,
                                             evaluator_instance = evaluator_instance,
-                                            weight=weight, scale=scale,
                                             max_niterations=self.__max_niterations,
                                             lambda_start=self.__lambda_start,
                                             lambda_max=self.__lambda_max,
                                             lambda_scale=self.__lambda_scale,
                                             lambda_thres=self.__lambda_thres,
                                             diff_thres=self.__diff_thres,
+                                            model_start=self.__model_start,
                                             model_size_est=self.__model_size_est,
-                                            messages_file=self.__messages_file,
-                                            debug=self.__debug)
-        if optimiser_instance.run(model_start=model_start):
-            if self.__data_is_tuple:
-                self.final_coeff,self.final_intercept = self.__convert_model(optimiser_instance.final_model, data[0])
-            else:
-                self.final_model = optimiser_instance.final_model
-
-            self.final_weight = optimiser_instance.final_weight
-            if self.__debug:
-                self.debug_diffs = optimiser_instance.debug_diffs
-                self.debug_diff_alpha = optimiser_instance.debug_diff_alpha
-                if self.__data_is_tuple:
-                    self.debug_model_list = [(model[0], self.__convert_model(model[1], data[0]), model[2]) for model in optimiser_instance.debug_model_list]
-                else:
-                    self.debug_model_list = optimiser_instance.debug_model_list
-
-                self.debug_weighted_derivs_time = optimiser_instance.debug_weighted_derivs_time
-                self.debug_solve_time = optimiser_instance.debug_solve_time
-                self.debug_total_time = optimiser_instance.debug_total_time
-                self.debug_n_iterations = optimiser_instance.debug_n_iterations
-
-            return True
+                                            messages_file=self._messages_file,
+                                            debug=self._debug)
+        res = optimiser_instance.fit(data, weight=weight, scale=scale)
+        if self.__data_is_tuple:
+            self.final_coeff,self.final_intercept = self.__convert_model(optimiser_instance.final_model, data[0])
         else:
-            return False
+            self.final_model = optimiser_instance.final_model
+
+        self.final_objective_val = optimiser_instance.final_objective_val
+        self.final_weight = optimiser_instance.final_weight
+        if self._debug:
+            self.debug_diffs = optimiser_instance.debug_diffs
+            self.debug_diff_alpha = optimiser_instance.debug_diff_alpha
+            if self.__data_is_tuple:
+                self.debug_model_list = [(model[0], self.__convert_model(model[1], data[0]), model[2], model[3]) for model in optimiser_instance.debug_model_list]
+            else:
+                self.debug_model_list = optimiser_instance.debug_model_list
+
+            self.debug_weighted_derivs_time = optimiser_instance.debug_weighted_derivs_time
+            self.debug_solve_time = optimiser_instance.debug_solve_time
+            self.debug_total_time = optimiser_instance.debug_total_time
+            self.debug_n_iterations = optimiser_instance.debug_n_iterations
+
+        return res

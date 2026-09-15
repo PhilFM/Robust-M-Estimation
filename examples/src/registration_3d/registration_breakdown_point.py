@@ -1,21 +1,14 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
-import matplotlib.pyplot as plt
-import os
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
 
 from gnc_smoothie.sup_gauss_newton import SupGaussNewton
-from gnc_smoothie.irls import IRLS
 from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
-from gnc_smoothie.gnc_irls_p_params import GNC_IRLSpParams
-from gnc_smoothie.gnc_null_params import GNC_NullParams
 from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
-from gnc_smoothie.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
-from gnc_smoothie.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
-from gnc_smoothie.plt_alg_vis import gncs_draw_curve
 
 sys.path.append("../misc")
 from minimiser import minimiser
@@ -23,6 +16,9 @@ from minimiser import minimiser
 from point_registration import PointRegistration
 
 def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/registration_3d"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     np.random.seed(0) # We want the numbers to be the same on each run
     n_xyz_samples = 3 # along each of the 3 dimensions
     n_good_samples = n_xyz_samples*n_xyz_samples*n_xyz_samples
@@ -31,7 +27,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
     # f(0) = 0, f(0.1) = 0.11111, f(0.5) = 1, f(1) = inf
     # or = x/(1+x), or + x*or = x, x*(1-or) = or, x = or/(1-or)
     n_bad_samples = int(0.5 + n_good_samples*outlier_ratio/(1.0 - outlier_ratio))
-    N = n_good_samples + n_bad_samples
+    n_points = n_good_samples + n_bad_samples
     sigma = 0.5 # noise
     sigma_limit = 10.0
     welsch_p = 0.666667
@@ -51,8 +47,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         if not test_run:
             print("Ground truth R=",R_gt,"t=",t_gt)
 
-        data = np.zeros((N,2,3))
-        weight = np.ones(N)
+        data = np.zeros((n_points,2,3))
 
         xyz_range = 1.0
         sample = 0
@@ -71,7 +66,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
                     RXpt = RX + t_gt
                     data[i][1] = RXpt
 
-        for i in range(n_good_samples,N):
+        for i in range(n_good_samples,n_points):
             data[i][0][0] = xyz_range*(np.random.rand() - 0.5)
             data[i][0][1] = xyz_range*(np.random.rand() - 0.5)
             data[i][0][2] = xyz_range*(np.random.rand() - 0.5)
@@ -82,7 +77,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
         welsch_param_instance = GNC_WelschParams(WelschInfluenceFunc(),
                                                  sigma_base=sigma_base, sigma_limit=sigma_limit,
                                                  num_sigma_steps=num_sigma_steps)
-        optimiser_instance = SupGaussNewton(welsch_param_instance, data, model_instance=PointRegistration())
+        optimiser_instance = SupGaussNewton(welsch_param_instance, model_instance=PointRegistration())
+        optimiser_instance._set_data(data)
         optimiser_instance._param_instance.reset(init=False)
 
         def objective_func(x: np.array) -> float:

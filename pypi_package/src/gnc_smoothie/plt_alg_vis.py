@@ -11,9 +11,30 @@ model_values[key]["lw"] = 1.0
 
 key = ("SupGN", "Welsch", "GNC_Welsch")
 model_values[key] = {}
-model_values[key]["label"] = "GNC SUP-GN Welsch"
+model_values[key]["label"] = "GNC Sup-GN Welsch"
 model_values[key]["colour"] = "green"
 model_values[key]["linestyle"] = "solid"
+model_values[key]["lw"] = 1.0
+
+key = ("SupGN", "Welsch", "SS")
+model_values[key] = {}
+model_values[key]["label"] = "GNC SS Sup-GN"
+model_values[key]["colour"] = "turquoise"
+model_values[key]["linestyle"] = "solid"
+model_values[key]["lw"] = 1.0
+
+key = ("MM-Estimation", "Tukey-Bisquare", "Small-Rho")
+model_values[key] = {}
+model_values[key]["label"] = "MM Estimation small rho"
+model_values[key]["colour"] = "darkorange"
+model_values[key]["linestyle"] = (0, (2, 2))
+model_values[key]["lw"] = 1.0
+
+key = ("MM-Estimation", "Tukey-Bisquare", "Large-Rho")
+model_values[key] = {}
+model_values[key]["label"] = "MM Estimation"
+model_values[key]["colour"] = "springgreen"
+model_values[key]["linestyle"] = "dotted"
 model_values[key]["lw"] = 1.0
 
 key = ("IRLS", "Welsch", "GNC_Welsch")
@@ -30,18 +51,32 @@ model_values[key]["colour"] = "green"
 model_values[key]["linestyle"] = "dotted"
 model_values[key]["lw"] = 1.5
 
-key = ("SupGN", "PseudoHuber", "Welsch")
+key = ("SupGN", "PseudoHuber", "PseudoHuber")
 model_values[key] = {}
 model_values[key]["label"] = "SUP-GN Pseudo-Huber"
 model_values[key]["colour"] = "brown"
 model_values[key]["linestyle"] = "dashed"
 model_values[key]["lw"] = 1.0
 
-key = ("IRLS", "PseudoHuber", "Welsch")
+key = ("IRLS", "PseudoHuber", "PseudoHuber")
 model_values[key] = {}
 model_values[key]["label"] = "IRLS Pseudo-Huber"
 model_values[key]["colour"] = "blue"
 model_values[key]["linestyle"] = (0, (5, 1))
+model_values[key]["lw"] = 1.0
+
+key = ("SupGN", "GNC_IRLSp", "GNC_IRLSp0")
+model_values[key] = {}
+model_values[key]["label"] = "GNC IRLS-p0"
+model_values[key]["colour"] = "purple"
+model_values[key]["linestyle"] = "dashdot"
+model_values[key]["lw"] = 1.0
+
+key = ("SupGN", "GNC_IRLSp", "GNC_IRLSp1")
+model_values[key] = {}
+model_values[key]["label"] = "GNC IRLS-p1"
+model_values[key]["colour"] = "mediumpurple"
+model_values[key]["linestyle"] = (0, (5, 1, 1, 1))
 model_values[key]["lw"] = 1.0
 
 key = ("IRLS", "GNC_IRLSp", "GNC_IRLSp0")
@@ -93,10 +128,17 @@ model_values[key]["colour"] = "deepskyblue"
 model_values[key]["linestyle"] = (0, (4, 1))
 model_values[key]["lw"] = 1.0
 
+key = ("Theil-Sen", "", "")
+model_values[key] = {}
+model_values[key]["label"] = "Theil-Sen"
+model_values[key]["colour"] = "darkkhaki"
+model_values[key]["linestyle"] = (0, (3, 1, 1, 1))
+model_values[key]["lw"] = 1.0
+
 key = ("RANSAC", "", "")
 model_values[key] = {}
 model_values[key]["label"] = "RANSAC"
-model_values[key]["colour"] = "darkorange"
+model_values[key]["colour"] = "deeppink"
 model_values[key]["linestyle"] = (0, (2, 2))
 model_values[key]["lw"] = 1.0
 

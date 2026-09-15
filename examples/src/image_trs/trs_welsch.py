@@ -25,18 +25,18 @@ class TRSWelsch:
         self.__messages_file = messages_file
         self.__debug = debug
 
-    def run(self,
+    def fit(self,
             data,
             weight: np.array = None,
             scale: np.array = None):
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), self.__sigma,
                                           sigma_limit=self.__sigma_limit, num_sigma_steps=self.__num_sigma_steps)
-        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=TRS(), weight=weight, scale=scale,
+        optimiser_instance = SupGaussNewton(param_instance, model_instance=TRS(),
                                             max_niterations=self.__max_niterations,
                                             diff_thres=self.__diff_thres,
                                             messages_file=self.__messages_file,
                                             debug=self.__debug)
-        if optimiser_instance.run():
+        if optimiser_instance.fit(data, weight=weight, scale=scale):
             self.final_trs = optimiser_instance.final_model
             self.final_weight = optimiser_instance.final_weight
             if self.__debug:

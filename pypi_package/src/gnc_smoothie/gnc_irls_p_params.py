@@ -48,6 +48,9 @@ class GNC_IRLSpParams:
             else 1.0
         )
 
+    def params(self):
+        return self.influence_func_instance.params()
+
     def filter_size(self) -> float:
         return self.influence_func_instance.epsilon/self.influence_func_instance.rscale
 

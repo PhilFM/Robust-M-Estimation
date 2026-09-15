@@ -102,11 +102,12 @@ def main(test_run:bool, output_folder:str="../../../output"):
     
         welschParamInstance = GNC_WelschParams(WelschInfluenceFunc(), welsch_sigma,
                                                sigma_limit=welsch_sigma_limit, num_sigma_steps=num_sigma_steps)
-        sup_gn_instance = SupGaussNewton(welschParamInstance, data, model_instance=model_instance,
+        sup_gn_instance = SupGaussNewton(welschParamInstance, model_instance=model_instance,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
+                                         model_start = None if with_gnc else model_start,
                                          messages_file=None, debug=True)
-        if sup_gn_instance.run(model_start = None if with_gnc else model_start):
+        if sup_gn_instance.fit(data):
             m = sup_gn_instance.final_model
             n_iterations = sup_gn_instance.debug_n_iterations
             diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
@@ -118,12 +119,12 @@ def main(test_run:bool, output_folder:str="../../../output"):
                 print("GNC Welsch SUP-GN diff alpha=",diff_alpha_welsch_sup_gn)
                 print("GNC Welsch SUP-GN times weighted_derivs",sup_gn_instance.debug_weighted_derivs_time,"solve",sup_gn_instance.debug_solve_time,"total",sup_gn_instance.debug_total_time)
 
-        irls_instance = IRLS(welschParamInstance, data, model_instance=model_instance,
+        irls_instance = IRLS(welschParamInstance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
-                             messages_file=None,
                              model_start = None if with_gnc else model_start,
+                             messages_file=None,
                              debug=True)
-        if irls_instance.run():
+        if irls_instance.fit(data):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
             diffs_welsch_irls = irls_instance.debug_diffs
@@ -136,11 +137,12 @@ def main(test_run:bool, output_folder:str="../../../output"):
                 print("GNC Welsch IRLS times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"total",irls_instance.debug_total_time)
 
         pseudoHuberParamInstance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma=welsch_sigma))
-        sup_gn_instance = SupGaussNewton(pseudoHuberParamInstance, data, model_instance=model_instance,
+        sup_gn_instance = SupGaussNewton(pseudoHuberParamInstance, model_instance=model_instance,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
+                                         model_start = None if with_gnc else model_start,
                                          messages_file=None, debug=True)
-        if sup_gn_instance.run(model_start = None if with_gnc else model_start):
+        if sup_gn_instance.fit(data):
             m = sup_gn_instance.final_model
             n_iterations = sup_gn_instance.debug_n_iterations
             diffs_pseudo_huber_sup_gn = sup_gn_instance.debug_diffs
@@ -152,10 +154,11 @@ def main(test_run:bool, output_folder:str="../../../output"):
                 print("Pseudo-Huber G-N diff alpha=",diff_alpha_pseudo_huber_sup_gn)
                 print("Pseudo-Huber G-N times weighted_derivs",sup_gn_instance.debug_weighted_derivs_time,"solve",sup_gn_instance.debug_solve_time,"total",sup_gn_instance.debug_total_time)
 
-        irls_instance = IRLS(pseudoHuberParamInstance, data, model_instance=model_instance,
+        irls_instance = IRLS(pseudoHuberParamInstance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
+                             model_start = None if with_gnc else model_start,
                              messages_file=None, debug=True)
-        if irls_instance.run(model_start = None if with_gnc else model_start):
+        if irls_instance.fit(data):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
             diffs_pseudo_huber_irls = irls_instance.debug_diffs
@@ -175,10 +178,11 @@ def main(test_run:bool, output_folder:str="../../../output"):
         gncIrlspParamInstance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                 0.0, gncIrlsp_rscale, gncIrlsp_epsilon_base,
                                                 epsilon_limit=gncIrlsp_epsilon_limit, beta=gncIrlsp_beta)
-        irls_instance = IRLS(gncIrlspParamInstance, data, model_instance=model_instance,
+        irls_instance = IRLS(gncIrlspParamInstance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
+                             model_start = None if with_gnc else model_start,
                              messages_file=None, debug=True)
-        if irls_instance.run(model_start = None if with_gnc else model_start):
+        if irls_instance.fit(data):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
             diffs_gnc_irls_p0 = irls_instance.debug_diffs
@@ -191,10 +195,11 @@ def main(test_run:bool, output_folder:str="../../../output"):
                 print("GNC IRLS-p0 times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"total",irls_instance.debug_total_time)
 
         gncIrlspParamInstance.influence_func_instance.p = 1.0
-        irls_instance = IRLS(gncIrlspParamInstance, data, model_instance=model_instance,
+        irls_instance = IRLS(gncIrlspParamInstance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
+                             model_start = None if with_gnc else model_start,
                              messages_file=None, debug=True)
-        if irls_instance.run(model_start = None if with_gnc else model_start):
+        if irls_instance.fit(data):
             m = irls_instance.final_model
             n_iterations = irls_instance.debug_n_iterations
             diffs_gnc_irls_p1 = irls_instance.debug_diffs

@@ -63,31 +63,37 @@ def main(test_run:bool, output_folder:str="../../../output"):
     rscale = 1.0
     epsilon = 0.1
     param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), p, rscale, epsilon)
-    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0], numeric_derivs_influence=True),
-                [1.0, 2.0], "GNC IRLSp0 influence function", output_folder, "gnc_irls_p0_majorizers", test_run)
+    optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance, numeric_derivs_influence=True)
+    optimiser_instance._set_data(np.array([[0.0]]), weight=[1.0])
+    plot_result(optimiser_instance, [1.0, 2.0], "GNC IRLSp0 influence function", output_folder, "gnc_irls_p0_majorizers", test_run)
 
     p = 0.5
     param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), p, rscale, epsilon)
-    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0], numeric_derivs_influence=True),
-                [1.0, 2.0], "GNC IRLSp0.5 influence function", output_folder, "gnc_irls_ph_majorizers", test_run)
+    optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance, numeric_derivs_influence=True)
+    optimiser_instance._set_data(np.array([[0.0]]), weight=[1.0])
+    plot_result(optimiser_instance, [1.0, 2.0], "GNC IRLSp0.5 influence function", output_folder, "gnc_irls_ph_majorizers", test_run)
 
     p = 1.0
     param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), p, rscale, epsilon)
-    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0], numeric_derivs_influence=True),
-                [1.0, 2.0], "GNC IRLSp1 influence function", output_folder, "gnc_irls_p1_majorizers", test_run)
+    optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance, numeric_derivs_influence=True)
+    optimiser_instance._set_data(np.array([[0.0]]), weight=[1.0])
+    plot_result(optimiser_instance, [1.0, 2.0], "GNC IRLSp1 influence function", output_folder, "gnc_irls_p1_majorizers", test_run)
 
     sigma = 1.0
     param_instance = GNC_NullParams(WelschInfluenceFunc(sigma))
-    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0]),
-                [1.5, 2.0], "Welsch influence function", output_folder, "welsch_majorizers", test_run)
+    optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance)
+    optimiser_instance._set_data(np.array([[0.0]]), weight=[1.0])
+    plot_result(optimiser_instance, [1.5, 2.0], "Welsch influence function", output_folder, "welsch_majorizers", test_run)
 
     param_instance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma))
-    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0]),
-                [1.5, 2.0], "Pseudo-Huber influence function", output_folder, "pseudo_huber_majorizers", test_run)
+    optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance)
+    optimiser_instance._set_data(np.array([[0.0]]), weight=[1.0])
+    plot_result(optimiser_instance, [1.5, 2.0], "Pseudo-Huber influence function", output_folder, "pseudo_huber_majorizers", test_run)
     
     param_instance = GNC_NullParams(GemanMcClureInfluenceFunc(sigma))
-    plot_result(SupGaussNewton(param_instance, np.array([[0.0]]), model_instance=model_instance, weight=[1.0]),
-                [1.0, 2.0], "Geman-McClure influence function", output_folder, "geman_mcclure_majorizers", test_run)
+    optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance)
+    optimiser_instance._set_data(np.array([[0.0]]), weight=[1.0])
+    plot_result(optimiser_instance, [1.0, 2.0], "Geman-McClure influence function", output_folder, "geman_mcclure_majorizers", test_run)
 
     if test_run:
         print("majorize_examples OK")

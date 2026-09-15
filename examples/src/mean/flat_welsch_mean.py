@@ -72,7 +72,8 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
     max_x = 0.0
     sample_val = []
     param_instance = GNC_NullParams(WelschInfluenceFunc(sigma=sigma))
-    optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, scale=scale)
+    optimiser_instance = SupGaussNewton(param_instance, model_instance=LinearRegressor(data[0]))
+    optimiser_instance._set_data(data, weight=weight, scale=scale)
     for x in sample_x:
         v = optimiser_instance.objective_func([x])
         sample_val.append(v)
@@ -103,11 +104,12 @@ def flat_welsch_mean(data, sigma, weight=None, scale=None,
             print("scale=",scale, file=messages_file)
             plot_result(optimiser_instance, data, weight, x, sigma, "Init m", m_gt, output_folder, test_run)
 
-        sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, scale=scale,
+        sup_gn_instance = SupGaussNewton(param_instance, model_instance=LinearRegressor(data[0]),
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=0.99, lambda_max=0.99, diff_thres=diff_thres,
+                                         model_start=[x],
                                          messages_file=messages_file)
-        if sup_gn_instance.run(model_start=[x]):
+        if sup_gn_instance.fit(data, weight=weight, scale=scale):
             m = sup_gn_instance.final_model
             testVal = optimiser_instance.objective_func([m])
             if testVal > max_val:

@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -13,6 +14,9 @@ from gnc_smoothie.check_derivs import check_derivs
 from point_registration import PointRegistration
 
 def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/registration_3d"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     np.random.seed(0) # We want the numbers to be the same on each run
 
     n = 10
@@ -42,8 +46,9 @@ def main(test_run:bool, output_folder:str="../../../output"):
             data[i][1][2] += noise_sigma*np.random.normal(0.0, 1.0)
 
         all_good = True
-        if check_derivs(SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), data, model_instance=PointRegistration(), weight=weight),
-                        np.array([0.0,0.0,0.0,t[0],t[1],t[2]]), model_ref=R, diff_threshold_AlB=1.e-4, print_derivs=False, print_diffs=False) is False:
+        optimiser_instance = SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), model_instance=PointRegistration())
+        optimiser_instance._set_data(data, weight=weight)
+        if check_derivs(optimiser_instance, np.array([0.0,0.0,0.0,t[0],t[1],t[2]]), model_ref=R, diff_threshold_AlB=1.e-4, print_derivs=False, print_diffs=False) is False:
             all_good = False
 
     if all_good:

@@ -4,7 +4,6 @@ import numpy.typing as npt
 from typing import TextIO
 import math
 
-
 class BaseIRLS:
     # number of types of data supported
     _dsize = 3
@@ -45,37 +44,21 @@ class BaseIRLS:
     def __init__(
         self,
         param_instance,
-        data: npt.ArrayLike,
         *,
         model_instance = None, # Python model
         evaluator_instance = None, # Cython model
-        weight: npt.ArrayLike = None,
-        scale: npt.ArrayLike = None,
-        data2=None,
-        weight2: npt.ArrayLike = None,
-        scale2: npt.ArrayLike = None,
-        data3=None,
-        weight3: npt.ArrayLike = None,
-        scale3: npt.ArrayLike = None,
         numeric_derivs_model: bool = False,
         numeric_derivs_influence: bool = False,
         max_niterations: int = 50,
         diff_thres: float = 1.0e-12,
-        messages_file: TextIO = None,
         model_start: npt.ArrayLike = None,
-        model_ref_start: npt.ArrayLike = None,
+        model_ref_start: npt.ArrayLike=None,
+        messages_file: TextIO = None,
         debug: bool = False,
     ):
         self._param_instance = param_instance
         self._model_instance = model_instance
         self._evaluator_instance = evaluator_instance
-
-        self._data = [None] * self._dsize
-        self._weight = [None] * self._dsize
-        self._scale = [None] * self._dsize
-        self.__assign_data(0, data, weight, scale)
-        self.__assign_data(1, data2, weight2, scale2)
-        self.__assign_data(2, data3, weight3, scale3)
 
         self.numeric_derivs_model = numeric_derivs_model
         self.numeric_derivs_influence = numeric_derivs_influence
@@ -86,14 +69,37 @@ class BaseIRLS:
 
         self._max_niterations = max_niterations
         self._diff_thres = diff_thres
+        self._set_model_start(model_start, model_ref_start)
         self._messages_file = messages_file
-        self._model_start = None if model_start is None else np.copy(model_start)
-        self._model_ref_start = None if model_ref_start is None else np.copy(model_ref_start)
         self._debug = debug
         self._linear_model_size = getattr(model_instance, "linear_model_size", None)
-
         self._residual_size = None
 
+    def _set_model_start(self,
+                         model_start: npt.ArrayLike = None,
+                         model_ref_start: npt.ArrayLike=None):
+        self._model_start = model_start
+        self._model_ref_start = model_ref_start
+
+    def _set_data(
+            self,
+            data: npt.ArrayLike,
+            *,
+            weight: npt.ArrayLike = None,
+            scale: npt.ArrayLike = None,
+            data2: npt.ArrayLike = None,
+            weight2: npt.ArrayLike = None,
+            scale2: npt.ArrayLike = None,
+            data3: npt.ArrayLike = None,
+            weight3: npt.ArrayLike = None,
+            scale3: npt.ArrayLike = None):
+        self._data = [None] * self._dsize
+        self._weight = [None] * self._dsize
+        self._scale = [None] * self._dsize
+        self.__assign_data(0, data, weight, scale)
+        self.__assign_data(1, data2, weight2, scale2)
+        self.__assign_data(2, data3, weight3, scale3)
+                
     def param_instance(self):
         return self._param_instance
 
@@ -135,6 +141,22 @@ class BaseIRLS:
                 return self._model_instance.residual_gradient2
             elif didx == 2:
                 return self._model_instance.residual_gradient3
+            else:
+                raise ValueError("Inconsistent data array index", didx)
+
+    def _get_model_residual_2nd_deriv_func(
+            self,
+            didx: int):
+        if didx >= self._dsize:
+            raise ValueError("Inconsistent data array index", didx)
+
+        if self._data[didx] is not None:
+            if didx == 0:
+                return self._model_instance.residual_2nd_deriv
+            elif didx == 1:
+                return self._model_instance.residual_2nd_deriv2
+            elif didx == 2:
+                return self._model_instance.residual_2nd_deriv3
             else:
                 raise ValueError("Inconsistent data array index", didx)
 
@@ -205,22 +227,20 @@ class BaseIRLS:
                 scale3=self._scale[2],
             )
 
-    def _init_model(
-            self,
-            model_start: npt.ArrayLike,
-            model_ref_start: npt.ArrayLike) -> None:
-        if model_start is None and model_ref_start is None:
+    def _init_model(self, weight: npt.ArrayLike = None):
+        if self._model_start is None and self._model_ref_start is None:
             if self._evaluator_instance is not None or callable(self._linear_model_size):
-                return self.weighted_fit()
+                return self.weighted_fit(weight_arr=weight)
             else:
-                return self.model_weighted_fit()
+                return self.model_weighted_fit(weight=weight)
         else:
-            return np.copy(model_start), np.copy(model_ref_start)
+            return np.copy(self._model_start), np.copy(self._model_ref_start)
 
     def _calc_residual_derivatives(
             self,
             model: npt.ArrayLike,
             *,
+            include_2nd_derivs: bool = False,
             model_ref=None,
             small_diff: float = 1.0e-5
     ) -> (np.ndarray, np.ndarray):
@@ -228,6 +248,11 @@ class BaseIRLS:
         self._model_instance.cache_model(model, model_ref=model_ref)
         residual_arr = [None] * self._dsize
         residual_gradient_arr = [None] * self._dsize
+        if include_2nd_derivs:
+            residual_2nd_deriv_arr = [None] * self._dsize
+        else:
+            residual_2nd_deriv_arr = None
+
         for didx in range(self._dsize):
             if self._data[didx] is not None and self._residual_size[didx] is not None:
                 model_residual_func = self._get_model_residual_func(didx)
@@ -239,6 +264,11 @@ class BaseIRLS:
                     (len(self._data[didx]), self._residual_size[didx], len(model))
                 )
 
+                if include_2nd_derivs:
+                    residual_2nd_deriv_arr[didx] = np.zeros(
+                        (len(self._data[didx]), self._residual_size[didx], len(model), len(model))
+                    )
+
                 # first the residuals
                 for i, d in enumerate(self._data[didx]):
                     residual_arr[didx][i] = model_residual_func(d)
@@ -246,30 +276,93 @@ class BaseIRLS:
                 # now the gradients
                 if self.numeric_derivs_model:
                     model_copy = np.copy(model)
+                    residual_n_arr = np.zeros(
+                        (len(model), len(self._data[didx]), self._residual_size[didx])
+                    )
+                    residual_p_arr = np.zeros(
+                        (len(model), len(self._data[didx]), self._residual_size[didx])
+                    )
+                    if include_2nd_derivs:
+                        residual_c_arr = np.zeros(
+                            (len(model), len(self._data[didx]), self._residual_size[didx])
+                        )
+                        residual_cross_arr = np.zeros(
+                            (len(model)*(len(model)-1)//2, len(self._data[didx]), self._residual_size[didx])
+                        )
+
+                    # first derivatives
                     for i in range(len(model)):
-                        model_copy[i] -= small_diff
                         self._model_instance.cache_model(
                             model_copy, model_ref=model_ref
                         )
-                        residual_n_arr = np.zeros(
-                            (len(self._data[didx]), self._residual_size[didx])
-                        )
-                        for j, d in enumerate(self._data[didx]):
-                            residual_n_arr[j] = model_residual_func(d)
+                        if include_2nd_derivs:
+                            for j, d in enumerate(self._data[didx]):
+                                residual_c_arr[i][j] = model_residual_func(d)
 
-                        model_copy[i] += 2.0 * small_diff
+                        model_copy[i] = model[i] - small_diff
                         self._model_instance.cache_model(
                             model_copy, model_ref=model_ref
                         )
                         for j, d in enumerate(self._data[didx]):
-                            residual = model_residual_func(d)
-                            for k in range(self._residual_size[didx]):
-                                residual_gradient_arr[didx][(j, k, i)] = (
-                                    0.5
-                                    * (residual[k] - residual_n_arr[j][k])
-                                    / small_diff
+                            residual_n_arr[i][j] = model_residual_func(d)
+
+                        if include_2nd_derivs:
+                            residual_nn_arr = np.zeros((i,len(self._data[didx]), self._residual_size[didx]))
+                            residual_np_arr = np.zeros((i,len(self._data[didx]), self._residual_size[didx]))
+                            for ii in range(0,i):
+                                model_copy[ii] = model[ii] - small_diff
+                                self._model_instance.cache_model(
+                                    model_copy, model_ref=model_ref
                                 )
+                                for j, d in enumerate(self._data[didx]):
+                                    residual_nn_arr[ii][j] = model_residual_func(d)
 
+                                model_copy[ii] = model[ii] + small_diff
+                                self._model_instance.cache_model(
+                                    model_copy, model_ref=model_ref
+                                )
+                                for j, d in enumerate(self._data[didx]):
+                                    residual_np_arr[ii][j] = model_residual_func(d)
+
+                                model_copy[ii] = model[ii]
+
+                        model_copy[i] = model[i] + small_diff
+                        self._model_instance.cache_model(
+                            model_copy, model_ref=model_ref
+                        )
+                        for j, d in enumerate(self._data[didx]):
+                            residual_p_arr[i][j] = model_residual_func(d)
+                            for k in range(self._residual_size[didx]):
+                                residual_gradient_arr[didx][(j, k, i)] = 0.5*(residual_p_arr[i][j][k] - residual_n_arr[i][j][k])/small_diff
+
+                        if include_2nd_derivs:
+                            # diagonal element i
+                            for j, d in enumerate(self._data[didx]):
+                                for k in range(self._residual_size[didx]):
+                                    residual_2nd_deriv_arr[didx][(j, k, i, i)] = (residual_n_arr[i][j][k] - 2.0*residual_c_arr[i][j][k] + residual_p_arr[i][j][k])/(small_diff*small_diff)
+
+                            # off-diagonal elements
+                            residual_pn_arr = np.zeros((i,len(self._data[didx]), self._residual_size[didx]))
+                            residual_pp_arr = np.zeros((i,len(self._data[didx]), self._residual_size[didx]))
+                            for ii in range(0,i):
+                                model_copy[ii] = model[ii] - small_diff
+                                self._model_instance.cache_model(
+                                    model_copy, model_ref=model_ref
+                                )
+                                for j, d in enumerate(self._data[didx]):
+                                    residual_pn_arr[ii][j] = model_residual_func(d)
+
+                                model_copy[ii] = model[ii] + small_diff
+                                self._model_instance.cache_model(
+                                    model_copy, model_ref=model_ref
+                                )
+                                for j, d in enumerate(self._data[didx]):
+                                    residual_pp_arr[ii][j] = model_residual_func(d)
+                                    for k in range(self._residual_size[didx]):
+                                        residual_2nd_deriv_arr[didx][(j, k, i, ii)] = residual_2nd_deriv_arr[didx][(j, k, ii, i)] = 0.25*(residual_nn_arr[ii][j][k] + residual_pp_arr[ii][j][k] - residual_pn_arr[ii][j][k] - residual_np_arr[ii][j][k])/(small_diff*small_diff)
+
+                                model_copy[ii] = model[ii]
+                                        
                         model_copy[i] = model[i]
                 else:
                     model_residual_gradient_func = (
@@ -278,7 +371,20 @@ class BaseIRLS:
                     for j, d in enumerate(self._data[didx]):
                         residual_gradient_arr[didx][j] = model_residual_gradient_func(d)
 
-        return residual_arr, residual_gradient_arr
+                    if include_2nd_derivs:
+                        model_residual_2nd_deriv_func = (
+                            self._get_model_residual_2nd_deriv_func(didx)
+                        )
+                        for j, d in enumerate(self._data[didx]):
+                            residual_2nd_deriv_arr[didx][j] = model_residual_2nd_deriv_func(d)
+                        
+        #print("residual_gradient_arr[0].shape=",residual_gradient_arr[0].shape)
+        #print("residual_gradient_arr[0][0]=",residual_gradient_arr[0][0])
+        #if include_2nd_derivs:
+        #    print("residual_2nd_deriv_arr[0].shape=",residual_2nd_deriv_arr[0].shape)
+        #    print("residual_2nd_deriv_arr[0][0]=",residual_2nd_deriv_arr[0][0])
+
+        return residual_arr, residual_gradient_arr, residual_2nd_deriv_arr
 
     def _initialize_residual_size_if_necessary(self) -> None:
         if self._residual_size is None:
@@ -297,7 +403,7 @@ class BaseIRLS:
             self._initialize_residual_size_if_necessary()
 
             small_diff = 1.0e-5  # in case numerical differentiation is specified
-            residual_arr, residual_gradient_arr = self._calc_residual_derivatives(
+            residual_arr, residual_gradient_arr, ignored_2nd_derivs = self._calc_residual_derivatives(
                 model, small_diff=small_diff
             )
 
@@ -381,27 +487,41 @@ class BaseIRLS:
                 weight
             )
             
-    def finalise(self,
-                 model,
-                 *,
-                 model_ref=None,
-                 AlB: np.ndarray = None,
-                 weight=None,
-                 itn:int=0,
-                 total_time=0):
+    def copy_weight(self):
+        weight = [None] * self._dsize
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                weight[didx] = np.copy(self._weight[didx])
+
+        return weight
+
+    def tot_weight(self, weight):
+        tot = 0.0
+        for didx in range(self._dsize):
+            if self._data[didx] is not None:
+                tot += np.sum(weight[didx])
+
+        return tot
+
+    def _finalise(self,
+                  model,
+                  *,
+                  model_ref=None,
+                  AlB: np.ndarray = None,
+                  weight=None,
+                  itn:int=0,
+                  total_time=0):
         self._param_instance.influence_func_instance.objective_func_sign()
         self._param_instance.reset(init=False)
         self._param_instance.influence_func_instance.objective_func_sign()
 
         self.final_model = model
         self.final_model_ref = model_ref
+        self.final_objective_val = self.objective_func(model, model_ref=model_ref)
         self.final_AlB = AlB
         
         if weight is None:
-            weight = [None] * self._dsize
-            for didx in range(self._dsize):
-                if self._data[didx] is not None:
-                    weight[didx] = np.copy(self._weight[didx])
+            weight = self.copy_weight()
 
         self.update_weights(model, weight, model_ref=model_ref)
         weight_scale = self._param_instance.influence_func_instance.objective_func_sign()*self._param_instance.influence_func_instance.rhop(0.0,1.0)
@@ -424,22 +544,3 @@ class BaseIRLS:
         if self._debug:
             self.debug_n_iterations = itn + 1
             self.debug_total_time = total_time
-
-    def variance(model: npt.ArrayLike) -> np.ndarray:
-        Atot = np.zeros((len(model), len(model)))
-        for didx in range(self._dsize):
-            if self._data[didx] is not None:
-                if weight_arr is None or weight_arr[didx] is None:
-                    weight = self._weight[didx]
-                else:
-                    weight = weight_arr[didx]
-
-                residual = residual_arr[didx]
-                residual_gradient = residual_gradient_arr[didx]
-                for i, (w, s) in enumerate(zip(weight, self._scale[didx], strict=True)):
-                    w /= s * s
-                    Atot += w * np.matmul(
-                        np.transpose(residual_gradient[i]), residual_gradient[i]
-                    )
-
-        return Atot

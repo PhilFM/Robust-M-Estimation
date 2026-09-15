@@ -36,3 +36,8 @@ class GemanMcClureInfluenceFunc:
 
     def summary(self) -> str:
         return "sigma=" + str(self.sigma)
+
+    def params(self):
+        param_dict = {}
+        param_dict["sigma"] = self.sigma
+        return param_dict

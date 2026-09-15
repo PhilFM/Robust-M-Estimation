@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -50,7 +51,7 @@ def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
     ax.set_ylabel(r'log(difference)')
 
     plt.legend()
-    plt.savefig(os.path.join(output_folder, "line_fit_convergence_speed_" + str(test_idx+1) + ".png"), bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "result_" + str(test_idx+1) + ".png"), bbox_inches='tight')
     if not test_run:
         plt.show()
 
@@ -58,6 +59,9 @@ def randomM11() -> float:
     return 2.0*(np.random.rand()-0.5)
 
 def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/line_fit/convergence_speed"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     np.random.seed(0) # We want the numbers to be the same on each run
     with_gnc = True
     model_gt = [randomM11(), randomM11()]
@@ -91,20 +95,22 @@ def main(test_run:bool, output_folder:str="../../../output"):
         for i in range(2):
             model_start[i] = model_gt[i] + 0.02
 
-        line_fitter = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
+        line_fitter = LinearRegressorWelsch(sigma_base=sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
                                             max_niterations=max_niterations, diff_thres=diff_thres,
+                                            model_start = None if with_gnc else model_start,
                                             messages_file=messages_file, debug=True)
-        if line_fitter.run(data, model_start = None if with_gnc else model_start):
+        if line_fitter.fit(data):
             diffs_welsch_sup_gn = line_fitter.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(line_fitter.debug_diff_alpha)
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
                                           sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
         model_instance = LinearRegressor(data[0])
-        irls_instance = IRLS(param_instance, data, model_instance=model_instance,
+        irls_instance = IRLS(param_instance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
+                             model_start = None if with_gnc else model_start,
                              messages_file=messages_file, debug=True)
-        if irls_instance.run(model_start = None if with_gnc else model_start):
+        if irls_instance.fit(data):
             diffs_welsch_irls = irls_instance.debug_diffs
             diff_alpha_welsch_irls = np.array(irls_instance.debug_diff_alpha)
     

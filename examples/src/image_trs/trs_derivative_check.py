@@ -1,4 +1,5 @@
 import numpy as np
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -12,6 +13,9 @@ from gnc_smoothie.check_derivs import check_derivs
 from trs import TRS
 
 def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/image_trs"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     np.random.seed(0) # We want the numbers to be the same on each run
 
     all_good = True
@@ -27,7 +31,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
                           2.0*(np.random.rand()-0.5), # tx
                           2.0*(np.random.rand()-0.5)]) # ty
 
-        optimiser_instance = SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), data, model_instance=TRS(), weight=weight)
+        optimiser_instance = SupGaussNewton(GNC_NullParams(QuadraticInfluenceFunc()), model_instance=TRS())
+        optimiser_instance._set_data(data, weight=weight)
         if not check_derivs(optimiser_instance, model, diff_threshold_AlB=1.e-5): #, print_diffs=True, print_derivs=False):
             all_good = False
 

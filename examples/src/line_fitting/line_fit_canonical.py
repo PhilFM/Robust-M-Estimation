@@ -2,9 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import math
+from pathlib import Path
+import sys
 
 if __name__ == "__main__":
-    import sys
     sys.path.append("../../../pypi_package/src")
     sys.path.append("../../../pypi_package/src/gnc_smoothie/linear_model")
     sys.path.append("../../../pypi_package/src/gnc_smoothie/cython_files")
@@ -14,9 +15,6 @@ from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWel
 from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie.cython_files.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
-from line_fit_orthog_welsch import LineFitOrthogWelsch
-
-from gnc_smoothie.linear_model.linear_regressor_pseudo_huber import LinearRegressorPseudoHuber
 
 sys.path.append("../misc")
 from minimiser import minimiser
@@ -33,13 +31,13 @@ def randomM11() -> float:
 
 def fit_line(data_x, data_y, sigma):
     y_range = max(data_y) - min(data_y)
-    line_fitter = LinearRegressorWelsch(sigma, sigma_limit=y_range, num_sigma_steps=10, debug=True, max_niterations=200)
-    assert(line_fitter.run((data_x, data_y)))
+    line_fitter = LinearRegressorWelsch(sigma_base=sigma, sigma_limit=y_range, num_sigma_steps=10, debug=True, max_niterations=200)
+    assert(line_fitter.fit((data_x, data_y)))
     coeff = line_fitter.final_coeff
     intercept = line_fitter.final_intercept
     return np.array([coeff[0][0], intercept[0]])
 
-def check_gnc_variation(param_instance, data_x: np.array, data_y: np.array) -> None:
+def check_gnc_variation(param_instance, data_x: np.array, data_y: np.array, test_run: bool) -> None:
     small_diff = 0.001
     param_instance.reset()
     while True:
@@ -48,24 +46,27 @@ def check_gnc_variation(param_instance, data_x: np.array, data_y: np.array) -> N
         l2 = fit_line(data_x, data_y, sigma*(1.0 - small_diff))
         deriv = 0.5*(l2 - l1)/small_diff
         x_range = max(data_x) - min(data_x)
-        print("sigma=",sigma,"deriv=",deriv,"sderiv=",x_range*deriv[0]/sigma,deriv[1]/sigma)
+        if not test_run:
+            print("sigma=",sigma,"deriv=",deriv,"sderiv=",x_range*deriv[0]/sigma,deriv[1]/sigma)
+
         if param_instance.alpha() == 1.0:
-            break;
+            break
 
         param_instance.increment()
 
 # get global maximum by sampling
-def test_minimum(line_gt, data_x, data_y, sigma_base):
+def test_minimum(line_gt, data_x, data_y, sigma_base, test_run:bool):
     data_xp = np.reshape(data_x, (len(data_x),1,1))
     data_yp = np.reshape(data_y, (len(data_y),1,1))
     data = np.concatenate((data_xp, data_yp), axis=2)
     sigma = 0.1 #sigma_base
     ab_max_list = []
     last_ab_max = None
-    for i in range(50):
+    for i in range(2 if test_run else 50):
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base=sigma, sigma_limit=sigma)
         evaluator_instance = LinearRegressorWelschEvaluator(data[0])
-        optimiser_instance = SupGaussNewton(param_instance, data, evaluator_instance = evaluator_instance)
+        optimiser_instance = SupGaussNewton(param_instance, evaluator_instance = evaluator_instance)
+        optimiser_instance._set_data(data)
         def objective_func(x: np.array) -> float:
             #print("x=",x)
             return -optimiser_instance.objective_func(x)
@@ -73,7 +74,7 @@ def test_minimum(line_gt, data_x, data_y, sigma_base):
         #print("")
         ab_max,best_val = minimiser(objective_func, initial_centre=line_gt, initial_n_samples=[41,201], initial_half_range=[2.0, 50.0], n_samples=[21,21], scale_factor=2.0)
         ab_max_list.append(ab_max)
-        if last_ab_max is not None:
+        if not test_run and last_ab_max is not None:
             print("sigma=",sigma,"ab_max",ab_max,"ab diff:", ab_max[0]-last_ab_max[0], ab_max[1]-last_ab_max[1])
 
         last_ab_max = ab_max
@@ -86,15 +87,14 @@ def test_with_sigma(line_gt, data_x, data_y, sigma: float, output_folder: str, t
     # linear regression fitter y = a*x + b
     x_range = max(data_x) - min(data_x)
     y_range = max(data_y) - min(data_y)
-    line_fitter = LinearRegressorWelsch(sigma, sigma_limit=y_range, num_sigma_steps=50, debug=True, max_niterations=200,
+    line_fitter = LinearRegressorWelsch(sigma_base=sigma, sigma_limit=y_range, num_sigma_steps=50, debug=True, max_niterations=200,
                                         model_size_est=np.array([1.0/x_range, 1.0])) #, messages_file=sys.stdout)
-    if line_fitter.run((data_x, data_y)):
+    if line_fitter.fit((data_x, data_y)):
         coeff = line_fitter.final_coeff
         intercept = line_fitter.final_intercept
         final_line = np.array([coeff[0][0], intercept[0]])
         final_weight = line_fitter.final_weight
-        debug_line_list = line_fitter.debug_model_list
-        check_gnc_variation(line_fitter.param_instance(), data_x, data_y)
+        check_gnc_variation(line_fitter.param_instance(), data_x, data_y, test_run)
 
     if not test_run:
         print("Linear regression result: a,b,c", final_line)
@@ -112,10 +112,14 @@ def test_with_sigma(line_gt, data_x, data_y, sigma: float, output_folder: str, t
     plt.figure(num=1, dpi=120)
 
     cnt = 0
-    print("ab_max_list=",ab_max_list)
+    if not test_run:
+        print("ab_max_list=",ab_max_list)
+
     for ab_max in ab_max_list:
         color = (0.5, 0.5, cnt/(len(ab_max_list)-1))
-        print("color=",color)
+        if not test_run:
+            print("color=",color)
+
         plt.axline((x_min, ab_max[0]*x_min+ab_max[1]), (x_max, ab_max[0]*x_max+ab_max[1]), color = color, linewidth=0.5)
         cnt += 1
 
@@ -131,15 +135,17 @@ def test_with_sigma(line_gt, data_x, data_y, sigma: float, output_folder: str, t
     #plt.axline((x_min, a*x_min+b), (x_max, a*x_max+b), color = "green", linewidth=1.5)
 
     plt.legend()
-    plt.savefig(os.path.join(output_folder, "line_fit_solver.png"), bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "canonical.png"), bbox_inches='tight')
     if not test_run:
         plt.show()
 
-    # show orthogonal regression result
     plt.close("all")
     plt.figure(num=1, dpi=120)
         
 def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/line_fit/breakdown_point"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     np.random.seed(0) # We want the numbers to be the same on each run
 
     # data is a list of [x,y] pairs
@@ -166,14 +172,14 @@ def main(test_run:bool, output_folder:str="../../../output"):
     # with small error estimate we will fit to the good data only
     p = 0.6667
     sigma_base = sigma_pop/p
-    ab_max_list = test_minimum(line_gt, data_x, data_y, sigma_base*10.0)
+    ab_max_list = test_minimum(line_gt, data_x, data_y, sigma_base*10.0, test_run)
     test_with_sigma(line_gt, data_x, data_y, sigma_base, output_folder, test_run, ab_max_list)
 
     # with a larger error estimate the points close to the good data will influence the result
     #test_with_sigma(line_gt, data_x, data_y, 2.0, output_folder, test_run)
 
     if test_run:
-        print("line_fit_solver OK")
+        print("line_fit_canonical OK")
 
 if __name__ == "__main__":
     main(False) # test_run

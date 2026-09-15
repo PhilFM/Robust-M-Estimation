@@ -2,6 +2,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -23,6 +24,9 @@ def welsch_influence(x: float):
     return 1.0-math.exp(-0.5*x*x/(sigma*sigma))
 
 def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/misc"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     rlist = np.linspace(-2.5, 2.5, num=100)
     plt.close("all")
     plt.figure(num=1, dpi=240)

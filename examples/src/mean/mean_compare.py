@@ -24,7 +24,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
 
     np.random.seed(0) # We want the numbers to be the same on each run
 
-    outlier_fraction_list = [0.0,0.2,0.5] if quick_run else [0.0,0.1,0.2,0.3,0.4,0.5]
+    outlier_fraction_list = [0.0,0.2,0.5] if quick_run else [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
     for xgtrange in [3.0,5.0,10.0,30.0,100.0]:
         sample_size_array = [10] if quick_run else [10,30,100,1000]
         for n in sample_size_array:
@@ -37,14 +37,14 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             eff_gncirlsp_list = []
             eff_rme_list = []
 
-            time_gncwelsch_list = []
-            time_mean_list = []
-            time_huber_list = []
-            time_trimmed_list = []
-            time_median_list = []
-            time_trimean_list = []
-            time_gncirlsp_list = []
-            time_rme_list = []
+            av_time_gncwelsch_list = []
+            av_time_mean_list = []
+            av_time_huber_list = []
+            av_time_trimmed_list = []
+            av_time_median_list = []
+            av_time_trimean_list = []
+            av_time_gncirlsp_list = []
+            av_time_rme_list = []
             for outlier_fraction in outlier_fraction_list:
                 output_file_1 = None # Path("../../../output/solver1-" + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlier_fraction)) + ".png")
                 output_file_2 = None # Path("../../../output/solver2-" + str(int(xgtrange)) + "-" + str(n) + "-" + str(int(100.0*outlier_fraction)) + ".png")
@@ -62,69 +62,70 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
                     output_file_1=output_file_1,
                     output_file_2=output_file_2,
                     test_run=test_run,
-                    output_folder=output_folder)
+                    output_folder=output_folder,
+                    just_simple_algorithms=False)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_gnc_welsch*alg_result.sd_gnc_welsch)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_gnc_welsch)
                 if not test_run:
                     print("GNC Welsch estimator efficiency: ", eff)
 
                 eff_gncwelsch_list.append(eff)
-                time_gncwelsch_list.append(alg_result.time_gnc_welsch)
+                av_time_gncwelsch_list.append(1000.0*alg_result.av_time_gnc_welsch)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_mean*alg_result.sd_mean)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_mean)
                 if not test_run:
                     print("Mean efficiency: ", eff)
 
                 eff_mean_list.append(eff)
-                time_mean_list.append(alg_result.time_mean)
+                av_time_mean_list.append(1000.0*alg_result.av_time_mean)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_huber*alg_result.sd_huber)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_huber)
                 if not test_run:
                     print("Pseudo-Huber estimator efficiency: ", eff)
 
                 eff_huber_list.append(eff)
-                time_huber_list.append(alg_result.time_huber)
+                av_time_huber_list.append(1000.0*alg_result.av_time_huber)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_trimmed*alg_result.sd_trimmed)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_trimmed)
                 if not test_run:
                     print("Trimmed mean 50% efficiency: ", eff)
 
                 eff_trimmed_list.append(eff)
-                time_trimmed_list.append(alg_result.time_trimmed)
+                av_time_trimmed_list.append(1000.0*alg_result.av_time_trimmed)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_median*alg_result.sd_median)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_median)
                 if not test_run:
                     print("Median efficiency: ", eff)
 
                 eff_median_list.append(eff)
-                time_median_list.append(alg_result.time_median)
+                av_time_median_list.append(1000.0*alg_result.av_time_median)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_trimean*alg_result.sd_trimean)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_trimean)
                 if not test_run:
                     print("Tukey trimean efficiency: ", eff)
 
                 eff_trimean_list.append(eff)
-                time_trimean_list.append(alg_result.time_trimean)
+                av_time_trimean_list.append(1000.0*alg_result.av_time_trimean)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_gnc_irls_p*alg_result.sd_gnc_irls_p)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_gnc_irls_p)
                 if not test_run:
                     print("GNC IRLS-p=0 estimator efficiency: ", eff)
 
                 eff_gncirlsp_list.append(eff)
-                time_gncirlsp_list.append(alg_result.time_gnc_irls_p)
+                av_time_gncirlsp_list.append(1000.0*alg_result.av_time_gnc_irls_p)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_rme*alg_result.sd_rme)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_rme)
                 if not test_run:
                     print("Robust Mean Estimator efficiency: ", eff)
 
                 eff_rme_list.append(eff)
-                time_rme_list.append(alg_result.time_rme)
+                av_time_rme_list.append(1000.0*alg_result.av_time_rme)
 
             plt.close("all")
             plt.figure(num=1, dpi=240)
             plt.clf()
             ax = plt.gca()
-            gncs_draw_curve(plt, eff_gncwelsch_list,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_gncwelsch_list,    ("SupGN",  "Welsch",      "GNC_Welsch"), xvalues=outlier_fraction_list)
             gncs_draw_curve(plt, eff_mean_list,         ("Mean",   "Basic",       ""          ), xvalues=outlier_fraction_list)
             gncs_draw_curve(plt, eff_trimmed_list,      ("Mean",   "Trimmed",     ""          ), xvalues=outlier_fraction_list)
             gncs_draw_curve(plt, eff_median_list,       ("Median", "Basic",       ""          ), xvalues=outlier_fraction_list)
@@ -137,39 +138,40 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             ax.set_ylim(0.0,1.1)
 
             plt.legend()
-            plt.savefig(os.path.join(output_folder, "compare_n" + str(n) + "_range" + str(int(xgtrange)) + "_lref.png"), bbox_inches='tight')
-            if False: #not test_run:
+            plt.savefig(os.path.join(output_folder, "mean_efficiency_n" + str(n) + "_range" + str(int(xgtrange)) + "_lref.png"), bbox_inches='tight')
+            if not test_run:
                 plt.show()
 
             plt.close("all")
             plt.figure(num=1, dpi=240)
             plt.clf()
             ax = plt.gca()
-            gncs_draw_curve(plt, time_gncwelsch_list,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, time_mean_list,         ("Mean",   "Basic",       ""          ), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, time_trimmed_list,      ("Mean",   "Trimmed",     ""          ), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, time_median_list,       ("Median", "Basic",       ""          ), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, time_trimean_list,      ("Trimean","Basic",       ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, av_time_gncwelsch_list,    ("SupGN",  "Welsch",      "GNC_Welsch"), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, av_time_mean_list,         ("Mean",   "Basic",       ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, av_time_trimmed_list,      ("Mean",   "Trimmed",     ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, av_time_median_list,       ("Median", "Basic",       ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, av_time_trimean_list,      ("Trimean","Basic",       ""          ), xvalues=outlier_fraction_list)
 
             ax.set_xlabel(r'Outlier fraction' )
-            ax.set_ylabel('Execution time')
+            ax.set_ylabel('Average time in msec')
+            ax.set_yscale("log")
             #plt.box(False)
             ax.set_xlim(0.0,outlier_fraction_list[len(outlier_fraction_list)-1])
             #ax.set_ylim(0.0,1.1)
 
             plt.legend()
-            plt.savefig(os.path.join(output_folder, "compare_time1_n" + str(n) + "_range" + str(int(xgtrange)) + ".png"), bbox_inches='tight')
-            if False: #not test_run:
+            plt.savefig(os.path.join(output_folder, "mean_av_time_n" + str(n) + "_range" + str(int(xgtrange)) + "_lref.png"), bbox_inches='tight')
+            if not test_run:
                 plt.show()
 
             plt.close("all")
             plt.figure(num=1, dpi=240)
             plt.clf()
             ax = plt.gca()
-            gncs_draw_curve(plt, eff_gncwelsch_list,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, eff_huber_list,        ("IRLS",   "PseudoHuber", "Welsch"    ), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, eff_gncirlsp_list,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, eff_rme_list,          ("RME",    "",            ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_gncwelsch_list,    ("SupGN",  "Welsch",      "GNC_Welsch" ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_huber_list,        ("IRLS",   "PseudoHuber", "PseudoHuber"), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_gncirlsp_list,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0" ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, eff_rme_list,          ("RME",    "",            ""           ), xvalues=outlier_fraction_list)
 
             ax.set_xlabel(r'Outlier fraction' )
             ax.set_ylabel('Relative efficiency')
@@ -178,32 +180,33 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             ax.set_ylim(0.0,1.1)
 
             plt.legend()
-            plt.savefig(os.path.join(output_folder, "compare_n" + str(n) + "_range" + str(int(xgtrange)) + "_mref.png"), bbox_inches='tight')
-            if False: #not test_run:
+            plt.savefig(os.path.join(output_folder, "mean_efficiency_n" + str(n) + "_range" + str(int(xgtrange)) + "_mref.png"), bbox_inches='tight')
+            if not test_run:
                 plt.show()
 
             plt.close("all")
             plt.figure(num=1, dpi=240)
             plt.clf()
             ax = plt.gca()
-            gncs_draw_curve(plt, time_gncwelsch_list,    ("IRLS",   "Welsch",      "GNC_Welsch"), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, time_huber_list,        ("IRLS",   "PseudoHuber", "Welsch"    ), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, time_gncirlsp_list,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0"), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, time_rme_list,          ("RME",    "",            ""          ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, av_time_gncwelsch_list,    ("SupGN",  "Welsch",      "GNC_Welsch" ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, av_time_huber_list,        ("IRLS",   "PseudoHuber", "PseudoHuber"), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, av_time_gncirlsp_list,     ("IRLS",   "GNC_IRLSp",   "GNC_IRLSp0" ), xvalues=outlier_fraction_list)
+            gncs_draw_curve(plt, av_time_rme_list,          ("RME",    "",            ""           ), xvalues=outlier_fraction_list)
 
             ax.set_xlabel(r'Outlier fraction' )
-            ax.set_ylabel('Execution time')
+            ax.set_ylabel('Average time in msec')
+            ax.set_yscale("log")
             #plt.box(False)
             ax.set_xlim(0.0,outlier_fraction_list[len(outlier_fraction_list)-1])
             #ax.set_ylim(0.0,1.1)
 
             plt.legend()
-            plt.savefig(os.path.join(output_folder, "compare_time2_n" + str(n) + "_range" + str(int(xgtrange)) + ".png"), bbox_inches='tight')
-            if False: #not test_run:
+            plt.savefig(os.path.join(output_folder, "mean_av_time_n" + str(n) + "_range" + str(int(xgtrange)) + "_mref.png"), bbox_inches='tight')
+            if not test_run:
                 plt.show()
 
     if test_run:
         print("mean_compare OK")
 
 if __name__ == "__main__":
-    main(False) # test_run
+    main(True) # test_run

@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import os
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -15,8 +16,26 @@ def randomM11() -> float:
 def apply_trs(trs, d, sigma=0.0):
     return (trs[1]*d[0] - trs[0]*d[1] + trs[2] + np.random.normal(0.0,sigma),
             trs[0]*d[0] + trs[1]*d[1] + trs[3] + np.random.normal(0.0,sigma))
-            
+
+# sets up plt with rectangle showing the edge of the image
+def init_plt(image_width:int, image_height:int):
+    plt.close("all")
+    plt.figure(num=1, dpi=120)
+    ax = plt.gca()
+    ax.set_aspect(1)
+    ax.set_axis_off()
+    ax.set_xlim((0, image_width))
+    ax.set_ylim((0, image_height))
+    axis_lwidth = 3.0
+    plt.plot((0,image_width),(0,0), color=(0,0,0), linewidth=axis_lwidth)
+    plt.plot((0,image_width),(image_height,image_height), color=(0,0,0), linewidth=axis_lwidth)
+    plt.plot((0,0),(0,image_height), color=(0,0,0), linewidth=axis_lwidth)
+    plt.plot((image_width,image_width),(0,image_height), color=(0,0,0), linewidth=axis_lwidth)
+
 def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/image_trs"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     np.random.seed(0) # We want the numbers to be the same on each run
 
     image_width = 1920
@@ -25,17 +44,17 @@ def main(test_run:bool, output_folder:str="../../../output"):
     half_image_height = 0.5*image_height
     box_size = 900.0
     n_good_points = 100
-    n_bad_points = 100
+    n_bad_points = 20
 
     for test_idx in range(0,1):
-        angle_gt = 0.02*np.pi*np.random.rand()
+        angle_gt = 0.03*np.pi*np.random.rand()
         scale_gt = 0.95 #1.0 + 0.2*randomM11()
         s_gt = scale_gt*math.sin(angle_gt)
         c_gt = scale_gt*math.cos(angle_gt)
         sigma_pop = 2.0
 
         # model is s,c,tx,ty
-        trs_gt = [s_gt, c_gt, -40.0, -10.0] #150.0*randomM11(), 70.0*randomM11()]
+        trs_gt = [s_gt, c_gt, -120.0, -10.0] #150.0*randomM11(), 70.0*randomM11()]
         data = np.zeros((n_good_points+n_bad_points,4))
         for i in range(n_good_points):
             while True:
@@ -55,15 +74,15 @@ def main(test_run:bool, output_folder:str="../../../output"):
                 if data[i][2] > -half_image_width and data[i][2] < half_image_width and data[i][3] > -half_image_height and data[i][3] < half_image_height:
                     break
 
-        if not test_run:
-            print("data=",data)
+        #if not test_run:
+        #    print("data=",data)
 
         q = 0.66667
         sigma_base = sigma_pop/q
         sigma_limit = image_width
         num_sigma_steps = 30
         trs_instance = TRSWelsch(sigma_base, sigma_limit, num_sigma_steps, max_niterations=100, debug=True)
-        if trs_instance.run(data):
+        if trs_instance.fit(data):
             trs = trs_instance.final_trs
             final_weight = trs_instance.final_weight
 
@@ -72,19 +91,52 @@ def main(test_run:bool, output_folder:str="../../../output"):
             print("trsDiff=",trs-trs_gt)
             print("n_iterations:",trs_instance.debug_n_iterations)
 
+        msize = 3.0
+
+        # draw first image points colour-coded to show the correspondence
+        # first create a list of colours
+        colour_list = []
+        for d in data:
+            while True:
+                colour = list(np.random.choice(range(256), size=3))
+                if colour[0] < 100 or colour[1] < 100 or colour[2] < 100:
+                    break
+
+            colour_list.append([colour[0]/255.0,colour[1]/255.0,colour[2]/255.0])
+
+        init_plt(image_width, image_height)
+
+        for d,colour in zip(data,colour_list, strict=True):
+            plt.plot(half_image_width+d[0], half_image_height+d[1], color = colour, marker = 'o', markersize=msize)
+
+        plt.savefig(os.path.join(output_folder, "trs_solver_image1.png"), bbox_inches='tight')
+        if not test_run:
+            plt.show()
+
+        # now draw the second image points
+        init_plt(image_width, image_height)
+
+        for d,colour in zip(data,colour_list, strict=True):
+            plt.plot(half_image_width+d[2], half_image_height+d[3], color = colour, marker = 'o', markersize=msize)
+
+        plt.savefig(os.path.join(output_folder, "trs_solver_image2.png"), bbox_inches='tight')
+        if not test_run:
+            plt.show()
+
+        # now draw the vectors for the differences
+        init_plt(image_width, image_height)
+
+        for d,colour in zip(data,colour_list, strict=True):
+            origin = [half_image_width+d[0], half_image_height+d[1]]
+            plt.quiver(*origin, [d[2]-d[0]], [d[3]-d[1]], color = colour, width=0.004)
+            #plt.plot((half_image_width+d[0], half_image_width+0.5*(d[2]+d[2])), (half_image_height+d[1], half_image_height+0.5*(d[3]+d[3])), color = colour, marker = 'o', markersize=msize)
+
+        plt.savefig(os.path.join(output_folder, "trs_solver_flow.png"), bbox_inches='tight')
+        if not test_run:
+            plt.show()
+
         # draw first image points with box
-        plt.close("all")
-        plt.figure(num=1, dpi=120)
-        ax = plt.gca()
-        ax.set_aspect(1)
-        ax.set_axis_off()
-        ax.set_xlim((0, image_width))
-        ax.set_ylim((0, image_height))
-        axis_lwidth = 3.0
-        plt.plot((0,image_width),(0,0), color=(0,0,0), linewidth=axis_lwidth)
-        plt.plot((0,image_width),(image_height,image_height), color=(0,0,0), linewidth=axis_lwidth)
-        plt.plot((0,0),(0,image_height), color=(0,0,0), linewidth=axis_lwidth)
-        plt.plot((image_width,image_width),(0,image_height), color=(0,0,0), linewidth=axis_lwidth)
+        init_plt(image_width, image_height)
 
         ref_box_width = 1.02*box_size
         ref_box_height = 1.02*box_size
@@ -101,7 +153,6 @@ def main(test_run:bool, output_folder:str="../../../output"):
         plt.plot((half_image_width+ref_box_coords[2][0],half_image_width+ref_box_coords[3][0]),
                  (half_image_height+ref_box_coords[2][1],half_image_height+ref_box_coords[3][1]), color = "limegreen")
 
-        msize = 3.0
         plt.plot(half_image_width+data[0][0], half_image_height+data[0][1],
                  color = (1,0,0), marker='o', markersize=msize, label="Inlier data values") # will be overwritten with corrected colour
         plt.plot(half_image_width+data[0][0], half_image_height+data[0][1],
@@ -117,17 +168,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
             plt.show()
 
         # draw second image points with transformed box
-        plt.close("all")
-        plt.figure(num=1, dpi=120)
-        ax = plt.gca()
-        ax.set_aspect(1)
-        ax.set_axis_off()
-        plt.plot((0,image_width),(0,0), color=(0,0,0), linewidth=axis_lwidth)
-        plt.plot((0,image_width),(image_height,image_height), color=(0,0,0), linewidth=axis_lwidth)
-        plt.plot((0,0),(0,image_height), color=(0,0,0), linewidth=axis_lwidth)
-        plt.plot((image_width,image_width),(0,image_height), color=(0,0,0), linewidth=axis_lwidth)
-        ax.set_xlim((0, image_width))
-        ax.set_ylim((0, image_height))
+        init_plt(image_width, image_height)
 
         box_coords = [apply_trs(trs, ref_box_coords[i]) for i in range(4)]
         plt.plot((half_image_width+box_coords[0][0],half_image_width+box_coords[1][0]),

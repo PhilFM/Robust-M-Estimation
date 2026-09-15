@@ -19,9 +19,9 @@ def mean_welsch_solver(data: np.array, scale: np.array, x_min: float, x_max: flo
     num_sigma_steps = 20
     max_niterations = 500
 
-    mean_finder = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
+    mean_finder = LinearRegressorWelsch(sigma_base=sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
                                         max_niterations=max_niterations, messages_file=None, debug=True)
-    if mean_finder.run(data):
+    if mean_finder.fit(data):
         m = mean_finder.final_model
         if not test_run:
             print("Welsch Sup-GN optimisation result: m=", m)
@@ -32,9 +32,9 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
     # data generation
     sigma_pop = 0.2 # population distribution standard deviation
-    n_dimensions = 100
-    n_good_points = 500
-    n_bad_points = 200
+    n_dimensions = 10 if test_run else 100
+    n_good_points = 100 if test_run else 500
+    n_bad_points = 40 if test_run else 200
     mean_gt = 3.0
     x_min = 0.0
     x_max = 10.0
@@ -56,7 +56,9 @@ def main(test_run:bool, output_folder:str="../../../output"):
     time_list = []
     for d in range(n_dimensions):
         datap = data[:,:d+1,:]
-        print(datap.shape)
+        if not test_run:
+            print(datap.shape)
+
         start_time = time.time()
         mean_welsch_solver(datap, scale, x_min, x_max, sigma_pop, test_run, output_folder)
         time_list.append(time.time() - start_time)
@@ -69,7 +71,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         plt.show()
 
     if test_run:
-        print("mean_solver OK")
+        print("mean_complexity OK")
 
 if __name__ == "__main__":
     main(False) # test_run

@@ -81,3 +81,8 @@ class GNC_IRLSpInfluenceFunc:
             + " epsilon="
             + str(self.epsilon)
         )
+
+    def params(self):
+        param_dict = {}
+        param_dict["epsilon"] = self.epsilon
+        return param_dict

@@ -31,9 +31,9 @@ def mean_welsch_solver(data: np.array, x_range: float, use_slow_version: bool, t
     num_sigma_steps = 20
     max_niterations = 50
 
-    mean_finder = LinearRegressorWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
+    mean_finder = LinearRegressorWelsch(sigma_base=sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
                                         max_niterations=max_niterations, use_slow_version=use_slow_version, messages_file=None, debug=True)
-    if mean_finder.run(data):
+    if mean_finder.fit(data):
         m = mean_finder.final_model[0]
         final_weight = mean_finder.final_weight
         if not test_run:
@@ -48,8 +48,8 @@ def mean_pseudo_huber_solver(data: np.array, x_range: float, use_slow_version: b
     model_instance = LinearRegressor(data[0])
     influence_func_instance = PseudoHuberInfluenceFunc(sigma=1.0)
     param_instance = GNC_NullParams(influence_func_instance)
-    irls_instance = IRLS(param_instance, data, model_instance=model_instance, max_niterations=200, messages_file=None, debug=True)
-    if irls_instance.run():
+    irls_instance = IRLS(param_instance, model_instance=model_instance, max_niterations=200, messages_file=None, debug=True)
+    if irls_instance.fit(data):
         m = irls_instance.final_model[0]
         final_weight = irls_instance.final_weight
         if not test_run:
@@ -57,8 +57,8 @@ def mean_pseudo_huber_solver(data: np.array, x_range: float, use_slow_version: b
             print("  final_weight=",final_weight)
 
     # check IRLS with scale
-    irls_instance = IRLS(GNC_NullParams(influence_func_instance), data, model_instance=model_instance)
-    if irls_instance.run():
+    irls_instance = IRLS(GNC_NullParams(influence_func_instance), model_instance=model_instance)
+    if irls_instance.fit(data):
         mscale = irls_instance.final_model[0]
         if not test_run:
             print("Pseudo-Huber scale result difference=", mscale-m)
@@ -72,14 +72,14 @@ def mean_geman_mcclure_solver(data: np.array, x_range: float, test_run: bool, ou
     influence_func_instance = GemanMcClureInfluenceFunc(sigma=sigma_base)
     param_instance = GNC_WelschParams(influence_func_instance, sigma_base,
                                       sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-    irls_instance = IRLS(param_instance, data, model_instance=model_instance, messages_file=None)
-    if irls_instance.run():
+    irls_instance = IRLS(param_instance, model_instance=model_instance, messages_file=None)
+    if irls_instance.fit(data):
         m = irls_instance.final_model[0]
         if not test_run:
             print("Geman-McClure IRLS result: m=", m)
 
-    sup_gn_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, messages_file=None, debug=True)
-    if sup_gn_instance.run():
+    sup_gn_instance = SupGaussNewton(param_instance, model_instance=model_instance, messages_file=None, debug=True)
+    if sup_gn_instance.fit(data):
         m = sup_gn_instance.final_model[0]
         final_weight = irls_instance.final_weight
         if not test_run:
@@ -97,8 +97,8 @@ def mean_gnc_irls_p_solver(data: np.array, x_range: float, test_run: bool, outpu
     influence_func_instance = GNC_IRLSpInfluenceFunc()
     param_instance = GNC_IRLSpParams(influence_func_instance, p, rscale, epsilon_base,
                                      epsilon_limit=epsilon_limit, beta=beta)
-    irls_instance = IRLS(param_instance, data, model_instance=model_instance, messages_file=None, debug=True)
-    if irls_instance.run():
+    irls_instance = IRLS(param_instance, model_instance=model_instance, messages_file=None, debug=True)
+    if irls_instance.fit(data):
         m = irls_instance.final_model[0]
         final_weight = irls_instance.final_weight
         if not test_run:

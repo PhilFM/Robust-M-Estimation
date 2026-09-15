@@ -15,6 +15,8 @@ from evaluator_check import evaluator_check
 sys.path.append("../src/cython_files")
 from line_fit_orthog_welsch_evaluator import LineFitOrthogWelschEvaluator
 
+sys.path.append("../src/misc")
+
 sys.path.append("../src/line_fitting")
 from line_fit_orthog import LineFitOrthog
 from line_fit_orthog_welsch import LineFitOrthogWelsch
@@ -55,8 +57,8 @@ def test_answer():
         sigma_limit = 50.0
         num_sigma_steps = 20
 
-        line_fitter = LineFitOrthogWelsch(sigma_base, sigma_limit, num_sigma_steps)
-        assert(line_fitter.run(data))
+        line_fitter = LineFitOrthogWelsch(sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
+        assert(line_fitter.fit(data))
         line = line_fitter.final_line
         lsgn = 1.0 if line[1]*b_gt > 0.0 else -1.0
         #print("line=",line,a_gt,b_gt,c_gt)
@@ -64,9 +66,9 @@ def test_answer():
         assert(line[1] == pytest.approx(lsgn*b_gt))
         assert(line[2] == pytest.approx(lsgn*c_gt))
 
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-        optimiser_instance = IRLS(param_instance, data, evaluator_instance=LineFitOrthogWelschEvaluator())
-        assert(optimiser_instance.run())
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base=sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
+        optimiser_instance = IRLS(param_instance, evaluator_instance=LineFitOrthogWelschEvaluator())
+        assert(optimiser_instance.fit(data))
         model = optimiser_instance.final_model
         #print("model=",model,a_gt,b_gt,c_gt)
         lsgn = 1.0 if model[1]*b_gt > 0.0 else -1.0
@@ -75,8 +77,8 @@ def test_answer():
         assert(model[2] == pytest.approx(lsgn*c_gt))
 
         # compare with slow version
-        optimiser_instance = IRLS(param_instance, data, model_instance=LineFitOrthog())
-        assert(optimiser_instance.run())
+        optimiser_instance = IRLS(param_instance, model_instance=LineFitOrthog())
+        assert(optimiser_instance.fit(data))
         model = optimiser_instance.final_model
         #print("model=",model,a_gt,b_gt,c_gt)
         lsgn = 1.0 if model[1]*b_gt > 0.0 else -1.0
@@ -116,15 +118,13 @@ def test_evaluator():
 
         # fast IRLS
         max_niterations=200
-        optimiser_instance = IRLS(param_instance, data, evaluator_instance=LineFitOrthogWelschEvaluator(), weight=weight, scale=scale,
-                                  max_niterations=max_niterations)
-        assert(optimiser_instance.run())
+        optimiser_instance = IRLS(param_instance, evaluator_instance=LineFitOrthogWelschEvaluator(), max_niterations=max_niterations)
+        assert(optimiser_instance.fit(data, weight=weight, scale=scale))
         model_fast = optimiser_instance.final_model
 
         # check against slow reference version
-        optimiser_instance = IRLS(param_instance, data, model_instance=LineFitOrthog(), weight=weight, scale=scale,
-                                  max_niterations=max_niterations)
-        assert(optimiser_instance.run())
+        optimiser_instance = IRLS(param_instance, model_instance=LineFitOrthog(), max_niterations=max_niterations)
+        assert(optimiser_instance.fit(data, weight=weight, scale=scale))
         model = optimiser_instance.final_model
         assert(model[0] == pytest.approx(model_fast[0]))
         assert(model[1] == pytest.approx(model_fast[1]))

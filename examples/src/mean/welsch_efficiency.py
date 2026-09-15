@@ -8,31 +8,39 @@ if __name__ == "__main__":
     import sys
     sys.path.append("../../../pypi_package/src")
 
-from gnc_smoothie.irls import IRLS
 from gnc_smoothie.sup_gauss_newton import SupGaussNewton
 from gnc_smoothie.gnc_welsch_params import GNC_WelschParams
 from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie.cython_files.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
 
 def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=False):
-    sigma_base = 1.0
-    sigma_limit = 500.0
-    num_sigma_steps = 100
+    sigma_base = 0.1
+    sigma_limit = sigma_base
+    num_sigma_steps = 1
     max_niterations = 200
-    small_val = 1.e-10
+    small_val = 1.e-20
 
-    def small_mean(optimiser_instance):
-        a,AlB = optimiser_instance.weighted_derivs(np.array([0.0]), 1.0) # model, lambda_b
-        return -a[0]/AlB[0][0]
+    def small_mean(optimiser_instance, data, weight):
+        if not optimiser_instance.fit(data, weight=weight):
+            param_instance_test = GNC_WelschParams(WelschInfluenceFunc(), sigma_base)
+            optimiser_instance_debug = SupGaussNewton(param_instance_test, evaluator_instance=LinearRegressorWelschEvaluator(optimiser_instance._data[0][0]), max_niterations=max_niterations, messages_file=sys.stdout, debug=True)
+            optimiser_instance_debug.fit(data)
+            assert(False)
+            
+        return optimiser_instance.final_model[0]
+        #a,AlB = optimiser_instance.weighted_derivs(np.array([0.0]), 1.0) # model, lambda_b
+        #return -a[0]/AlB[0][0]
 
-    def efficiency_est_func(q):
+    def relative_efficiency_est_func(q:float):
         return math.pow(1.0 + 2.0*q*q, 1.5)*math.pow(1.0 + q*q, -3.0)
 
-    def efficiency_est_func_n(q,n):
-        numerator = n*math.pow(1.0 + 2.0*q*q, -1.5)
+    def relative_efficiency_est_func_n(q:float, n:float):
+        # these values are scaled
+        numerator = math.pow(1.0 + 2.0*q*q, -1.5)
         denom1 = (1.0 + 3.0*q*q*q*q + 2.0*q*q)*math.pow(1.0 + 2.0*q*q, -2.5)
         denom2 = (n-1.0)*math.pow(1.0 + q*q, -3.0)
-        return (denom1 + denom2)/numerator
+        ls_var = 1.0/n
+        return ls_var*(denom1 + denom2)/numerator
 
     for test_idx in range(0):
         n = 100
@@ -42,13 +50,12 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
         for i in range(n):
             data[i][0] = random.gauss(0.0, sigma_pop)
 
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(),
-                                          sigma_base, sigma_limit, num_sigma_steps, max_niterationsp=max_niterations)
-        optimiser_instance = IRLS(param_instance, data, evaluator_instance=LinearRegressorWelschEvaluator(data[0]), weight=weight, max_niterations=max_niterations)
-        if optimiser_instance.run():
+        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
+        optimiser_instance = SupGaussNewton(param_instance, evaluator_instance=LinearRegressorWelschEvaluator(data[0]), max_niterations=max_niterations)
+        if optimiser_instance.fit(data, weight=weight):
             m1 = optimiser_instance.final_model
 
-        m2 = small_mean(param_instance.influence_func_instance)
+        m2 = small_mean(optimiser_instance, data, weight)
 
         if not test_run:
             print("m1=",m1," m2=",m2)
@@ -57,18 +64,22 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
     plt.figure(num=1, dpi=240)
     ax = plt.gca()
     ax.set_xlabel(r'$q$')
-    ax.set_ylabel('Efficiency')
+    ax.set_ylabel('Relative efficiency')
 
     qmax = 1.0
-    splist = np.linspace(0, qmax, num=30)
+    qlist = np.linspace(0, qmax, num=30)
+    #qmax = 0.5
+    #qlist = np.linspace(0, qmax, num=6)
 
-    n_samples = 30 if quick_run else 3000
+    n_samples = 30 if quick_run else 1000
 
-    n_array = [5,10,50,100]
-    col_array = ['magenta','r','g','cyan']
+    n_array = [20,100] #,20,50,100] #[20,50,100,500]
+    col_array = ['magenta','r'] #,'g','cyan']
+    mlist = np.linspace(0, qmax, num=300)
     for n,col in zip(n_array,col_array, strict=True):
         effData = []
-        for sigma_pop in splist:
+        for q in qlist:
+            sigma_pop = q*sigma_base
             mstot = 0.0
             lsstot = 0.0
             semx2s2 = 0.0
@@ -88,11 +99,11 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
                     data[i] = [random.gauss(0.0, sigma_pop)]
 
                 param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base)
-                optimiser_instance = SupGaussNewton(param_instance, data,
+                optimiser_instance = SupGaussNewton(param_instance,
                                                     evaluator_instance=LinearRegressorWelschEvaluator(data[0]),
-                                                    weight=weight, max_niterations=200)
+                                                    max_niterations=200)
 
-                m = small_mean(optimiser_instance)
+                m = small_mean(optimiser_instance, data, weight)
                 mstot += m*m
 
                 lsm = optimiser_instance.weighted_fit()[0]
@@ -111,7 +122,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
                     sxemx22s2 += x*math.exp(-0.5*x*x*inv_variance)
                     sfid += (1.0 - x*x*inv_variance)*math.exp(-0.5*x*x*inv_variance)
 
-                m2 = small_mean(optimiser_instance)
+                m2 = small_mean(optimiser_instance, data, weight)
                 #print("m2=",m2," m2p=",sxemx22s2/sfid)
                 small_mean_var += m2*m2
                 small_mean_var_est += math.pow(sxemx22s2/sfid, 2.0)
@@ -129,10 +140,10 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             small_mean_var_den_est /= n_samples
 
             q = sigma_pop/sigma_base
-            var = n*mstot/n_samples
-            lsvar = n*lsstot/n_samples
+            var = n*mstot/(n_samples-1)
+            lsvar = n*lsstot/(n_samples-1)
             if not test_run:
-                print("sigma_pop=",sigma_pop," var=",var, " est=",sigma_base*sigma_base*q*q*math.sqrt(1.0+q*q)," lsvar",lsvar," est=",sigma_base*sigma_base*q*q)
+                print("sigma_pop=",sigma_pop," var=",var, " est=",sigma_pop*sigma_pop*math.sqrt(1.0+q*q)," lsvar",lsvar," est=",sigma_pop*sigma_pop)
 
             effData.append((lsvar+small_val)/(var+small_val))
 
@@ -167,15 +178,20 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             if not test_run:
                 print("Small mean variance = ", n*small_mean_var, " est = ", n*small_mean_var_est, " est2 = ", n*small_mean_var_est2, " est3 = ", n*small_mean_var_est3, " est4 = ", n*small_mean_var_est4)
                 print("Ratio: ", small_mean_var_est2/small_mean_var_est, " num_est=", small_mean_var_num_est," den_est=", small_mean_var_den_est)
-                print("q=",q, " asymptotic efficiency=", (small_val + sigma_pop*sigma_pop/n)/(small_val + small_mean_var_est2), " est=", efficiency_est_func(q), " estn=", efficiency_est_func_n(q,n))
+                print("q=",q, " asymptotic relative efficiency=", (small_val + sigma_pop*sigma_pop/n)/(small_val + small_mean_var_est2), " est=", relative_efficiency_est_func(q), " estn=", relative_efficiency_est_func_n(q,n))
 
-        plt.plot(splist, effData, color = col, lw = 1.0, label = '$n=$' + str(n), marker = 'o', markersize = 2.0)
-        #hmfv = np.vectorize(efficiency_est_func_n, excluded={"n"})
-        #mlist = np.linspace(0, qmax, num=300)
-        #plt.plot(mlist, hmfv(mlist, n=n), color = col, lw = 1.0, linestyle = 'dashed', )
+        plt.plot(qlist, effData, color = col, lw = 1.0, label = '$n=$' + str(n), marker = 'o', markersize = 2.0)
+        #hmfv = np.vectorize(relative_efficiency_est_func_n, excluded={"n"})
+        #plt.plot(mlist, hmfv(mlist, n=n), color = col, lw = 1.0, linestyle = 'dotted')
 
-    hmfv = np.vectorize(efficiency_est_func)
-    mlist = np.linspace(0, qmax, num=300)
+    ax.set_ylim((0.5, 1.1))
+    ref_q = 0.6666667
+    plt.axline((ref_q,0), (ref_q,1.1), color = "grey")
+    plt.text(ref_q-0.01, 0.6, "q=0.667", color = "grey", verticalalignment="center", horizontalalignment="right")
+    if not test_run:
+        print("Asymptotic Relative Efficiency (ARE) (",ref_q,") =",relative_efficiency_est_func(ref_q))
+
+    hmfv = np.vectorize(relative_efficiency_est_func)
     plt.plot(mlist, hmfv(mlist), color = 'b', lw = 1.0, linestyle = 'dashed', label = 'asymptotic')
 
     plt.legend()

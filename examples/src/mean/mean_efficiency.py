@@ -50,27 +50,27 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
                     output_file_2=output_file_2,
                     test_run=test_run,
                     output_folder=output_folder,
-                    smoothie=True)
+                    just_simple_algorithms=True)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_gnc_welsch*alg_result.sd_gnc_welsch)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_gnc_welsch)
                 if not test_run:
                     print("GNC Welsch estimator efficiency: ", eff)
 
                 eff_gncwelsch_list.append(eff)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_trimmed*alg_result.sd_trimmed)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_trimmed)
                 if not test_run:
                     print("Trimmed mean 50% efficiency: ", eff)
 
                 eff_trimmed_list.append(eff)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_median*alg_result.sd_median)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_median)
                 if not test_run:
                     print("Median efficiency: ", eff)
 
                 eff_median_list.append(eff)
 
-                eff = sigma_pop*sigma_pop/(n*alg_result.sd_trimean*alg_result.sd_trimean)
+                eff = sigma_pop*sigma_pop/(n*alg_result.var_trimean)
                 if not test_run:
                     print("Tukey trimean efficiency: ", eff)
 

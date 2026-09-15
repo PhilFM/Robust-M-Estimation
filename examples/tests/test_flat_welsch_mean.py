@@ -61,8 +61,8 @@ def test_answer():
 
             # determine ground truth by sampling
             param_instance = GNC_NullParams(WelschInfluenceFunc(sigma))
-            optimiser_instance = BaseIRLS(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight, scale=scale)
-
+            optimiser_instance = BaseIRLS(param_instance, model_instance=LinearRegressor(data[0]))
+            optimiser_instance._set_data(data, weight=weight, scale=scale)
             n_samples = 200
             xlist = np.linspace(0.0, x_range, num=n_samples)
             rmfv = np.vectorize(objective_func, excluded="optimiser_instance")

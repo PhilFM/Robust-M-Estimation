@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -17,6 +18,9 @@ def lineFitFunc(a, b, optimiser_instance):
     return optimiser_instance.objective_func([a,b])
 
 def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/line_fit"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     # data is a list of [weight, value] pairs
     data = np.array([[-1.0, 0.0], [-0.5, 0.0], [0.0, 0.0], [0.5, 0.0], [1.0, 0.0], # good data
                      [-1.0, 0.5]]) # bad data
@@ -26,7 +30,8 @@ def main(test_run:bool, output_folder:str="../../../output"):
     alist = np.linspace(-5, 5, num=200)
     blist = np.linspace(-2.0, 2.0, num=200)
     param_instance = GNC_NullParams(WelschInfluenceFunc(0.2)) # sigma
-    optimiser_instance = SupGaussNewton(param_instance, data, model_instance=LinearRegressor(data[0]), weight=weight)
+    optimiser_instance = SupGaussNewton(param_instance, model_instance=LinearRegressor(data[0]))
+    optimiser_instance._set_data(data, weight=weight)
     rmfv = np.vectorize(lineFitFunc, excluded={"optimiser_instance"})
     plt.close("all")
     plt.figure(num=1, dpi=120)
@@ -34,7 +39,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
     plt.plot(blist, rmfv(alist, blist, optimiser_instance=optimiser_instance))
 
     #plt.legend()
-    plt.savefig(os.path.join(output_folder, "line_fit_param_plot.png"), bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, "param_plot.png"), bbox_inches='tight')
     if not test_run:
         plt.show()
 

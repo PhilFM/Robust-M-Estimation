@@ -14,6 +14,9 @@ class GNC_NullParams:
     def alpha(self) -> float:
         return 1.0
 
+    def params(self):
+        return {}
+
     def filter_size(self) -> float:
         return 0.0
 

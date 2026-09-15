@@ -81,11 +81,10 @@ def calculate_stats(
     stats_result.welsch_instance = IRLS(GNC_WelschParams(WelschInfluenceFunc(),
                                                          welsch_sigma,
                                                          sigma_limit, 50),
-                                        data,
                                         evaluator_instance=evaluator_instance,
                                         max_niterations=5000,
                                         diff_thres=1.e-12*sigma_pop)
-    if stats_result.welsch_instance.run():
+    if stats_result.welsch_instance.fit(data):
         stats_result.m_gnc_welsch = stats_result.welsch_instance.final_model[0]
         if False: #not test_run:
             mlist = np.linspace(x_min, x_max, num=300)
@@ -115,10 +114,9 @@ def calculate_stats(
     evaluator_instance = LinearRegressorPseudoHuberEvaluator(data[0])
     pseudo_huber_sigma = pseudo_huber_sigma_scale*sigma_pop
     stats_result.pseudo_huber_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=pseudo_huber_sigma)),
-                                              data,
                                               evaluator_instance=evaluator_instance,
                                               diff_thres=1.e-12*sigma_pop)
-    stats_result.pseudo_huber_instance.run()  # this can fail but let's use the result anyway
+    stats_result.pseudo_huber_instance.fit(data)  # this can fail but let's use the result anyway
     stats_result.m_pseudo_huber = stats_result.pseudo_huber_instance.final_model[0]
 
     trim_size = len(data)//4
@@ -141,10 +139,9 @@ def calculate_stats(
                                                             gnc_irls_p_epsilon_base,
                                                             gnc_irls_p_epsilon_limit,
                                                             gnc_irls_p_beta),
-                                            data,
                                             evaluator_instance=evaluator_instance,
                                             diff_thres=1.e-12*sigma_pop)
-    stats_result.gnc_irls_p_instance.run() # this can fail but let's use the result anyway
+    stats_result.gnc_irls_p_instance.fit(data) # this can fail but let's use the result anyway
     stats_result.m_gnc_irls_p = stats_result.gnc_irls_p_instance.final_model[0]
     stats_result.m_rme = M_estimator(data, beta=rme_beta_scale*sigma_pop)
     return stats_result

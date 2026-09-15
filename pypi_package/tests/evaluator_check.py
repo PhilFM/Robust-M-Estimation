@@ -13,12 +13,13 @@ def evaluator_check(evaluator_instance, param_instance, model_instance,
                     irls_only: bool=False) -> bool:
     # reference slow instance
     if irls_only:
-        optimiser_instance = IRLS(param_instance, data, model_instance=model_instance, weight=weight, scale=scale)
+        optimiser_instance = IRLS(param_instance, model_instance=model_instance)
     else:
-        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, weight=weight, scale=scale)
+        optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance)
 
     # check objective_func()
     objv = evaluator_instance.objective_func(model, None, param_instance.influence_func_instance, [data], [weight], [scale])
+    optimiser_instance._set_data(data, weight=weight, scale=scale)
     objvp = optimiser_instance.objective_func(model)
     assert(objv == pytest.approx(objvp))
 

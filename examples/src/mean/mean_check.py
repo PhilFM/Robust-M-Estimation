@@ -58,7 +58,7 @@ def plot_result(data, weight,
     gncs_draw_curve(plt, rmfv(mlist, optimiser_instance=gnc_welsch_optimiser_instance), key, xvalues=mlist, draw_markers=False, hlight_x_value=m_gnc_welsch_supgn, ax=ax)
     gncs_draw_vline(plt, m_gnc_welsch_supgn,     key, use_label=False)
     gncs_draw_vline(plt, m_gnc_welsch_irls, ("IRLS", "Welsch",      "GNC_Welsch"))
-    key = ("SupGN", "PseudoHuber", "Welsch")
+    key = ("SupGN", "PseudoHuber", "PseudoHuber")
     gncs_draw_curve(plt, 0.03*rmfv(mlist, optimiser_instance=pseudo_huber_optimiser_instance), key, xvalues=mlist, draw_markers=False, hlight_x_value=m_pseudo_huber_supgn, ax=ax)
     gncs_draw_vline(plt, m_pseudo_huber_supgn,      key, use_label=False)
     #gncs_draw_vline(plt, m_pseudo_huber_irls, ("IRLS", "PseudoHuber", "Welsch"))
@@ -98,40 +98,41 @@ def main(test_run:bool, output_folder:str="../../../output"):
         #print("data(1)=",data)
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
                                           sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-        irls_instance = IRLS(param_instance, data, model_instance=model_instance, weight=weight,
+        irls_instance = IRLS(param_instance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
-        irls_instance.run() # this can fail but let's use the result anyway
+        irls_instance.fit(data, weight=weight) # this can fail but let's use the result anyway
         m_gnc_welsch_irls = irls_instance.final_model
 
-        gnc_welsch_optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, weight=weight,
+        gnc_welsch_optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance,
                                                        max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
-        if gnc_welsch_optimiser_instance.run():
+        if gnc_welsch_optimiser_instance.fit(data, weight=weight):
             m_gnc_welsch_supgn = gnc_welsch_optimiser_instance.final_model
 
         m_flat = flat_welsch_mean(data, sigma_base, weight,
                                   max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
 
         param_instance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma_base))
-        pseudo_huber_optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, weight=weight,
+        pseudo_huber_optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance,
                                                          max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
-        if pseudo_huber_optimiser_instance.run():
+        if pseudo_huber_optimiser_instance.fit(data, weight=weight):
             m_pseudo_huber_supgn = pseudo_huber_optimiser_instance.final_model
 
-        irls_instance = IRLS(param_instance, data, model_instance=model_instance, weight=weight,
+        irls_instance = IRLS(param_instance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
-        if irls_instance.run():
+        if irls_instance.fit(data, weight=weight):
             m_pseudo_huber_irls = irls_instance.final_model
 
         # GNC IRLS-p params [p,epsilon_base,epsilon_limit,rscale,beta]
         param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(), 0.0, 0.01, 1.0,
                                          epsilon_limit=1.0/xrange, beta=0.8)
-        irls_instance = IRLS(param_instance, data, model_instance=model_instance, weight=weight,
+        irls_instance = IRLS(param_instance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
-        if irls_instance.run():
+        if irls_instance.fit(data, weight=weight):
             m_gncirlsp = irls_instance.final_model
 
-        gnc_irls_p_optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance, weight=weight,
+        gnc_irls_p_optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance,
                                                        max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
+        gnc_irls_p_optimiser_instance._set_data(data, weight=weight)
 
         plot_result(data, weight,
                     gnc_welsch_optimiser_instance,   m_gnc_welsch_irls,    m_gnc_welsch_supgn, m_flat,

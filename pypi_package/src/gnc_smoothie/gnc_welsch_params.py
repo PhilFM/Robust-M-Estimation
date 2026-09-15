@@ -49,6 +49,9 @@ class GNC_WelschParams:
             else 1.0
         )
 
+    def params(self):
+        return self.influence_func_instance.params()
+
     def filter_size(self) -> float:
         return self.influence_func_instance.sigma
 

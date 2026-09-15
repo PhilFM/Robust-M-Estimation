@@ -1,6 +1,8 @@
+# Compares erf(x)/x with Gaussian function
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -23,11 +25,19 @@ def erf_func2(a,b,x1,x2):
 
 def normal_func(x,sigma,scale):
     #print("x=",x,"sigma=",sigma,"scale=",scale,math.exp(-0.5*x*x/(sigma*sigma)))
-    return scale*math.exp(-0.5*x*x/(sigma*sigma))
+    val = scale*math.exp(-0.5*x*x/(sigma*sigma))
+    if abs(val) < 1.0e-6:
+        val = 1.0e-6
+
+    return val
 
 def main(test_run:bool, output_folder:str="../../output"):
+    output_folder += "/line_fit"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     x_range = 10.0
     xlist = np.linspace(-x_range, x_range, num=401)
+    plt.close("all")
     plt.figure(num=1, dpi=240)
     erf_mfv_a = np.vectorize(erf_func2, excluded={"b","x1","x2"})
     normal_mfv = np.vectorize(normal_func, excluded={"sigma", "scale"})
@@ -40,6 +50,7 @@ def main(test_run:bool, output_folder:str="../../output"):
         erf_arr_a = np.array(erf_list_a)
         normal_arr = np.array(normal_list)
         ratio_arr = np.divide(erf_arr_a,normal_arr)
+
         #print("erf_arr_a=",erf_arr_a)
         #print("normal_arr=",normal_arr)
         #print("ratio_arr=",ratio_arr)
@@ -48,12 +59,18 @@ def main(test_run:bool, output_folder:str="../../output"):
         if ratio_init is None:
             ratio_init = ratio_min
 
-        print("b=",b,"x12=",x1,x2,"ratio=",ratio_min,"est ratio=",ratio_min/(ratio_init*math.exp(-b*b)),"ratio a=",xlist[ratio_arg])
+        if not test_run:
+            print("b=",b,"x12=",x1,x2,"ratio=",ratio_min,"est ratio=",ratio_min/(ratio_init*math.exp(-b*b)),"ratio a=",xlist[ratio_arg])
+
         normal_list_scaled = ratio_min*normal_list
         plt.plot(xlist, erf_list_a, lw = 1.0, label="erf2")
         plt.plot(xlist, normal_list_scaled, lw = 1.0, label="normal")
         plt.legend()
-        #plt.show()
+        if not test_run:
+            plt.show()
+
+    if test_run:
+        print("compare_erf_normal OK")
 
 if __name__ == "__main__":
     main(False) # test_run

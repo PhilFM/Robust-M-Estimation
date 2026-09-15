@@ -91,4 +91,3 @@ cdef inline increment_weighted_gnc_deriv_sums(cython.double[:,:] data_item, cyth
                 Aivtot[offset+dim][offsetp+l] += w * Bterm * grad[j][dim]*grad[m][l]
 
             Aivtot[offset+dim][offsetp+dim] += w * Bterm * grad[j][dim]*grad[m][dim]
-

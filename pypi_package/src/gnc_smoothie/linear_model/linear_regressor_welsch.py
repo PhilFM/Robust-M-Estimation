@@ -21,8 +21,8 @@ except ImportError:
 class LinearRegressorWelsch(LinearRegressorBase):
     def __init__(
             self,
-            sigma_base: float,
             *,
+            sigma_base: float = 0.0, # don't use unless non-zero value provided
             sigma_limit: float = 20.0,
             num_sigma_steps: int = 20,
             max_niterations: int = 50,
@@ -31,6 +31,7 @@ class LinearRegressorWelsch(LinearRegressorBase):
             lambda_scale: float = 1.2,
             lambda_thres: float = 0.0,
             diff_thres: float = 1.e-10,
+            model_start: npt.ArrayLike = None,
             model_size_est: npt.ArrayLike = None,
             use_slow_version: bool = False,
             messages_file: TextIO = None,
@@ -44,6 +45,7 @@ class LinearRegressorWelsch(LinearRegressorBase):
             lambda_scale=lambda_scale,
             lambda_thres=lambda_thres,
             diff_thres=diff_thres,
+            model_start=model_start,
             model_size_est=model_size_est,
             use_slow_version=use_slow_version,
             messages_file=messages_file,
@@ -54,12 +56,11 @@ class LinearRegressorWelsch(LinearRegressorBase):
     def param_instance(self):
         return self.__param_instance
 
-    def run(self,
+    def fit(self,
             data,
             *,
             weight: np.array = None,
-            scale: np.array = None,
-            model_start: npt.ArrayLike = None):
+            scale: np.array = None):
         data = self.convert_data(data)
         evaluator_instance = None if self._use_slow_version else LinearRegressorWelschEvaluator(data[0])
-        return self.run_base(data, self.__param_instance, evaluator_instance, weight, scale, model_start)
+        return self.run_base(data, self.__param_instance, evaluator_instance, weight, scale)

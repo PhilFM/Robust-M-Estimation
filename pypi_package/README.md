@@ -261,10 +261,10 @@ The Python library is based on `numpy` and contains the following top-level modu
 
 Implementation in [irls.py](src/gnc_smoothie/irls.py)
 
-Top-level 'IRLS' class. Once you have constructed an instance of this class, call the `run()`
+Top-level 'IRLS' class. Once you have constructed an instance of this class, call the `fit()`
 method to run it. This returns `True` on successful convergence, `False` on failure.
 The final model and model reference (see below) are stored in `final_model` and `final_model_ref`,
-whether the `run()` method succeeds or not.
+whether the `fit()` method succeeds or not.
 
 Here are the parameters that need to be passed to the `IRLS` class constructor. Optional parameters follow.
 - `param_instance` Defines the GNC schedule to be followed by IRLS. If GNC is not being used then
@@ -281,13 +281,16 @@ Here are the parameters that need to be passed to the `IRLS` class constructor. 
            GNC schedule indicated by the init parameter. If init is `True`, reset to the
            starting value to prepare for the GNC process to start. If init is `False`,
            reset to the final stage of GNC.
-   - `n_steps(self) -> int:`
+   - `n_steps(self) -> int`
            Returns the number of steps in the GNC schedule.
    - `alpha(self) -> float`
            Returns the stage reached in the GNC schedule, as a value between zero (start)
 	   and one (end)
    - `increment(self) -> None` Updates the influence_func_instance to the next step in the GNC schedule.
-- `data` An array of data items. Each data item should itself be an array.
+   - `params(self)`
+           Returns a dict containing named parameters of the influence function instance.
+   - `filter_size(self) -> float`
+           Returns a value representing the standard deviation or size of the smoothing filter represented by the influence function.                                                  - `increment(self) -> None` Updates the influence_func_instance to the next step in the GNC schedule.
 
 Now the optional parameters for the `IRLS` class constructor:
 - `model_instance` A Python-based model being fitted to the data, an instance of a class you design
@@ -335,25 +338,6 @@ Now the optional parameters for the `IRLS` class constructor:
    - `weighted_fit(self, data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike) -> np.array`
        Return the model fitted to the data, taking the weights into account.
      We expect that the implementation of the above vectorised functions will use [Cython](https://cython.org/).
-- `weight` An array of float weight values for each data item.
-     If not provided, weights are initialised to one.
-- `scale` An array of scale values, indicating that one or more data items are known to
-     have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
-     to apply to the influence function for that data item.
-- `data2` A second array of data items. Each data item should itself be an array.
-     Use this if you have a second type of data item.
-- `weight2` An array of float weight values for each of the second data items `data2`.
-     If not provided with `data2`, weights are initialised to one
-- `scale2` An array of scale values, indicating that one or more data items in `data2`
-     are known to have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
-     to apply to the influence function for that data item.
-- `data3` A third array of data items. Each data item should itself be an array.
-     Use this if you have a third type of data item.
-- `weight3` An array of float weight values for each of the third data items `data3`.
-     If not provided with `data3`, weights are initialised to one
-- `scale3` An array of scale values, indicating that one or more data items in `data3`
-     are known to have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
-     to apply to the influence function for that data item.
 - `numeric_derivs_influence: bool` Whether to calculate derivatives of the influence function numerically
      from a provided `rho()` method or directly using a provided `rhop()` method.
 - `max_niterations: int` Maximum number of IRLS iterations to apply before aborting.
@@ -374,6 +358,30 @@ Now the optional parameters for the `IRLS` class constructor:
    - `debug_weighted_fit_time` The total time spent fitting the model to data in seconds
    - `debug_total_time` The total time spent in the algorithm in seconds.
 
+Once you have built an instance of the `IRLS` class you need to call the `fit()` method, which takes the following parameters:
+- `data` An array of data items. Each data item should itself be an array.
+
+Now the optional parameters:
+- `weight` An array of float weight values for each data item.
+     If not provided, weights are initialised to one.
+- `scale` An array of scale values, indicating that one or more data items are known to
+     have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
+     to apply to the influence function for that data item.
+- `data2` A second array of data items. Each data item should itself be an array.
+     Use this if you have a second type of data item.
+- `weight2` An array of float weight values for each of the second data items `data2`.
+     If not provided with `data2`, weights are initialised to one
+- `scale2` An array of scale values, indicating that one or more data items in `data2`
+     are known to have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
+     to apply to the influence function for that data item.
+- `data3` A third array of data items. Each data item should itself be an array.
+     Use this if you have a third type of data item.
+- `weight3` An array of float weight values for each of the third data items `data3`.
+     If not provided with `data3`, weights are initialised to one
+- `scale3` An array of scale values, indicating that one or more data items in `data3`
+     are known to have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
+     to apply to the influence function for that data item.
+
 ### Supervised Gauss-Newton class
 
 Implementation at [sup_gauss_newton.py](src/gnc_smoothie/sup_gauss_newton.py)
@@ -392,10 +400,10 @@ such problems so long as a reasonable starting point for the model can be suppli
 model implementation than IRLS, since the closed-form solution for the model is calculated
 internally. Also Sup-GN converges quadratically for linear models when close to the solution.
 
-Once you have constructed an instance of the `SupGaussNewton` class, call the `run()`
+Once you have constructed an instance of the `SupGaussNewton` class, call the `fit()`
 method to run it. This returns `True` on successful convergence, `False` on failure.
 The final model and model reference (see below) are stored in `final_model` and `final_model_ref`,
-whether the `run()` method succeeds or not.
+whether the `fit()` method succeeds or not.
 
 The parameters to the `SupGaussNewton` constructor are very similar to the `IRLS` class,
 but there are some twists due to Sup-GN requiring differentiation of the model residual.
@@ -443,8 +451,12 @@ Here are the parameters you need to pass to the `SupGaussNewton` class:
            Returns the stage reached in the GNC schedule, as a value between zero (start)
 	   and one (end)
    - `increment(self) -> None` Updates the influence_func_instance to the next step in the GNC schedule.
-
-- `data` An array of data items. Each data item should itself be an array.
+   - `params(self)`
+           Returns a dict containing named parameters of the influence function instance.
+   - `filter_size(self) -> float`
+           Returns a value representing the standard deviation or size of the smoothing filter represented by the influence function.                                                  - `increment(self) -> None` Updates the influence_func_instance to the next step in the GNC schedule.
+   - `supports_factor_argument(self) -> bool`
+           Whether a derivative argument is supported in the GNC schedule (experimental)
 
 Now the optional parameters for the `SupGaussNewton` class constructor:
 - `model_instance` A Python-based model being fitted to the data, an instance of a class you design
@@ -511,25 +523,6 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
    - `weighted_fit(self, data: npt.ArrayLike, weight: npt.ArrayLike, scale: npt.ArrayLike) -> np.array`
        Return the model fitted to the data, taking the weights into account.
      We expect that the implementation of the above vectorised functions will use [Cython](https://cython.org/).
-- `weight` An array of float weight values for each data item.
-     If not provided, weights are initialised to one
-- `scale` An array of scale values, indicating that one or more data items are known to
-     have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
-     to apply to the influence function for that data item.
-- `data2` A second array of data items. Each data item should itself be an array.
-     Use this if you have a second type of data item.
-- `weight2` An array of float weight values for each of the second data items `data2`.
-     If not provided with `data2`, weights are initialised to one
-- `scale2` An array of scale values, indicating that one or more data items in `data2`
-     are known to have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
-     to apply to the influence function for that data item.
-- `data3` A third array of data items. Each data item should itself be an array.
-     Use this if you have a third type of data item.
-- `weight3` An array of float weight values for each of the third data items `data3`.
-     If not provided with `data3`, weights are initialised to one
-- `scale3` An array of scale values, indicating that one or more data items in `data3`
-     are known to have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
-     to apply to the influence function for that data item.
 - `numeric_derivs_model: bool` Whether to calculate derivatives of the data residual vector with respect to the
      model parameters numerically using a provided `residual()` method or directly
      using a provided `residual_gradient()` method.
@@ -549,9 +542,9 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
      by this factor to increase the damping at the next iteration.
 - `lambda_thres: float` Threshold for $\lambda$ below which the Sup-GN iteration switches to pure gradient-based updates.
 - `diff_thres: float` Terminate when successful update changes the model parameters by less than this value.
-- `messages_file: TextIO` File to print debugging information.
 - `model_start` Starting value for model parameters.
 - `model_ref_start` Starting reference parameters for model, e.g. if optimising rotation.
+- `messages_file: TextIO` File to print debugging information.
 - `debug: bool` Whether to add extra debugging data to the `SupGaussNewton` class instance on exit:
    - `debug_n_iterations` The number of iterations actually applied.
    - `debug_model_list` A list of the model parameters at each iteration.
@@ -564,6 +557,30 @@ Now the optional parameters for the `SupGaussNewton` class constructor:
    - `debug_weighted_derivs_time` The total time spend calculating derivatives in seconds.
    - `debug_solve_time` The total time spent solving for the model in seconds.
    - `debug_total_time` The total time spent in the algorithm in seconds.
+
+Once you have built an instance of the `IRLS` class you need to call the `fit()` method, which takes the following parameters:
+- `data` An array of data items. Each data item should itself be an array.
+
+Now the optional parameters:
+- `weight` An array of float weight values for each data item.
+     If not provided, weights are initialised to one
+- `scale` An array of scale values, indicating that one or more data items are known to
+     have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
+     to apply to the influence function for that data item.
+- `data2` A second array of data items. Each data item should itself be an array.
+     Use this if you have a second type of data item.
+- `weight2` An array of float weight values for each of the second data items `data2`.
+     If not provided with `data2`, weights are initialised to one
+- `scale2` An array of scale values, indicating that one or more data items in `data2`
+     are known to have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
+     to apply to the influence function for that data item.
+- `data3` A third array of data items. Each data item should itself be an array.
+     Use this if you have a third type of data item.
+- `weight3` An array of float weight values for each of the third data items `data3`.
+     If not provided with `data3`, weights are initialised to one
+- `scale3` An array of scale values, indicating that one or more data items in `data3`
+     are known to have reduced accuracy, i.e. a wider influence function. The scale indicates the stretching
+     to apply to the influence function for that data item.
 
 ### Example code for the IRLS and Sup-GN classes
 
@@ -612,8 +629,8 @@ from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 sigma = 0.2
 param_instance = GNC_NullParams(WelschInfluenceFunc(sigma))
 model_instance = LineFit()
-optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance)
-if optimiser_instance.run():
+optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance)
+if optimiser_instance.fit(data):
     model = optimiser_instance.final_model
     print("line a b:",model)
 ```
@@ -694,7 +711,7 @@ Optional parameters are:
 
 To run the GNC Smoothie linear regressor, create a `data` array in the format described below and call
 ```
-    if linear_regressor.run(data):
+    if linear_regressor.fit(data):
         model = linear_regressor.final_model
 ```
 Mapping the mathematical representation above to the software, the model vector ${\bf x}$ is the rows of $X$ concatenated:
@@ -726,7 +743,7 @@ You prepare two arrays, such as `data_x` and `data_y`, as the "training" and
 as you would for [RANSACRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RANSACRegressor.html).
 Then you can call `linear_regressor` in a similar way:
 ```
-    if linear_regressor.run((data_x, data_y)):
+    if linear_regressor.fit((data_x, data_y)):
         coeff = line_fitter.final_coeff
         intercept = line_fitter.final_intercept
 ```

@@ -11,59 +11,59 @@ class IRLS(BaseIRLS):
     def __init__(
         self,
         param_instance,
-        data: npt.ArrayLike,
         *,
         model_instance = None, # Python model
         evaluator_instance = None, # Cython model
-        weight: npt.ArrayLike = None,
-        scale: npt.ArrayLike = None,
-        data2: npt.ArrayLike = None,
-        weight2: npt.ArrayLike = None,
-        scale2: npt.ArrayLike = None,
-        data3: npt.ArrayLike = None,
-        weight3: npt.ArrayLike = None,
-        scale3: npt.ArrayLike = None,
         numeric_derivs_influence: bool = False,
         max_niterations: int = 50,
         diff_thres: float = 1.0e-12,
-        messages_file: TextIO = None,
         model_start: npt.ArrayLike = None,
-        model_ref_start=None,
+        model_ref_start: npt.ArrayLike=None,
+        messages_file: TextIO = None,
         debug: bool = False,
     ):
         BaseIRLS.__init__(
             self,
             param_instance,
-            data,
             model_instance=model_instance,
             evaluator_instance=evaluator_instance,
-            weight=weight,
-            scale=scale,
-            data2=data2,
-            weight2=weight2,
-            scale2=scale2,
-            data3=data3,
-            weight3=weight3,
-            scale3=scale3,
             numeric_derivs_influence=numeric_derivs_influence,
             max_niterations=max_niterations,
             diff_thres=diff_thres,
+            model_start=model_start,
+            model_ref_start=model_ref_start,
             messages_file=messages_file,
             debug=debug,
         )
 
-    def run(self,
-            *,
-            model_start: npt.ArrayLike = None,
-            model_ref_start: npt.ArrayLike=None,
+    def fit(self,
+            data: npt.ArrayLike,
+            weight: npt.ArrayLike = None,
+            scale: npt.ArrayLike = None,
+            data2: npt.ArrayLike = None,
+            weight2: npt.ArrayLike = None,
+            scale2: npt.ArrayLike = None,
+            data3: npt.ArrayLike = None,
+            weight3: npt.ArrayLike = None,
+            scale3: npt.ArrayLike = None,
             ) -> bool:
+        BaseIRLS._set_data(self,
+                           data,
+                           weight=weight,
+                           scale=scale,
+                           data2=data2,
+                           weight2=weight2,
+                           scale2=scale2,
+                           data3=data3,
+                           weight3=weight3,
+                           scale3=scale3)
         self._param_instance.reset()
         weight = [None] * self._dsize
         for didx in range(self._dsize):
             if self._data[didx] is not None:
                 weight[didx] = np.copy(self._weight[didx])
 
-        model, model_ref = self._init_model(model_start, model_ref_start)
+        model, model_ref = self._init_model()
         if self._messages_file is not None:
             print(
                 "Initial model=",
@@ -84,6 +84,8 @@ class IRLS(BaseIRLS):
                     0.0,  # iteration alpha
                     np.copy(model),
                     self._param_instance.alpha(), # GNC alpha
+                    self._param_instance.params(),  # list of dicts for state of parameters at each stage
+                    self.copy_weight()
                 )
             )
 
@@ -113,6 +115,8 @@ class IRLS(BaseIRLS):
 
             gnc_alpha = self._param_instance.alpha()
             if self._debug:
+                gnc_filter_size = self._param_instance.filter_size()
+                gnc_params = self._param_instance.params()
                 self.debug_weighted_fit_time += time.time() - start_time
 
             if self._diff_thres is not None:
@@ -128,11 +132,11 @@ class IRLS(BaseIRLS):
                     self.debug_diff_alpha.append(gnc_alpha)
 
                 if gnc_alpha == 1.0 and model_max_diff < self._diff_thres:
-                        if self._messages_file is not None:
-                            print("Difference threshold reached", file=self._messages_file)
+                    if self._messages_file is not None:
+                        print("Difference threshold reached", file=self._messages_file)
 
-                        all_good = True
-                        break
+                    all_good = True
+                    break
 
             if self._messages_file is not None:
                 print(
@@ -151,9 +155,10 @@ class IRLS(BaseIRLS):
                     (
                         (1 + itn) / (self._max_niterations - 1),  # alpha
                         np.copy(model),
-                        gnc_alpha,
+                        gnc_filter_size,
+                        gnc_params
                     )
                 )
 
-        self.finalise(model, model_ref=model_ref, weight=weight, itn=itn, total_time = time.time() - start_time_total if self._debug else 0)
+        self._finalise(model, model_ref=model_ref, weight=weight, itn=itn, total_time = time.time() - start_time_total if self._debug else 0)
         return all_good

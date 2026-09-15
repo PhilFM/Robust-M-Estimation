@@ -110,7 +110,8 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
             model_instance = LinearRegressor(data[0])
             param_instance = GNC_WelschParams(influence_func, sigma_base,
                                               sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-            optimiser_instance = SupGaussNewton(param_instance, data, model_instance=model_instance)
+            optimiser_instance = SupGaussNewton(param_instance, model_instance=model_instance)
+            optimiser_instance._set_data(data)
 
             def plane_a(a, data):
                 return optimiser_instance.objective_func([a,plane_good[1],plane_good[2]])

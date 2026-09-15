@@ -1,8 +1,12 @@
 *~
 output/*.png
 output/*.json
+output/*/*.png
+output/*/*.json
 test_output/*.png
 test_output/*.json
+test_output/*/*.png
+test_output/*/*.json
 *.aux
 *.bbl
 *.blg

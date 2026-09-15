@@ -1,6 +1,5 @@
 import math
 import numpy as np
-import os
 import sys
 
 if __name__ == "__main__":
@@ -98,7 +97,7 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
     param_instance = GNC_WelschParams(influence_func, sigma_base,
                                       sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
 
-    bad_point_scale = 5.0
+    #bad_point_scale = 5.0
     for test_idx in range(10000):
         data_c = np.copy(data)
         bad_point = 0.002*test_idx #randomM11()*bad_point_scale

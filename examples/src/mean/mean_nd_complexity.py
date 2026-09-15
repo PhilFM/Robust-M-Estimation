@@ -48,18 +48,18 @@ def solve_time(dim: int,
     num_sigma_steps = 100 #20
     max_niterations = 5000
     if file_id == "supgn":
-        linear_regressor = LinearRegressorWelsch(sigma, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps, use_slow_version=False, debug=False,
+        linear_regressor = LinearRegressorWelsch(sigma_base=sigma, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
+                                                 use_slow_version=False, debug=False,
                                                  max_niterations=max_niterations) #, messages_file=sys.stdout)
-        if linear_regressor.run(data):
+        if linear_regressor.fit(data):
             intercept = linear_regressor.final_model
             final_mean = np.array(intercept)
     elif file_id == "irls":
         irls_instance = IRLS(GNC_WelschParams(WelschInfluenceFunc(), sigma,
                                               sigma_limit=sigma_limit,  num_sigma_steps=num_sigma_steps),
-                             data,
                              evaluator_instance=LinearRegressorWelschEvaluator(data[0]),
                              max_niterations=max_niterations)
-        if irls_instance.run():
+        if irls_instance.fit(data):
             final_mean = irls_instance.final_model
             #print("final_weight:",irls_instance.final_weight)
     elif file_id == "average":

@@ -65,7 +65,7 @@ def plot_result(data, weight,
     gncs_draw_vline(plt, m_welschopt, key, use_label=False)
 
     rmfv = np.vectorize(objective_func, excluded={"optimiser_instance"})
-    key = ("SupGN", "PseudoHuber", "Welsch")
+    key = ("SupGN", "PseudoHuber", "PseudoHuber")
     gncs_draw_curve(plt, 0.05*rmfv(mlist, optimiser_instance=pseudo_huber_supgn_optimiser_instance), key, xvalues=mlist, draw_markers=False, hlight_x_value=m_pseudo_huber, ax=ax)
     gncs_draw_vline(plt, m_pseudo_huber, key, use_label=False)
 
@@ -107,26 +107,27 @@ def main(test_run:bool, output_folder:str="../../output"):
 
         welsch_optimiser_instance = SupGaussNewton(GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
                                                                     sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps),
-                                                   data, model_instance=model_instance, weight=weight,
+                                                   model_instance=model_instance,
                                                    max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                                    lambda_start=lambda_start, lambda_scale=lambda_scale, diff_thres=diff_thres,
                                                    messages_file=messages_file)
-        if welsch_optimiser_instance.run():
+        if welsch_optimiser_instance.fit(data, weight=weight):
             m_welsch = welsch_optimiser_instance.final_model
             if not test_run:
                 print("m_welsch-m_gt=",m_welsch-m_gt)
 
-        pseudo_huber_supgn_optimiser_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)), data,
-                                                     model_instance=model_instance, weight=weight,
+        pseudo_huber_supgn_optimiser_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)),
+                                                     model_instance=model_instance,
                                                      max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
-        if pseudo_huber_supgn_optimiser_instance.run():
+        if pseudo_huber_supgn_optimiser_instance.fit(data, weight=weight):
             m_pseudo_huber = pseudo_huber_supgn_optimiser_instance.final_model
             if not test_run:
                 print("m_pseudo_huber-m_gt=",m_pseudo_huber-m_gt)
 
         pseudo_huber_supgn_optimiser_instance = SupGaussNewton(GNC_NullParams(PseudoHuberInfluenceFunc(sigma=sigma_base)),
-                                                               data, model_instance=model_instance, weight=weight,
+                                                               model_instance=model_instance,
                                                                max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
+        pseudo_huber_supgn_optimiser_instance._set_data(data, weight=weight)
     
         gnc_irls_p_p = 0.0
         gnc_irls_p_rscale = 1.0/xgtrange
@@ -136,18 +137,18 @@ def main(test_run:bool, output_folder:str="../../output"):
         gnc_irls_p_param_instance = GNC_IRLSpParams(GNC_IRLSpInfluenceFunc(),
                                                     gnc_irls_p_p, gnc_irls_p_rscale, gnc_irls_p_epsilon_base,
                                                     epsilon_limit=gnc_irls_p_epsilon_limit, beta=gnc_irls_p_beta)
-        gnc_irls_p_optimiser_instance = IRLS(gnc_irls_p_param_instance, data, model_instance=model_instance, weight=weight,
+        gnc_irls_p_optimiser_instance = IRLS(gnc_irls_p_param_instance, model_instance=model_instance,
                                              max_niterations=max_niterations, diff_thres=diff_thres, messages_file=messages_file)
-        if gnc_irls_p_optimiser_instance.run():
+        if gnc_irls_p_optimiser_instance.fit(data, weight=weight):
             m_gnc_irls_p = gnc_irls_p_optimiser_instance.final_model
             if not test_run:
                 print("m_gnc_irls_p-m_gt=",m_gnc_irls_p-m_gt)
 
-        gnc_irls_p_supgn_optimiser_instance = SupGaussNewton(gnc_irls_p_param_instance, data, model_instance=model_instance, weight=weight,
+        gnc_irls_p_supgn_optimiser_instance = SupGaussNewton(gnc_irls_p_param_instance, model_instance=model_instance,
                                                              max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                                              lambda_start=lambda_start, lambda_scale=lambda_scale, diff_thres=diff_thres,
                                                              messages_file=messages_file)
-        if gnc_irls_p_supgn_optimiser_instance.run():
+        if gnc_irls_p_supgn_optimiser_instance.fit(data, weight=weight):
             m_gnc_irls_popt = gnc_irls_p_supgn_optimiser_instance.final_model
             if not test_run:
                 print("m_gnc_irls_popt-m_gt=",m_gnc_irls_popt-m_gt)

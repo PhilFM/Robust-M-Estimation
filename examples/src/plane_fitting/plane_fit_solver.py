@@ -1,8 +1,8 @@
 import numpy as np
 import open3d as o3d
+import sys
 
 if __name__ == "__main__":
-    import sys
     sys.path.append("../../../pypi_package/src")
     sys.path.append("../../../pypi_package/src/gnc_smoothie/linear_model")
     sys.path.append("../../../pypi_package/src/gnc_smoothie/cython_files")
@@ -83,13 +83,15 @@ def main(test_run:bool, output_folder:str="../../../output"):
     sigma = sigma_pop/q
     sigma_limit = np.max(data[:,2]) - np.min(data[:,2])
     model_size_est = np.array([1.0/xy_range, 1.0/xy_range, 1.0])
-    linear_regressor = LinearRegressorWelsch(sigma, sigma_limit=sigma_limit,
-                                             num_sigma_steps=20, model_size_est=model_size_est, use_slow_version=False, debug=True,
-                                             messages_file=sys.stdout)
-    if linear_regressor.run(data):
+    linear_regressor = LinearRegressorWelsch(sigma_base=sigma, sigma_limit=sigma_limit,
+                                             num_sigma_steps=20, model_size_est=model_size_est, use_slow_version=False,
+                                             debug=False if test_run else True,
+                                             messages_file=None if test_run else sys.stdout)
+    if linear_regressor.fit(data):
         final_plane = linear_regressor.final_model
         final_weight = linear_regressor.final_weight
-        debug_plane_list = linear_regressor.debug_model_list
+        if not test_run:
+            debug_plane_list = linear_regressor.debug_model_list
 
     if not test_run:
         print("Linear regression plane result:", final_plane)
@@ -103,17 +105,18 @@ def main(test_run:bool, output_folder:str="../../../output"):
         show_3d(data, final_weight, mesh_size, plane_vertices)
 
     # change to True if you want to see the progress of the algorithm
-    if True: #not test_run:
+    if not test_run:
         print("Intermediate model values:")
         for plane in debug_plane_list:
             if not test_run:
                 print("   ",plane)
 
     # orthogonal regression fitter a*x + b*y + c*z + d = 0 where a^2+b^2+c^2=1
-    plane_fitter_orthog = PlaneFitOrthogWelsch(0.01, 50.0, 20, max_niterations=200, debug=True)
-    if plane_fitter_orthog.run(data):
+    plane_fitter_orthog = PlaneFitOrthogWelsch(0.01, 50.0, 20, max_niterations=200, debug=False if test_run else True)
+    if plane_fitter_orthog.fit(data):
         final_plane_orthog = plane_fitter_orthog.final_plane
-        debug_plane_list_orthog = plane_fitter_orthog.debug_plane_list
+        if not test_run:
+            debug_plane_list_orthog = plane_fitter_orthog.debug_plane_list
 
     if not test_run:
         print("Orthogonal regression result: a,b,c,d=", final_plane_orthog)

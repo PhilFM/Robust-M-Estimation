@@ -3,12 +3,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from scipy.optimize import brentq
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
     sys.path.append("../../pypi_package/src")
 
-def main(test_run:bool, output_folder:str="../../output"):
+def main(test_run:bool, output_folder:str="../../../output"):
+    output_folder += "/misc"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     rlist = np.linspace(-3.0, 3.0, num=100)
     plt.close("all")
     plt.figure(num=1, dpi=240)

@@ -1,9 +1,9 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import sys
 
 if __name__ == "__main__":
-    import sys
     sys.path.append("../../../pypi_package/src")
     sys.path.append("../../../pypi_package/src/gnc_smoothie/linear_model")
     sys.path.append("../../../pypi_package/src/gnc_smoothie/cython_files")
@@ -36,10 +36,10 @@ def main(test_run:bool, output_folder:str="../../../output"):
     # data is a list of [x,y,z] triplets
     mean_gt = [0.5, 0.3]
 
-    sigma_pop = 0.03
+    sigma_pop = 0.01
     xy_range = 1.2
-    n_good_points = 20
-    n_bad_points = 50
+    n_good_points = 50
+    n_bad_points = 0
     data = np.zeros((n_good_points+n_bad_points,2,1))
     for i in range(n_good_points):
         data[i][0][0] = mean_gt[0] + np.random.normal(0.0, sigma_pop)
@@ -49,14 +49,16 @@ def main(test_run:bool, output_folder:str="../../../output"):
         data[n_good_points+i][0][0] = np.random.rand()*xy_range
         data[n_good_points+i][1][0] = np.random.rand()*xy_range
     
-    q = 0.6667
-    sigma = sigma_pop/q
+    supgn_q = 0.6667
+    sigma_base = sigma_pop/supgn_q
     sigma_limit = xy_range
-    linear_regressor = LinearRegressorWelsch(sigma, sigma_limit=sigma_limit, num_sigma_steps=20, use_slow_version=False, debug=True)
-    if linear_regressor.run(data):
+    linear_regressor = LinearRegressorWelsch(sigma_base=sigma_base, sigma_limit=sigma_limit, num_sigma_steps=20,
+                                             messages_file=None if test_run else sys.stdout, debug=False if test_run else True)
+    if linear_regressor.fit(data):
         intercept = linear_regressor.final_model
         final_mean_2d = np.array([intercept[0], intercept[1]])
-        debug_model_list = linear_regressor.debug_model_list
+        if not test_run:
+            debug_model_list = linear_regressor.debug_model_list
 
     if not test_run:
         print("Linear regression 2D mean result:", final_mean_2d)

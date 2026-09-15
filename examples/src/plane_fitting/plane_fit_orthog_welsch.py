@@ -29,22 +29,22 @@ class PlaneFitOrthogWelsch:
     def __convert_model(self, model: np.array) -> np.array:
         return model/math.sqrt(model[0]*model[0]+model[1]*model[1]+model[2]*model[2])
 
-    def run(self,
+    def fit(self,
             data,
             weight: np.array = None,
             scale: np.array = None):
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), self.__sigma,
                                           sigma_limit=self.__sigma_limit, num_sigma_steps=self.__num_sigma_steps)
-        optimiser_instance = IRLS(param_instance, data, model_instance=PlaneFitOrthog(), weight=weight, scale=scale,
+        optimiser_instance = IRLS(param_instance, model_instance=PlaneFitOrthog(),
                                   max_niterations=self.__max_niterations,
                                   diff_thres=self.__diff_thres,
                                   messages_file=self.__messages_file,
                                   debug=self.__debug)
-        if optimiser_instance.run():
+        if optimiser_instance.fit(data, weight=weight, scale=scale):
             self.final_plane = self.__convert_model(optimiser_instance.final_model)
             self.final_weight = optimiser_instance.final_weight
             if self.__debug:
-                self.debug_plane_list = [(model[0], self.__convert_model(model[1]), model[2]) for model in optimiser_instance.debug_model_list]
+                self.debug_plane_list = [(model[0], self.__convert_model(model[1]), model[2], model[3]) for model in optimiser_instance.debug_model_list]
                 self.debug_update_weights_time = optimiser_instance.debug_update_weights_time
                 self.debug_weighted_fit_time = optimiser_instance.debug_weighted_fit_time
                 self.debug_total_time = optimiser_instance.debug_total_time

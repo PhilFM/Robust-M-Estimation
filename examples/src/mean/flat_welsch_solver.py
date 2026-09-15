@@ -72,8 +72,9 @@ def main(test_run:bool, output_folder:str="../../../output"):
     mlist = np.linspace(x_min, x_max, num=300)
 
     # plot stuff
-    optimiser_instance = SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=sigma)), data,
-                                        model_instance=LinearRegressor(data[0]), weight=weight)
+    optimiser_instance = SupGaussNewton(GNC_NullParams(WelschInfluenceFunc(sigma=sigma)),
+                                        model_instance=LinearRegressor(data[0]))
+    optimiser_instance._set_data(data, weight=weight)
 
     def objective_func(m):
         return optimiser_instance.objective_func([m])

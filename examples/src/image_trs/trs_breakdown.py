@@ -2,6 +2,7 @@ import numpy as np
 import math
 import os
 import sys
+from pathlib import Path
 
 if __name__ == "__main__":
     sys.path.append("../../../pypi_package/src")
@@ -25,7 +26,7 @@ def apply_trs(trs, d, sigma=0.0):
     return (trs[1]*d[0] - trs[0]*d[1] + trs[2] + np.random.normal(0.0,sigma),
             trs[0]*d[0] + trs[1]*d[1] + trs[3] + np.random.normal(0.0,sigma))
             
-def check_breakpoint():
+def check_breakpoint(test_run:bool):
     image_width = 20
     image_height = 20
     half_image_width = 0.5*image_width
@@ -33,7 +34,7 @@ def check_breakpoint():
     n_points_xy = 10
     n_points = n_points_xy*n_points_xy
     trs_gt = [0.0,1.0,0.0,0.0]
-    for n_bad_points in range(1,n_points//2):
+    for n_bad_points in range(1,n_points//2,50 if test_run else 1):
         sigma = 0.1
 
         # model is s,c,tx,ty
@@ -53,11 +54,12 @@ def check_breakpoint():
                 else:
                     (data[idx][2],data[idx][3]) = apply_trs(trs_gt, data[idx], 0.0)
 
-        bad_xy_av /= n_bad_points
+                    bad_xy_av /= n_bad_points
         bad_xy_av_p = np.array(apply_trs(trs_gt, bad_xy_av, 0.0))
         bad_xy_av_p[0] += 2.0*sigma
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base=sigma)
-        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=TRS())
+        optimiser_instance = SupGaussNewton(param_instance, model_instance=TRS())
+        optimiser_instance._set_data(data)
 
         def objective_func(x: np.array) -> float: # x is [s,c]
             # We have xp = c*x - s*y + tx, yp = s*x + c*y + ty
@@ -69,7 +71,8 @@ def check_breakpoint():
 
         best_sc,best_val = minimiser(objective_func, initial_centre=[0.0,0.0], initial_half_range=[1.0,1.0], n_samples=[11,11], scale_factor=1.4)
         good_val = optimiser_instance.objective_func(np.array(trs_gt))
-        print("Compare (",n_bad_points/n_points,")",-best_val,good_val,-best_val-good_val)
+        if not test_run:
+            print("Compare (",n_bad_points/n_points,")",-best_val,good_val,-best_val-good_val)
 
 def next_bad_point(idx, n_points_xy):
     # check quadrant
@@ -92,9 +95,12 @@ def next_bad_point(idx, n_points_xy):
     return idx
 
 def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=False):
+    output_folder += "/image_trs"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     np.random.seed(0) # We want the numbers to be the same on each run
 
-    check_breakpoint()
+    check_breakpoint(test_run)
 
     image_width = 1000
     image_height = 1000
@@ -160,7 +166,8 @@ def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=Fals
         influence_func = WelschInfluenceFunc()
         param_instance = GNC_WelschParams(influence_func, sigma_base,
                                           sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-        optimiser_instance = SupGaussNewton(param_instance, data, model_instance=TRS())
+        optimiser_instance = SupGaussNewton(param_instance, model_instance=TRS())
+        optimiser_instance._set_data(data)
 
         trs_bad = [s_bad, 0.0, 0.0, 0.0] #150.0*randomM11(), 70.0*randomM11()]
         bad_xy_idx = [0,0]

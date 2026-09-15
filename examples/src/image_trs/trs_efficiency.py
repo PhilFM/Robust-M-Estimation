@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import math
+from pathlib import Path
 
 if __name__ == "__main__":
     import sys
@@ -78,7 +79,7 @@ def apply_to_data(sigma_pop:float, p:float, xy_range:float, n:int, n_samples_bas
 
         # GNC IRLS Welsch
         trs_instance = TRSWelsch(sigma_pop/p, max(xy_range,10.0*sigma_pop), 30, max_niterations=200)
-        if trs_instance.run(data):
+        if trs_instance.fit(data):
             trs_gnc_welsch = trs_instance.final_trs
 
         diff = trs_gnc_welsch-model_gt
@@ -96,6 +97,9 @@ def apply_to_data(sigma_pop:float, p:float, xy_range:float, n:int, n_samples_bas
     return var_predicted,var_gnc_welsch,var_ls
 
 def main(test_run:bool, output_folder:str="../../../output", quick_run:bool=False):
+    output_folder += "/image_trs"
+    Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     sigma_pop = 0.01
     p = 0.66666667
 
