@@ -129,6 +129,8 @@ class LinearRegressorBase:
             self.debug_weighted_derivs_time = optimiser_instance.debug_weighted_derivs_time
             self.debug_solve_time = optimiser_instance.debug_solve_time
             self.debug_total_time = optimiser_instance.debug_total_time
+            self.debug_final_stage_time = optimiser_instance.debug_final_stage_time
             self.debug_n_iterations = optimiser_instance.debug_n_iterations
+            self.debug_n_iterations_final_stage = optimiser_instance.debug_n_iterations_final_stage
 
         return res

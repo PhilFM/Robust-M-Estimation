@@ -16,7 +16,9 @@ from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie.pseudo_huber_influence_func import PseudoHuberInfluenceFunc
 from gnc_smoothie.gnc_irls_p_influence_func import GNC_IRLSpInfluenceFunc
 from gnc_smoothie.plt_alg_vis import gncs_draw_curve
+from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWelsch
 from gnc_smoothie.linear_model.linear_regressor import LinearRegressor
+from gnc_smoothie.cython_files.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
 
 def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                      diffs_welsch_irls, diff_alpha_welsch_irls,
@@ -98,28 +100,28 @@ def main(test_run:bool, output_folder:str="../../../output"):
 
         model_start = [mgt+0.5]
 
-        model_instance = LinearRegressor(data[0])
+        evaluator_instance = LinearRegressorWelschEvaluator(data[0])
     
-        welschParamInstance = GNC_WelschParams(WelschInfluenceFunc(), welsch_sigma,
-                                               sigma_limit=welsch_sigma_limit, num_sigma_steps=num_sigma_steps)
-        sup_gn_instance = SupGaussNewton(welschParamInstance, model_instance=model_instance,
-                                         max_niterations=max_niterations, residual_tolerance=residual_tolerance,
-                                         lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
-                                         model_start = None if with_gnc else model_start,
-                                         messages_file=None, debug=True)
-        if sup_gn_instance.fit(data):
-            m = sup_gn_instance.final_model
-            n_iterations = sup_gn_instance.debug_n_iterations
-            diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
-            diff_alpha_welsch_sup_gn = sup_gn_instance.debug_diff_alpha
+        mean_fitter = LinearRegressorWelsch(sigma_base=welsch_sigma, sigma_limit=welsch_sigma_limit, num_sigma_steps=num_sigma_steps,
+                                            max_niterations=max_niterations,
+                                            lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,
+                                            model_start = None if with_gnc else model_start,
+                                            messages_file=None, debug=True)
+        if mean_fitter.fit(data):
+            m = mean_fitter.final_model
+            n_iterations = mean_fitter.debug_n_iterations
+            diffs_welsch_sup_gn = mean_fitter.debug_diffs
+            diff_alpha_welsch_sup_gn = mean_fitter.debug_diff_alpha
             if not test_run:
-                print("GNC Welsch SUP-GN recovered m=",m,"n_iterations=",n_iterations)
+                print("GNC Welsch SUP-GN recovered m=",m,"n_iterations=",n_iterations,"n_iterations_final_stage=",mean_fitter.debug_n_iterations_final_stage)
                 print("GNC Welsch SUP-GN mdiff=",m-mgt)
                 print("GNC Welsch SUP-GN diffs=",diffs_welsch_sup_gn)
                 print("GNC Welsch SUP-GN diff alpha=",diff_alpha_welsch_sup_gn)
-                print("GNC Welsch SUP-GN times weighted_derivs",sup_gn_instance.debug_weighted_derivs_time,"solve",sup_gn_instance.debug_solve_time,"total",sup_gn_instance.debug_total_time)
+                print("GNC Welsch SUP-GN times weighted_derivs",mean_fitter.debug_weighted_derivs_time,"solve",mean_fitter.debug_solve_time,"final stage",mean_fitter.debug_final_stage_time,"total",mean_fitter.debug_total_time)
 
-        irls_instance = IRLS(welschParamInstance, model_instance=model_instance,
+        welschParamInstance = GNC_WelschParams(WelschInfluenceFunc(), welsch_sigma,
+                                               sigma_limit=welsch_sigma_limit, num_sigma_steps=num_sigma_steps)
+        irls_instance = IRLS(welschParamInstance, evaluator_instance=evaluator_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              model_start = None if with_gnc else model_start,
                              messages_file=None,
@@ -130,13 +132,14 @@ def main(test_run:bool, output_folder:str="../../../output"):
             diffs_welsch_irls = irls_instance.debug_diffs
             diff_alpha_welsch_irls = irls_instance.debug_diff_alpha
             if not test_run:
-                print("GNC Welsch IRLS recovered m=",m,"n_iterations=",n_iterations)
+                print("GNC Welsch IRLS recovered m=",m,"n_iterations=",n_iterations,"n_iterations_final_stage=",irls_instance.debug_n_iterations_final_stage)
                 print("GNC Welsch IRLS mdiff=",m-mgt)
                 print("GNC Welsch IRLS diffs=",diffs_welsch_irls)
                 print("GNC Welsch IRLS diff alpha=",diff_alpha_welsch_irls)
-                print("GNC Welsch IRLS times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"total",irls_instance.debug_total_time)
+                print("GNC Welsch IRLS times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"final stage",irls_instance.debug_final_stage_time,"total",irls_instance.debug_total_time)
 
         pseudoHuberParamInstance = GNC_NullParams(PseudoHuberInfluenceFunc(sigma=welsch_sigma))
+        model_instance = LinearRegressor(data[0])
         sup_gn_instance = SupGaussNewton(pseudoHuberParamInstance, model_instance=model_instance,
                                          max_niterations=max_niterations, residual_tolerance=residual_tolerance,
                                          lambda_start=1.0, lambda_scale=1.0, diff_thres=diff_thres,

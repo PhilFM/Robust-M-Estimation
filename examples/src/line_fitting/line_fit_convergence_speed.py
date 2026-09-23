@@ -15,6 +15,7 @@ from gnc_smoothie.welsch_influence_func import WelschInfluenceFunc
 from gnc_smoothie.plt_alg_vis import gncs_draw_curve
 from gnc_smoothie.linear_model.linear_regressor_welsch import LinearRegressorWelsch
 from gnc_smoothie.linear_model.linear_regressor import LinearRegressor
+from gnc_smoothie.cython_files.linear_regressor_welsch_evaluator import LinearRegressorWelschEvaluator
 
 def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                      diffs_welsch_irls, diff_alpha_welsch_irls,
@@ -80,9 +81,6 @@ def main(test_run:bool, output_folder:str="../../../output"):
                 # add outlier
                 data[i] = (x, y_range*randomM11())
 
-        if not test_run:
-            print("data=",data)
-
         diff_thres = 1.e-13
         q = 0.66667
         sigma_base = sigma_pop/q
@@ -100,19 +98,35 @@ def main(test_run:bool, output_folder:str="../../../output"):
                                             model_start = None if with_gnc else model_start,
                                             messages_file=messages_file, debug=True)
         if line_fitter.fit(data):
+            line = line_fitter.final_model
+            n_iterations = line_fitter.debug_n_iterations
             diffs_welsch_sup_gn = line_fitter.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(line_fitter.debug_diff_alpha)
+            if not test_run:
+                print("GNC Welsch SUP-GN recovered line=",line,"n_iterations=",n_iterations,"n_iterations_final_stage=",line_fitter.debug_n_iterations_final_stage)
+                print("GNC Welsch SUP-GN line diff=",line-model_gt)
+                print("GNC Welsch SUP-GN diffs=",diffs_welsch_sup_gn)
+                print("GNC Welsch SUP-GN diff alpha=",diff_alpha_welsch_sup_gn)
+                print("GNC Welsch SUP-GN times weighted_derivs",line_fitter.debug_weighted_derivs_time,"solve",line_fitter.debug_solve_time,"GNC stage",line_fitter.debug_total_time-line_fitter.debug_final_stage_time,"final stage",line_fitter.debug_final_stage_time,"total",line_fitter.debug_total_time)
 
         param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
                                           sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-        model_instance = LinearRegressor(data[0])
-        irls_instance = IRLS(param_instance, model_instance=model_instance,
+        evaluator_instance = LinearRegressorWelschEvaluator(data[0])
+        irls_instance = IRLS(param_instance, evaluator_instance=evaluator_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
                              model_start = None if with_gnc else model_start,
                              messages_file=messages_file, debug=True)
         if irls_instance.fit(data):
+            line = irls_instance.final_model
+            n_iterations = irls_instance.debug_n_iterations
             diffs_welsch_irls = irls_instance.debug_diffs
             diff_alpha_welsch_irls = np.array(irls_instance.debug_diff_alpha)
+            if not test_run:
+                print("GNC Welsch IRLS recovered line=",line,"n_iterations=",n_iterations,"n_iterations_final_stage=",irls_instance.debug_n_iterations_final_stage)
+                print("GNC Welsch IRLS line diff=",line-model_gt)
+                print("GNC Welsch IRLS diffs=",diffs_welsch_irls)
+                print("GNC Welsch IRLS diff alpha=",diff_alpha_welsch_irls)
+                print("GNC Welsch IRLS times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"GNC stage",irls_instance.debug_total_time-irls_instance.debug_final_stage_time,"final stage",irls_instance.debug_final_stage_time,"total",irls_instance.debug_total_time)
     
         plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                          diffs_welsch_irls, diff_alpha_welsch_irls,

@@ -102,8 +102,16 @@ def main(test_run:bool, output_folder:str="../../../output"):
                                          debug=True,
                                          lambda_start=1.0)
         if sup_gn_instance.fit(data):
+            final_model = sup_gn_instance.final_model
+            n_iterations = sup_gn_instance.debug_n_iterations
             diffs_welsch_sup_gn = sup_gn_instance.debug_diffs
             diff_alpha_welsch_sup_gn = np.array(sup_gn_instance.debug_diff_alpha)
+            if not test_run:
+                print("GNC Welsch SUP-GN recovered final model=",final_model,"n_iterations=",n_iterations,"n_iterations_final_stage=",sup_gn_instance.debug_n_iterations_final_stage)
+                print("GNC Welsch SUP-GN final model diff=",final_model-model_gt)
+                print("GNC Welsch SUP-GN diffs=",diffs_welsch_sup_gn)
+                print("GNC Welsch SUP-GN diff alpha=",diff_alpha_welsch_sup_gn)
+                print("GNC Welsch SUP-GN times weighted_derivs",sup_gn_instance.debug_weighted_derivs_time,"solve",sup_gn_instance.debug_solve_time,"final stage",sup_gn_instance.debug_final_stage_time,"total",sup_gn_instance.debug_total_time)
 
         irls_instance = IRLS(param_instance, model_instance=model_instance,
                              max_niterations=max_niterations, diff_thres=diff_thres,
@@ -111,9 +119,17 @@ def main(test_run:bool, output_folder:str="../../../output"):
                              messages_file=messages_file,
                              debug=True)
         irls_instance.fit(data) # this can fail but we don't care in this context
+        final_model = irls_instance.final_model
+        n_iterations = irls_instance.debug_n_iterations
         diffs_welsch_irls = irls_instance.debug_diffs
-        diff_alpha_welsch_irls = np.array(sup_gn_instance.debug_diff_alpha)
-    
+        diff_alpha_welsch_irls = np.array(irls_instance.debug_diff_alpha)
+        if not test_run:
+            print("GNC Welsch IRLS recovered final model=",final_model,"n_iterations=",n_iterations,"n_iterations_final_stage=",irls_instance.debug_n_iterations_final_stage)
+            print("GNC Welsch IRLS final model diff=",final_model-model_gt)
+            print("GNC Welsch IRLS diffs=",diffs_welsch_irls)
+            print("GNC Welsch IRLS diff alpha=",diff_alpha_welsch_irls)
+            print("GNC Welsch IRLS times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"final stage",irls_instance.debug_final_stage_time,"total",irls_instance.debug_total_time)
+
         plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                          diffs_welsch_irls, diff_alpha_welsch_irls,
                          test_idx, test_run, output_folder)

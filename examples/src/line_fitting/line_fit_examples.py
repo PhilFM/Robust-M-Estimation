@@ -8,9 +8,9 @@ from sklearn.datasets import fetch_openml
 import scipy
 from pathlib import Path
 from robpy.regression import MMRegression
-import sys
 
 if __name__ == "__main__":
+    import sys
     sys.path.append("../../../pypi_package/src")
     sys.path.append("../../../pypi_package/src/gnc_smoothie/linear_model")
     sys.path.append("../../../pypi_package/src/gnc_smoothie/cython_files")
@@ -104,33 +104,40 @@ def fit_line_dependent(data:np.ndarray, x_label:str, y_label:str, sigma:float, o
     #print("data=",data)
     (x_min,x_max) = (min(data[:,0]),max(data[:,0]))
     (y_min,y_max) = (min(data[:,1]),max(data[:,1]))
-    sigma_base = sigma/0.6667
-    sigma_limit = y_max-y_min
-    num_sigma_steps = 10
-    max_niterations = 200
-    diff_thres = 1.e-12
-    line_fitter = LinearRegressorWelsch(sigma_base=sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
-                                        max_niterations=max_niterations, diff_thres=diff_thres,
-                                        messages_file=None if test_run else sys.stdout, debug=True)
-    fit_ok = line_fitter.fit(data)
-    if fit_ok:
-        diffs_welsch_sup_gn = line_fitter.debug_diffs
-        diff_alpha_welsch_sup_gn = np.array(line_fitter.debug_diff_alpha)
+    if sigma is not None:
+        sigma_base = sigma/0.6667
+        sigma_limit = y_max-y_min
+        num_sigma_steps = 10
+        max_niterations = 200
+        diff_thres = 1.e-12
+        line_fitter = LinearRegressorWelsch(sigma_base=sigma_base, sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps,
+                                            max_niterations=max_niterations, diff_thres=diff_thres,
+                                            messages_file=None if test_run else sys.stdout, debug=True)
+        fit_ok = line_fitter.fit(data)
+        if fit_ok:
+            diffs_welsch_sup_gn = line_fitter.debug_diffs
+            diff_alpha_welsch_sup_gn = np.array(line_fitter.debug_diff_alpha)
 
-        param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
+            param_instance = GNC_WelschParams(WelschInfluenceFunc(), sigma_base,
                                           sigma_limit=sigma_limit, num_sigma_steps=num_sigma_steps)
-        model_instance = LinearRegressor(data[0])
-        irls_instance = IRLS(param_instance, model_instance=model_instance,
-                             max_niterations=max_niterations, diff_thres=diff_thres,
-                             messages_file=None if test_run else sys.stdout, debug=True)
-        irls_instance.fit(data) # we don't care if IRLS fails to converge
-        diffs_welsch_irls = irls_instance.debug_diffs
-        diff_alpha_welsch_irls = np.array(irls_instance.debug_diff_alpha)
+            model_instance = LinearRegressor(data[0])
+            irls_instance = IRLS(param_instance, model_instance=model_instance,
+                                 max_niterations=max_niterations, diff_thres=diff_thres,
+                                 messages_file=None if test_run else sys.stdout, debug=True)
+            irls_instance.fit(data) # we don't care if IRLS fails to converge
+            diffs_welsch_irls = irls_instance.debug_diffs
+            diff_alpha_welsch_irls = np.array(irls_instance.debug_diff_alpha)
 
-        test_idx = 0
-        plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
-                         diffs_welsch_irls, diff_alpha_welsch_irls, output_file_name,
-                         test_idx, test_run, output_folder)
+            test_idx = 0
+            plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
+                             diffs_welsch_irls, diff_alpha_welsch_irls, output_file_name,
+                             test_idx, test_run, output_folder)
+    else:
+        line_fitter = LinearRegressorWelsch(max_niterations=200, low_log_sigma_estimate_extension=3.0,
+                                            messages_file=None if test_run else sys.stdout, debug=False if test_run else True)
+        fit_ok = line_fitter.fit(data)
+        if fit_ok and not test_run:
+            print("Estimated scale:",line_fitter.estimated_scale)
 
     if fit_ok:
         final_weight = line_fitter.final_weight

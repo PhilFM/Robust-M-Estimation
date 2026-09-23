@@ -91,8 +91,8 @@ class IRLS(BaseIRLS):
 
             self.debug_update_weights_time = 0.0
             self.debug_weighted_fit_time = 0.0
-            self.debug_total_time = 0.0
             start_time_total = time.time()
+            start_time_final_stage = None
 
         all_good = False
         for itn in range(self._max_niterations):
@@ -118,6 +118,9 @@ class IRLS(BaseIRLS):
                 gnc_filter_size = self._param_instance.filter_size()
                 gnc_params = self._param_instance.params()
                 self.debug_weighted_fit_time += time.time() - start_time
+                if gnc_alpha == 1.0 and start_time_final_stage is None:
+                    start_time_final_stage = time.time()
+                    start_itn_final_stage = itn
 
             if self._diff_thres is not None:
                 model_max_diff = np.linalg.norm(model - model_old, ord=np.inf)
@@ -160,5 +163,5 @@ class IRLS(BaseIRLS):
                     )
                 )
 
-        self._finalise(model, model_ref=model_ref, weight=weight, itn=itn, total_time = time.time() - start_time_total if self._debug else 0)
+        self._finalise(model, model_ref=model_ref, weight=weight, itn=itn, total_time = time.time() - start_time_total if self._debug else 0, final_stage_time = time.time() - start_time_final_stage if self._debug and start_time_final_stage is not None else None, final_stage_start_itn = start_itn_final_stage if self._debug and start_time_final_stage is not None else None)
         return all_good

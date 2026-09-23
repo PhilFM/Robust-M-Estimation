@@ -286,9 +286,6 @@ class BaseIRLS:
                         residual_c_arr = np.zeros(
                             (len(model), len(self._data[didx]), self._residual_size[didx])
                         )
-                        residual_cross_arr = np.zeros(
-                            (len(model)*(len(model)-1)//2, len(self._data[didx]), self._residual_size[didx])
-                        )
 
                     # first derivatives
                     for i in range(len(model)):
@@ -510,7 +507,9 @@ class BaseIRLS:
                   AlB: np.ndarray = None,
                   weight=None,
                   itn:int=0,
-                  total_time=0):
+                  total_time=0,
+                  final_stage_time=None,
+                  final_stage_start_itn=None):
         self._param_instance.influence_func_instance.objective_func_sign()
         self._param_instance.reset(init=False)
         self._param_instance.influence_func_instance.objective_func_sign()
@@ -542,5 +541,7 @@ class BaseIRLS:
             self.final_weight3 = weight[2]/weight_scale
 
         if self._debug:
-            self.debug_n_iterations = itn + 1
             self.debug_total_time = total_time
+            self.debug_final_stage_time = final_stage_time
+            self.debug_n_iterations = itn + 1
+            self.debug_n_iterations_final_stage = itn - final_stage_start_itn if final_stage_start_itn is not None else None

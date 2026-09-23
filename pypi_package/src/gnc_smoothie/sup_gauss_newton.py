@@ -335,6 +335,7 @@ class SupGaussNewton(BaseIRLS):
             self.debug_weighted_derivs_time = 0.0
             self.debug_solve_time = 0.0
             start_time_total = time.time()
+            start_time_final_stage = None
 
         all_good = False
         for itn in range(self._max_niterations):
@@ -374,6 +375,9 @@ class SupGaussNewton(BaseIRLS):
                 gnc_filter_size = self._param_instance.filter_size()
                 gnc_params = self._param_instance.params()
                 self.debug_solve_time += time.time() - start_time
+                if gnc_alpha == 1.0 and start_time_final_stage is None:
+                    start_time_final_stage = time.time()
+                    start_itn_final_stage = itn
 
             at *= lambda_a
             model -= at
@@ -473,7 +477,7 @@ class SupGaussNewton(BaseIRLS):
                     )
                 )
 
-        self.finalise(model, model_ref=model_ref, itn=itn, total_time = time.time() - start_time_total if self._debug else 0)
+        self.finalise(model, model_ref=model_ref, itn=itn, total_time = time.time() - start_time_total if self._debug else 0, final_stage_time = time.time() - start_time_final_stage if self._debug and start_time_final_stage is not None else None, final_stage_start_itn = start_itn_final_stage if self._debug and start_time_final_stage is not None else None)
         return all_good
 
     def finalise(self,
@@ -482,7 +486,9 @@ class SupGaussNewton(BaseIRLS):
                  model_ref=None,
                  weight=None,
                  itn:int=0,
-                 total_time=0):
+                 total_time=0,
+                 final_stage_time=None,
+                 final_stage_start_itn=None):
         include_2nd_derivs = getattr(self._model_instance, "residual_2nd_deriv", None) is not None
         a, AlB = self.weighted_derivs(model, 1.0, model_ref=model_ref, include_2nd_derivs=include_2nd_derivs)
         BaseIRLS._finalise(
@@ -493,4 +499,6 @@ class SupGaussNewton(BaseIRLS):
             weight=weight,
             itn=itn,
             total_time=total_time,
+            final_stage_time=final_stage_time,
+            final_stage_start_itn=final_stage_start_itn
             )

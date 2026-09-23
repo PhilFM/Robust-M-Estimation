@@ -20,7 +20,9 @@ from gnc_smoothie.plt_alg_vis import gncs_draw_curve
 
 from point_registration import PointRegistration
 
-def plot_differences(diffs_gnc_supgn_welsch, diffs_gnc_irls_welsch, diffs_pseudo_huber, diffs_gnc_irls_p0, diffs_gnc_irls_p1,
+def plot_differences(diffs_gnc_supgn_welsch, diff_alpha_welsch_sup_gn,
+                     diffs_gnc_irls_welsch, diff_alpha_welsch_irls,
+                     diffs_pseudo_huber, diffs_gnc_irls_p0, diffs_gnc_irls_p1,
                      test_idx:int, test_run:bool, output_folder:str):
     plt.close("all")
     plt.figure(num=1, dpi=240)
@@ -28,8 +30,22 @@ def plot_differences(diffs_gnc_supgn_welsch, diffs_gnc_irls_welsch, diffs_pseudo
     ax = plt.gca()
     ax.set_xlim(0,max(len(diffs_gnc_supgn_welsch),len(diffs_gnc_irls_welsch))) #len(diffs_pseudo_huber),len(diffs_gnc_irls_p0),len(diffs_gnc_irls_p1)))
 
-    gncs_draw_curve(plt, diffs_gnc_supgn_welsch, ("SupGN", "Welsch",      "GNC_Welsch") )
-    gncs_draw_curve(plt, diffs_gnc_irls_welsch,  ("IRLS", "Welsch",      "GNC_Welsch") )
+    idx = np.argmax(diff_alpha_welsch_sup_gn)
+    if idx > 0:
+        gncs_draw_curve(plt, diffs_gnc_supgn_welsch[0:idx+1], ("SupGN", "Welsch", "GNC_Welsch"),
+                        lw=0.2, xvalues = np.arange(0,idx+1), add_label=False, markersize=1.0)
+
+    gncs_draw_curve(plt, diffs_gnc_supgn_welsch[idx:], ("SupGN", "Welsch",      "GNC_Welsch"),
+                    xvalues = np.arange(idx,len(diffs_gnc_supgn_welsch)))
+
+    idx = np.argmax(diff_alpha_welsch_irls)
+    if idx > 0:
+        gncs_draw_curve(plt, diffs_gnc_irls_welsch[0:idx+1], ("IRLS",  "Welsch", "GNC_Welsch"),
+                        lw=0.2, xvalues = np.arange(0,idx+1), add_label=False, markersize=1.0)
+
+    gncs_draw_curve(plt, diffs_gnc_irls_welsch[idx:],  ("IRLS", "Welsch",      "GNC_Welsch"),
+                    xvalues = np.arange(idx,len(diffs_gnc_irls_welsch)))
+
     #gncs_draw_curve(plt, diffs_pseudo_huber,     ("SupGN", "PseudoHuber", "PseudoHuber"))
     #gncs_draw_curve(plt, diffs_gnc_irls_p0,      ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp0") )
     #gncs_draw_curve(plt, diffs_gnc_irls_p1,      ("IRLS",  "GNC_IRLSp",   "GNC_IRLSp1") )
@@ -114,7 +130,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         #model_start[3:6] = t_gt
         #model_ref_start = R_gt #np.matmul(Rs,R_gt)
         welsch_param_instance = GNC_WelschParams(WelschInfluenceFunc(),
-                                                 noise_sigma/welsch_p, sigma_limit=noise_sigma/welsch_p,
+                                                 noise_sigma/welsch_p, sigma_limit=100.0, #noise_sigma/welsch_p,
                                                  num_sigma_steps=num_sigma_steps)
         optimiser_instance = SupGaussNewton(welsch_param_instance, model_instance=PointRegistration(),# numeric_derivs_model=True,
                                             max_niterations=max_niterations, residual_tolerance=residual_tolerance,
@@ -126,11 +142,13 @@ def main(test_run:bool, output_folder:str="../../../output"):
             model_ref = optimiser_instance.final_model_ref
             n_iterations = optimiser_instance.debug_n_iterations
             diffs_gnc_supgn_welsch = optimiser_instance.debug_diffs
+            diff_alpha_welsch_sup_gn = np.array(optimiser_instance.debug_diff_alpha)
             if not test_run:
                 #print("diffs_gnc_welsch=",diffs_gnc_welsch)
-                print("GNC Welsch Sup-GN recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
+                print("GNC Welsch Sup-GN recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations,"n_iterations_final_stage=",optimiser_instance.debug_n_iterations_final_stage)
                 print("GNC Welsch Sup-GN Rdiff=",model_ref-R_gt)
                 print("GNC Welsch Sup-GN tdiff=",model[3:6]-t_gt)
+                print("GNC Welsch Sup-GN times weighted_derivs",optimiser_instance.debug_weighted_derivs_time,"solve",optimiser_instance.debug_solve_time,"final stage",optimiser_instance.debug_final_stage_time,"total",optimiser_instance.debug_total_time)
 
         irls_instance = IRLS(welsch_param_instance, model_instance=PointRegistration(),
                              max_niterations=max_niterations, diff_thres=diff_thres,
@@ -141,11 +159,13 @@ def main(test_run:bool, output_folder:str="../../../output"):
             model_ref = irls_instance.final_model_ref
             n_iterations = irls_instance.debug_n_iterations
             diffs_gnc_irls_welsch = irls_instance.debug_diffs
+            diff_alpha_welsch_irls = np.array(irls_instance.debug_diff_alpha)
             if not test_run:
                 #print("diffs_gnc_welsch=",diffs_gnc_welsch)
-                print("GNC Welsch IRLS recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations)
+                print("GNC Welsch IRLS recovered R=",model_ref,"t=",model[3:6],"n_iterations=",n_iterations,"n_iterations_final_stage=",irls_instance.debug_n_iterations_final_stage)
                 print("GNC Welsch IRLS Rdiff=",model_ref-R_gt)
                 print("GNC Welsch IRLS tdiff=",model[3:6]-t_gt)
+                print("GNC Welsch IRLS times update_weights",irls_instance.debug_update_weights_time,"weighted_fit",irls_instance.debug_weighted_fit_time,"final stage",irls_instance.debug_final_stage_time,"total",irls_instance.debug_total_time)
 
         optimiser_instance = IRLS(GNC_NullParams(PseudoHuberInfluenceFunc(noise_sigma/welsch_p)),
                                   model_instance=PointRegistration(),
@@ -198,7 +218,9 @@ def main(test_run:bool, output_folder:str="../../../output"):
                 print("GNC IRLS-p1 Rdiff=",model_ref-R_gt)
                 print("GNC IRLS-p1 tdiff=",model[3:6]-t_gt)
 
-        plot_differences(diffs_gnc_supgn_welsch, diffs_gnc_irls_welsch, diffs_pseudo_huber, diffs_gnc_irls_p0, diffs_gnc_irls_p1, test_idx, test_run, output_folder)
+        plot_differences(diffs_gnc_supgn_welsch, diff_alpha_welsch_sup_gn,
+                         diffs_gnc_irls_welsch, diff_alpha_welsch_irls,
+                         diffs_pseudo_huber, diffs_gnc_irls_p0, diffs_gnc_irls_p1, test_idx, test_run, output_folder)
 
     if test_run:
         print("registration_solver OK")
