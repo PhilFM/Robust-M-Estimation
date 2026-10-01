@@ -81,6 +81,10 @@ def fit_line_hough(data, sigma_pop: float, max_rho: float, test_run: bool) -> np
                                    rho_step=0.01*max_rho, min_theta=0.0, max_theta=np.pi, 
                                    theta_step=0.005*np.pi)
 
+    # difference between opencv_python versions 4 and 5
+    if lines.ndim == 3:
+        lines = lines[0]
+
     _, rho, theta = lines[0][0], lines[0][1], lines[0][2]
 
     # Convert to cartesian
