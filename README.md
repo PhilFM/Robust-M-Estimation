@@ -5,6 +5,8 @@
 
 ## Build and install `gnc_smoothie` package
 
+`gnc_smoothie` has been tested with Python version 3.14.4.
+
 The first build command builds the source tar.gz successfully but then fails for some reason (on Linux).
 You can ignore the error and proceed with the second build command that builds the wheel.
 ```
@@ -20,6 +22,7 @@ To build and test GNC Smoothie PyPi package:
 pip install pytest
 cd pypi_package
 python setup.py build_ext --inplace
+mv build/lib*/gnc_smoothie/cython_files/*.so src/gnc_smoothie/cython_files
 cd tests
 pytest
 ```

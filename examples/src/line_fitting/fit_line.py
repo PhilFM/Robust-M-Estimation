@@ -76,20 +76,19 @@ def fit_line_ransac(data, sigma_pop: float):
     return np.array([coeff[0],intercept])
 
 def fit_line_hough(data, sigma_pop: float, max_rho: float, test_run: bool) -> np.ndarray:
-    #print("data=",data)
     datap = data.reshape(-1, 1, 2).astype(np.float32)
-    #print("datap=",datap)
     lines = cv2.HoughLinesPointSet(datap, lines_max=1, threshold=0, min_rho=-max_rho, max_rho=max_rho,
                                    rho_step=0.01*max_rho, min_theta=0.0, max_theta=np.pi, 
                                    theta_step=0.005*np.pi)
-    #print("lines=",lines)
 
-    _, rho, theta = lines[:, 0][:, 0], lines[:, 0][:, 1], lines[:, 0][:, 2]
+    _, rho, theta = lines[0][0], lines[0][1], lines[0][2]
 
     # Convert to cartesian
-    theta[theta == 0.] = 1e-5  # to avoid division by 0 in next line
+    if theta == 0.:
+        theta = 1e-5  # to avoid division by 0 in next line
+
     a = -1 / np.tan(theta)  # the implied lines are perpendicular to theta
     x = rho * np.cos(theta)
     y = rho * np.sin(theta)
     b = y - a * x
-    return np.array([a[0],b[0]])
+    return np.array([a,b])

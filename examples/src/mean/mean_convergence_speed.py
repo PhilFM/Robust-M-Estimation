@@ -96,7 +96,7 @@ def main(test_run:bool, output_folder:str="../../../output"):
         
         welsch_p = 0.666667
         welsch_sigma = sigma_pop/welsch_p
-        welsch_sigma_limit = max(data) - min(data) if with_gnc else welsch_sigma
+        welsch_sigma_limit = max(data)[0] - min(data)[0] if with_gnc else welsch_sigma
 
         model_start = [mgt+0.5]
 

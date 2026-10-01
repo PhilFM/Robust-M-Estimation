@@ -30,6 +30,11 @@ class LineFitOrthogWelschEvaluator:
 
         # calculate normal vector as smallest eigenvalue of the covariance matrix
         e_val, e_vect = np.linalg.eig(cov)
+
+        # eigenvalues and eigenvectors are complex but imaginary parts are zero
+        e_val = np.real(e_val)
+        e_vect = np.real(e_vect)
+
         min_eval = np.argmin(e_val)
         normal_vector = e_vect[:, min_eval]
         return np.array([normal_vector[0], normal_vector[1], -np.dot(normal_vector,X0)]),None

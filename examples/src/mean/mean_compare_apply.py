@@ -112,7 +112,7 @@ def mean_compare_apply(sigma_pop: float,
                 GNC_WelschParams(
                     WelschInfluenceFunc(),
                     gnc_welsch_sigma,
-                    sigma_limit=max(max(data)-min(data),xgtrange,10.0*sigma_pop),
+                    sigma_limit=max(max(data)[0]-min(data)[0],xgtrange,10.0*sigma_pop),
                     num_sigma_steps=10),
                 evaluator_instance=evaluator_instance,
                 max_niterations=200)
