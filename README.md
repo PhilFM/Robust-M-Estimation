@@ -5,7 +5,7 @@
 
 ## Build and install `gnc_smoothie` package
 
-`gnc_smoothie` has been tested with Python version 3.14.4 on Linux and 3.15.1 on Windows.
+`gnc_smoothie` has been tested with Python version 3.14.
 
 You will need to install the `build` Python package first:
 ```
@@ -22,7 +22,7 @@ pip install .
 
 To build and test GNC Smoothie PyPi package:
 ```
-pip install pytest
+pip install pytest setuptools scipy
 cd pypi_package
 python setup.py build_ext --inplace
 mv build/lib*/gnc_smoothie/cython_files/*.so src/gnc_smoothie/cython_files
@@ -38,6 +38,7 @@ mv build/lib*/gnc_smoothie/cython_files/*.pyd src/gnc_smoothie/cython_files
 
 To build and run the GNC Smoothie tests:
 ```
+pip install Cython
 cd examples
 python setup.py build_ext --inplace
 mv *.so src/cython_files
@@ -60,7 +61,7 @@ pip install .
 Then you can return to the `Robust-M-Estimation` shell and perform the
 following commands
 ```
-pip install pandas statsmodels seaborn scikit-learn opencv-python
+pip install pandas statsmodels seaborn scikit-learn opencv-python open3d
 cd ../src
 python run_all.py
 ```

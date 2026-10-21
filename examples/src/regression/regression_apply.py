@@ -3,7 +3,7 @@ import math
 import time
 from statsmodels.api import add_constant
 
-from fit_regression import fit_regression_ls,fit_regression_gnc_welsch,fit_regression_huber,fit_regression_gnc_irls_p,fit_regression_mm_estimation,fit_regression_theil_sen,fit_regression_ransac
+from fit_regression import fit_regression_ls,fit_regression_gnc_welsch,fit_regression_huber,fit_regression_gnc_irls_p,fit_regression_theil_sen,fit_regression_ransac
 
 def randomM11() -> float:
     return 2.0*(np.random.rand()-0.5)
@@ -16,7 +16,6 @@ class CompareRegressionResult:
         # variances
         self.var_ls = np.zeros((ndim,ndim))
         self.var_gnc_welsch = np.zeros((ndim,ndim))
-        self.var_mm_estimation = np.zeros((ndim,ndim))
         self.var_huber = np.zeros((ndim,ndim))
         self.var_gnc_irls_p = np.zeros((ndim,ndim))
         self.var_theil_sen = np.zeros((ndim,ndim))
@@ -25,7 +24,6 @@ class CompareRegressionResult:
         # timing
         self.av_time_ls = 0.0
         self.av_time_gnc_welsch = 0.0
-        self.av_time_mm_estimation = 0.0
         self.av_time_huber = 0.0
         self.av_time_gnc_irls_p = 0.0
         self.av_time_theil_sen = 0.0
@@ -108,13 +106,6 @@ def apply_to_data(ndim:int,
             av_err = np.sum(residuals ** 2)/(sigma_pop*sigma_pop*n_data_points)
             print("av_err=",av_err)
 
-        # MM estimation
-        start_time = time.process_time()
-        model_est = fit_regression_mm_estimation(data_x, data_y, 3.44)
-        alg_result.av_time_mm_estimation += time.process_time()-start_time
-        diff = model_est-model_gt
-        alg_result.var_mm_estimation += np.outer(diff, diff)
-
         # Theil-Sen
         start_time = time.process_time()
         model_est = fit_regression_theil_sen(data_x, data_y)
@@ -148,14 +139,12 @@ def apply_to_data(ndim:int,
     alg_result.var_gnc_welsch *= norm
     alg_result.var_huber *= norm
     alg_result.var_gnc_irls_p *= norm
-    alg_result.var_mm_estimation *= norm
     alg_result.var_theil_sen *= norm
     alg_result.var_ransac *= norm
     alg_result.var_ls *= norm
     alg_result.av_time_gnc_welsch /= alg_result.n_samples
     alg_result.av_time_huber /= alg_result.n_samples
     alg_result.av_time_gnc_irls_p /= alg_result.n_samples
-    alg_result.av_time_mm_estimation /= alg_result.n_samples
     alg_result.av_time_theil_sen /= alg_result.n_samples
     alg_result.av_time_ransac /= alg_result.n_samples
     alg_result.av_time_ls /= alg_result.n_samples

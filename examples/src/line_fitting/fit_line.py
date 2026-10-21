@@ -2,8 +2,6 @@ import numpy as np
 from sklearn import linear_model
 import cv2 as cv2
 import sys
-from robpy.utils.rho import TukeyBisquare
-from robpy.regression import MMRegression
 
 if __name__ == "__main__":
     sys.path.append("../../../pypi_package/src")

@@ -7,7 +7,6 @@ from sklearn import linear_model
 from sklearn.datasets import fetch_openml
 import scipy
 from pathlib import Path
-from robpy.regression import MMRegression
 
 if __name__ == "__main__":
     import sys
@@ -50,16 +49,6 @@ def draw_theil_sen_line(data, x_min:float, x_max:float):
     coeff = theil_sen.coef_
     intercept = theil_sen.intercept_
     plt.axline((x_min, coeff[0]*x_min+intercept), (x_max, coeff[0]*x_max+intercept), color = "brown", linewidth=1.0, label="Theil-Sen fit")
-
-def draw_mm_estimation_line(data, x_min:float, x_max:float):
-    data_x = np.array(data[:,0]).reshape((len(data),1))
-    data_y = np.array(data[:,1])
-    #data_x = data[:,0]
-    #data_y = data[:,1]
-    estimator = MMRegression(prepend_intercept=False).fit(data_x, data_y)
-    print("MM estimator scale=", estimator._scale)
-    line_ab = estimator.model.coef_
-    plt.axline((x_min, line_ab[0]*x_min+line_ab[1]), (x_max, line_ab[0]*x_max+line_ab[1]), color = "magenta", linewidth=1.0, label="MM estimation fit")
 
 def plot_differences(diffs_welsch_sup_gn, diff_alpha_welsch_sup_gn,
                      diffs_welsch_irls, diff_alpha_welsch_irls, output_file_name:str,
@@ -163,10 +152,6 @@ def fit_line_dependent(data:np.ndarray, x_label:str, y_label:str, sigma:float, o
             color = [alpha, 0.0, 1.0-alpha]
             plt.plot(d[0], d[1], color = color, marker = 'o')
 
-        if sigma is None:
-            draw_mm_estimation_line(data, x_min, x_max)
-            #draw_theil_sen_line(data, x_min, x_max)
-            
         if False:
             debug_line_list = line_fitter.debug_model_list
             for i,line in enumerate(debug_line_list):
@@ -236,10 +221,6 @@ def fit_line_orthog(method:str, data:np.ndarray, x_label:str, y_label:str, sigma
             alpha = w/max_weight
             color = [alpha, 0.0, 1.0-alpha]
             plt.plot(d[0], d[1], color = color, marker = 'o')
-
-        if method == "BestAngle":
-            draw_mm_estimation_line(data, x_min, x_max)
-            #draw_theil_sen_line(data, x_min, x_max)
 
         if not test_run:
             for i,line in enumerate(debug_line_list):

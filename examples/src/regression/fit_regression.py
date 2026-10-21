@@ -2,8 +2,6 @@ import numpy as np
 from sklearn import linear_model
 import cv2 as cv2
 import sys
-from robpy.utils.rho import TukeyBisquare
-from robpy.regression import MMRegression
 from sklearn.linear_model import LinearRegression
 from statsmodels.api import add_constant
 
@@ -31,12 +29,6 @@ def fit_regression_gnc_welsch(data_x:np.ndarray, data_y:np.ndarray, sigma_base:f
     #print("final_coeff=",regressor.final_coeff,"final_intercept=",regressor.final_intercept)
     #print("      GNCW end")
     return np.concatenate((regressor.final_coeff[0],regressor.final_intercept))
-
-def fit_regression_mm_estimation(data_x:np.ndarray, data_y:np.ndarray, c:float):
-    #print("      MM start")
-    estimator = MMRegression(prepend_intercept=False, rho=TukeyBisquare(c)).fit(data_x, data_y)
-    #print("      MM end")
-    return estimator.model.coef_
 
 def fit_regression_huber(data_x:np.ndarray, data_y:np.ndarray, sigma:float):
     #print("      Huber start")
