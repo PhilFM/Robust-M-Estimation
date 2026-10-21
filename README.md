@@ -29,20 +29,38 @@ mv build/lib*/gnc_smoothie/cython_files/*.so src/gnc_smoothie/cython_files
 cd tests
 pytest
 ```
+On Windows, replace the `mv *.so src/cython_files` command with
+```
+mv build/lib*/gnc_smoothie/cython_files/*.pyd src/gnc_smoothie/cython_files
+```
 
 ## Local testing of GNC Smoothie example code
 
-To build and run the GNC Smoothie example tests and samples:
+To build and run the GNC Smoothie tests:
 ```
 cd examples
 python setup.py build_ext --inplace
 mv *.so src/cython_files
 cd tests
 pytest
-cd ../src
-python run_all.py
 ```
 On Windows, replace the `mv *.so src/cython_files` command with
 ```
-mv build/lib.win*/*.pyd src/cython_files/
+mv *.pyd src/cython_files/
+```
+
+The sample code requires additional packages.
+Firstly open a new shell and install Timothee Mathieu's `RobustMeanEstimator`
+package from source:
+```
+git clone https://github.com/TimotheeMathieu/RobustMeanEstimator.git
+cd RobustMeanEstimator/
+pip install .
+```
+Then you can return to the `Robust-M-Estimation` shell and perform the
+following commands
+```
+pip install pandas statsmodels seaborn scikit-learn opencv-python
+cd ../src
+python run_all.py
 ```
