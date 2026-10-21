@@ -7,8 +7,11 @@
 
 `gnc_smoothie` has been tested with Python versions 3.12.3 and 3.14.4.
 
-The first build command builds the source tar.gz successfully but then fails for some reason (on Linux).
-You can ignore the error and proceed with the second build command that builds the wheel.
+You will need to install the `build` Python package first:
+```
+python -m pip install build
+```
+Then you can proceed to build the `gnc_smoothie` package as a wheel file:
 ```
 cd pypi_package
 python -m build -s
