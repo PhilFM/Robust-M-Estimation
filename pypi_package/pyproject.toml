@@ -1,6 +1,6 @@
 [build-system]
 # Minimum requirements for the build system to execute.
-requires = ["setuptools", "Cython", "numpy"]
+requires = ["setuptools", "Cython", "numpy", "scipy"]
 build-backend = "setuptools.build_meta"
 
 #[tool.setuptools]

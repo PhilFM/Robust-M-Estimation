@@ -5,7 +5,7 @@
 
 ## Build and install `gnc_smoothie` package
 
-`gnc_smoothie` has been tested with Python version 3.14.4 on Linux and 3.15.0 on Windows.
+`gnc_smoothie` has been tested with Python version 3.14.4 on Linux and 3.15.1 on Windows.
 
 You will need to install the `build` Python package first:
 ```
@@ -34,7 +34,6 @@ pytest
 
 To build and run the GNC Smoothie example tests and samples:
 ```
-pip install pytest
 cd examples
 python setup.py build_ext --inplace
 mv *.so src/cython_files
@@ -42,4 +41,8 @@ cd tests
 pytest
 cd ../src
 python run_all.py
+```
+On Windows, replace the `mv *.so src/cython_files` command with
+```
+mv build/lib.win*/*.pyd src/cython_files/
 ```
