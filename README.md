@@ -5,7 +5,7 @@
 
 ## Build and install `gnc_smoothie` package
 
-`gnc_smoothie` has been tested with Python version 3.14.
+`gnc_smoothie` has been tested with Python version 3.11 on Linux and Mac, and Python 3.14 on Windows.
 
 You will need to install the `build` Python package first:
 ```
