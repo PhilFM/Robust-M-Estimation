@@ -52,14 +52,12 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
             eff_gnc_welsch_list = []
             eff_huber_list = []
             eff_gnc_irls_p_list = []
-            eff_mm_estimation_list = []
             eff_theil_sen_list = []
             eff_ransac_list = []
 
             av_time_gnc_welsch_list = []
             av_time_huber_list = []
             av_time_gnc_irls_p_list = []
-            av_time_mm_estimation_list = []
             av_time_theil_sen_list = []
             av_time_ransac_list = []
             for outlier_fraction in outlier_fraction_list:
@@ -107,21 +105,6 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
                 av_time_gnc_irls_p_list.append(1000.0*alg_result.av_time_gnc_irls_p)
                 if not test_run:
                     print("   GNC IRLS-p efficiency: ", eff)
-
-                # MM estimation
-                fac = np.linalg.cholesky(alg_result.var_mm_estimation)
-                facI = np.linalg.inv(fac)
-                eff_mat = np.matmul(facI, np.matmul(alg_result.var_ls, np.matrix.transpose(facI)))
-                eff = math.pow(np.linalg.det(eff_mat),1.0/ndim)
-                if not test_run:
-                    #print("   MM estimation variance:",alg_result.var_mm_estimation)
-                    #print("   MM estimation eff matrix:",eff_mat)
-                    print("   MM estimation efficiency: ", eff)
-
-                eff_mm_estimation_list.append(eff)
-                av_time_mm_estimation_list.append(1000.0*alg_result.av_time_mm_estimation)
-                if not test_run:
-                    print("   MM estimation average time", 1000.0*alg_result.av_time_mm_estimation, "msec")
 
                 # Theil-Sen
                 fac = np.linalg.cholesky(alg_result.var_theil_sen)
@@ -191,7 +174,6 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
             plt.clf()
             ax = plt.gca()
             gncs_draw_curve(plt, eff_gnc_welsch_list,     ("SupGN",         "Welsch",         "SS"       ), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, eff_mm_estimation_list,  ("MM-Estimation", "Tukey-Bisquare", "Large-Rho"), xvalues=outlier_fraction_list)
             gncs_draw_curve(plt, eff_theil_sen_list,      ("Theil-Sen",     "",               ""         ), xvalues=outlier_fraction_list)
             gncs_draw_curve(plt, eff_ransac_list,         ("RANSAC",        "",               ""         ), xvalues=outlier_fraction_list)
 
@@ -211,7 +193,6 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
             plt.clf()
             ax = plt.gca()
             gncs_draw_curve(plt, av_time_gnc_welsch_list,     ("SupGN",         "Welsch",         "SS"       ), xvalues=outlier_fraction_list)
-            gncs_draw_curve(plt, av_time_mm_estimation_list,  ("MM-Estimation", "Tukey-Bisquare", "Large-Rho"), xvalues=outlier_fraction_list)
             gncs_draw_curve(plt, av_time_theil_sen_list,      ("Theil-Sen",     "",               ""         ), xvalues=outlier_fraction_list)
             gncs_draw_curve(plt, av_time_ransac_list,         ("RANSAC",        "",               ""         ), xvalues=outlier_fraction_list)
 

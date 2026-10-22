@@ -17,17 +17,20 @@ cd pypi_package
 python -m build -s
 python -m build -w
 pip install .
+cd ..
 ```
 ## Local testing of GNC Smoothie package
 
-To build and test GNC Smoothie PyPi package:
+To build and test GNC Smoothie PyPi package on Linux and Mac:
 ```
-pip install pytest setuptools scipy
+pip install -r requirements.txt
+pip install pytest setuptools
 cd pypi_package
 python setup.py build_ext --inplace
 mv build/lib*/gnc_smoothie/cython_files/*.so src/gnc_smoothie/cython_files
 cd tests
 pytest
+cd ../..
 ```
 On Windows, replace the `mv *.so src/cython_files` command with
 ```
@@ -36,14 +39,15 @@ mv build/lib*/gnc_smoothie/cython_files/*.pyd src/gnc_smoothie/cython_files
 
 ## Local testing of GNC Smoothie example code
 
-To build and run the GNC Smoothie tests:
+To build and run the GNC Smoothie tests on Linux and Mac:
 ```
-pip install Cython
+pip install Cython matplotlib
 cd examples
 python setup.py build_ext --inplace
 mv *.so src/cython_files
 cd tests
 pytest
+cd ..
 ```
 On Windows, replace the `mv *.so src/cython_files` command with
 ```
@@ -62,6 +66,7 @@ Then you can return to the `Robust-M-Estimation` shell and perform the
 following commands
 ```
 pip install pandas statsmodels seaborn scikit-learn opencv-python open3d
-cd ../src
+cd examples/src
 python run_all.py
+cd ../..
 ```

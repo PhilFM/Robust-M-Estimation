@@ -45,7 +45,6 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
         eff_gnc_welsch_list = []
         eff_huber_list = []
         eff_gnc_irls_p_list = []
-        eff_mm_estimation_list = []
         eff_theil_sen_list = []
         eff_ransac_list = []
         eff_ls_list = []
@@ -53,7 +52,6 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
         av_time_gnc_welsch_list = []
         av_time_huber_list = []
         av_time_gnc_irls_p_list = []
-        av_time_mm_estimation_list = []
         av_time_theil_sen_list = []
         av_time_ransac_list = []
         av_time_ls_list = []
@@ -104,21 +102,6 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
             av_time_gnc_welsch_list.append(1000.0*alg_result.av_time_gnc_welsch)
             if not test_run:
                 print("   GNC Welsch estimator SS average time", 1000.0*alg_result.av_time_gnc_welsch, "msec")
-
-            # MM estimation
-            if False:
-                fac = np.linalg.cholesky(alg_result.var_mm_estimation)
-                facI = np.linalg.inv(fac)
-                eff_mat = np.matmul(facI, np.matmul(alg_result.var_ls, np.matrix.transpose(facI)))
-                eff = math.pow(np.linalg.det(eff_mat),1.0/ndim)
-                if not test_run:
-                    print("   MM estimation efficiency: ", eff, "average time")
-
-                eff_mm_estimation_list.append(eff)
-
-            av_time_mm_estimation_list.append(1000.0*alg_result.av_time_mm_estimation)
-            if not test_run:
-                print("   MM estimation average time", 1000.0*alg_result.av_time_mm_estimation, "msec")
 
             # Theil-Sen
             if False:
@@ -195,7 +178,6 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
             plt.clf()
             ax = plt.gca()
             gncs_draw_curve(plt, eff_gnc_welsch_list,     ("SupGN",         "Welsch",         "SS"       ), xvalues=n_dimensions_list)
-            gncs_draw_curve(plt, eff_mm_estimation_list,  ("MM-Estimation", "Tukey-Bisquare", "Large-Rho"), xvalues=n_dimensions_list)
             gncs_draw_curve(plt, eff_theil_sen_list,      ("Theil-Sen",     "",               ""         ), xvalues=n_dimensions_list)
             gncs_draw_curve(plt, eff_ransac_list,         ("RANSAC",        "",               ""         ), xvalues=n_dimensions_list)
 
@@ -215,7 +197,6 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
         plt.clf()
         ax = plt.gca()
         gncs_draw_curve(plt, av_time_gnc_welsch_list,     ("SupGN",         "Welsch",         "SS"       ), xvalues=n_dimensions_list)
-        gncs_draw_curve(plt, av_time_mm_estimation_list,  ("MM-Estimation", "Tukey-Bisquare", "Large-Rho"), xvalues=n_dimensions_list)
         gncs_draw_curve(plt, av_time_theil_sen_list,      ("Theil-Sen",     "",               ""         ), xvalues=n_dimensions_list)
         gncs_draw_curve(plt, av_time_ransac_list,         ("RANSAC",        "",               ""         ), xvalues=n_dimensions_list)
         #gncs_draw_curve(plt, av_time_ls_list,             ("LS",            "",               ""         ), xvalues=n_dimensions_list)
@@ -246,23 +227,6 @@ def main(test_idx:int = -1, test_run:bool=False, output_folder:str="../../../out
 
         plt.legend()
         plt.savefig(os.path.join(output_folder, "dim_av_time_gnc_welsch_n" + str(n_data_points) + ".png"), bbox_inches='tight')
-        if False: #not test_run:
-            plt.show()
-
-        plt.close("all")
-        plt.figure(num=1, dpi=240)
-        plt.clf()
-        ax = plt.gca()
-        gncs_draw_curve(plt, av_time_mm_estimation_list,  ("MM-Estimation", "Tukey-Bisquare", "Large-Rho"), xvalues=n_dimensions_list)
-
-        ax.set_xlabel(r'Dimension' )
-        ax.set_ylabel(r'Average time in msec')
-        #plt.box(False)
-        #ax.set_xlim(0.0,n_dimensions_list[n_values-1])
-        ax.set_ylim(0.0,1.05*max(av_time_mm_estimation_list))
-
-        plt.legend()
-        plt.savefig(os.path.join(output_folder, "dim_av_time_mm_estimation_n" + str(n_data_points) + ".png"), bbox_inches='tight')
         if False: #not test_run:
             plt.show()
 
