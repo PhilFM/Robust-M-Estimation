@@ -13,7 +13,7 @@ build-backend = "setuptools.build_meta"
 #src = ['gnc_smoothie/cython/*.pyx']
 
 [project]
-name = "gnc_smoothie_philfm"
+name = "gnc_smoothie"
 version = "0.1.1"
 authors = [
   { name="Philip McLauchlan", email="philipmclauchlan6@gmail.com" },
