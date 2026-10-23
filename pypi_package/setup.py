@@ -26,10 +26,10 @@ def no_cythonize(extensions, **_ignore):
     return extensions
 
 extensions = [
-    Extension("gnc_smoothie.cython_files.linear_regressor_welsch_fast", ["src/gnc_smoothie/cython_files/linear_regressor_welsch_fast.pyx"]),
-    Extension("gnc_smoothie.cython_files.linear_regressor_pseudo_huber_fast", ["src/gnc_smoothie/cython_files/linear_regressor_pseudo_huber_fast.pyx"]),
-    Extension("gnc_smoothie.cython_files.linear_regressor_gnc_irls_p_fast", ["src/gnc_smoothie/cython_files/linear_regressor_gnc_irls_p_fast.pyx"]),
-    Extension("gnc_smoothie.cython_files.linear_regressor_weighted_fit", ["src/gnc_smoothie/cython_files/linear_regressor_weighted_fit.pyx"]),
+    Extension("gnc_smoothie.cython_files.linear_regressor_welsch_fast", ["src/gnc_smoothie/cython_files/linear_regressor_welsch_fast.pyx"], define_macros=[("Py_LIMITED_API", 0x030B0000),], py_limited_api=True),
+    Extension("gnc_smoothie.cython_files.linear_regressor_pseudo_huber_fast", ["src/gnc_smoothie/cython_files/linear_regressor_pseudo_huber_fast.pyx"], define_macros=[("Py_LIMITED_API", 0x030B0000),], py_limited_api=True),
+    Extension("gnc_smoothie.cython_files.linear_regressor_gnc_irls_p_fast", ["src/gnc_smoothie/cython_files/linear_regressor_gnc_irls_p_fast.pyx"], define_macros=[("Py_LIMITED_API", 0x030B0000),], py_limited_api=True),
+    Extension("gnc_smoothie.cython_files.linear_regressor_weighted_fit", ["src/gnc_smoothie/cython_files/linear_regressor_weighted_fit.pyx"], define_macros=[("Py_LIMITED_API", 0x030B0000),], py_limited_api=True),
 ]
 
 CYTHONIZE = cythonize is not None
@@ -48,5 +48,6 @@ setup(
         "Operating System :: OS Independent",
     ],
     license="MIT",
-    python_requires='>=3.10',
+    python_requires='>=3.11',
+    options={'bdist_wheel': {'py_limited_api': 'cp311'}},
 )
